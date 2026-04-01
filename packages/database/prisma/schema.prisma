@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  REFUNDED
+}
+
+enum LessonAccessKind {
+  PREVIEW
+  STANDARD
+  LIVE_REPLAY
+  DOWNLOADABLE
+}
+
+enum VideoAssetStatus {
+  DRAFT
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum AttendanceMode {
+  LIVE_ONLY
+  LIVE_AND_REPLAY
+  REPLAY_ONLY
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id          String       @id @default(cuid())
+  firebaseUid String       @unique
+  email       String?      @unique
+  displayName String?
+  role        UserRole     @default(STUDENT)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  enrollments Enrollment[]
+  orders      PurchaseOrder[]
+}
+
+model Instructor {
+  id              String             @id @default(cuid())
+  slug            String             @unique
+  name            String
+  branch          String
+  experienceLabel String
+  specialization  String
+  bio             String             @db.Text
+  avatarUrl       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  courseLinks     CourseInstructor[]
+}
+
+model Course {
+  id               String             @id @default(cuid())
+  slug             String             @unique
+  title            String
+  track            String
+  summary          String
+  description      String             @db.Text
+  level            String
+  durationLabel    String
+  lessonCount      Int
+  priceNpr         Int
+  originalPriceNpr Int?
+  accentColor      String
+  heroImageUrl     String?
+  isFeatured       Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  instructorLinks  CourseInstructor[]
+  lessons          Lesson[]
+  enrollments      Enrollment[]
+  liveSessions     LiveSession[]
+  videoAssets      VideoAsset[]
+  orderItems       PurchaseOrderItem[]
+}
+
+model CourseInstructor {
+  courseId     String
+  instructorId String
+  displayOrder Int        @default(0)
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor   Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, instructorId])
+}
+
+model Lesson {
+  id              String           @id @default(cuid())
+  courseId        String
+  title           String
+  synopsis        String
+  position        Int
+  durationMinutes Int?
+  accessKind      LessonAccessKind @default(STANDARD)
+  bunnyVideoId    String?
+  videoAssetId    String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  videoAsset      VideoAsset?      @relation(fields: [videoAssetId], references: [id])
+
+  @@unique([courseId, position])
+}
+
+model Enrollment {
+  id              String           @id @default(cuid())
+  userId          String
+  courseId        String
+  status          EnrollmentStatus @default(ACTIVE)
+  progressPercent Int              @default(0)
+  purchasedAt     DateTime         @default(now())
+  expiresAt       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model VideoAsset {
+  id             String           @id @default(cuid())
+  courseId       String?
+  libraryId      String
+  bunnyVideoId   String           @unique
+  title          String
+  status         VideoAssetStatus @default(UPLOADING)
+  playbackUrl    String?
+  thumbnailUrl   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  course         Course?          @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  lessons        Lesson[]
+  replaySessions LiveSession[]
+}
+
+model LiveSession {
+  id                 String         @id @default(cuid())
+  courseId           String
+  title              String
+  startsAt           DateTime
+  endsAt             DateTime
+  deliveryMode       String
+  attendanceMode     AttendanceMode @default(LIVE_AND_REPLAY)
+  meetingUrl         String?
+  replayVideoAssetId String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  course             Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  replayVideoAsset   VideoAsset?    @relation(fields: [replayVideoAssetId], references: [id], onDelete: SetNull)
+}
+
+model PurchaseOrder {
+  id        String              @id @default(cuid())
+  userId    String
+  status    OrderStatus         @default(DRAFT)
+  totalNpr  Int
+  currency  String              @default("NPR")
+  provider  String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id        String        @id @default(cuid())
+  orderId   String
+  courseId  String
+  priceNpr  Int
+  quantity  Int           @default(1)
+  createdAt DateTime      @default(now())
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  course    Course        @relation(fields: [courseId], references: [id], onDelete: Restrict)
+}

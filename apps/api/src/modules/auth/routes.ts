@@ -1,0 +1,149 @@
+import type { FastifyPluginAsync } from "fastify";
+import type {
+  AuthCsrfResponse,
+  AuthSessionLoginRequest,
+  AuthSessionResponse,
+  AuthSessionUser
+} from "@colonels-academy/contracts";
+
+import type { AuthUser } from "../../plugins/auth";
+
+function toSessionUser(authUser: AuthUser): AuthSessionUser {
+  return {
+    uid: authUser.uid,
+    ...(authUser.email ? { email: authUser.email } : {}),
+    ...(authUser.role ? { role: authUser.role } : {})
+  };
+}
+
+const authRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get(
+    "/csrf",
+    {
+      config: {
+        rateLimit: {
+          max: 60,
+          timeWindow: "1 minute"
+        }
+      }
+    },
+    async (_request, reply) => {
+      reply.header("cache-control", "no-store");
+
+      const csrfToken = fastify.issueCsrfToken(reply);
+      const response: AuthCsrfResponse = {
+        csrfToken,
+        cookieName: fastify.authCookies.csrfCookieName,
+        headerName: fastify.authCookies.csrfHeaderName
+      };
+
+      return response;
+    }
+  );
+
+  fastify.get(
+    "/session",
+    {
+      config: {
+        rateLimit: {
+          max: 120,
+          timeWindow: "1 minute"
+        }
+      }
+    },
+    async (request, reply) => {
+      reply.header("cache-control", "no-store");
+
+      const authResult = await fastify.authenticateRequest(request);
+      const response: AuthSessionResponse = {
+        authenticated: Boolean(authResult.user),
+        user: authResult.user ? toSessionUser(authResult.user) : null,
+        authMethod: authResult.method
+      };
+
+      return response;
+    }
+  );
+
+  fastify.post<{ Body: Partial<AuthSessionLoginRequest> }>(
+    "/session-login",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 minute"
+        }
+      }
+    },
+    async (request, reply) => {
+      reply.header("cache-control", "no-store");
+      fastify.assertCsrfProtection(request);
+
+      const idToken = typeof request.body?.idToken === "string" ? request.body.idToken.trim() : "";
+
+      if (!idToken) {
+        throw fastify.httpErrors.badRequest("A Firebase ID token is required.");
+      }
+
+      const authUser = await fastify.createSession(reply, idToken);
+
+      fastify.log.info(
+        {
+          uid: authUser.uid,
+          authMethod: "session"
+        },
+        "Issued Firebase session cookie."
+      );
+
+      const response: AuthSessionResponse = {
+        authenticated: true,
+        user: toSessionUser(authUser),
+        authMethod: "session"
+      };
+
+      return response;
+    }
+  );
+
+  fastify.post(
+    "/session-logout",
+    {
+      config: {
+        rateLimit: {
+          max: 20,
+          timeWindow: "1 minute"
+        }
+      }
+    },
+    async (request, reply) => {
+      reply.header("cache-control", "no-store");
+      fastify.assertCsrfProtection(request);
+
+      const sessionCookie = request.cookies[fastify.authCookies.sessionCookieName];
+      const authUser = await fastify.verifySessionCookie(sessionCookie);
+
+      if (authUser) {
+        await fastify.revokeUserSessions(authUser.uid);
+        fastify.log.info(
+          {
+            uid: authUser.uid,
+            authMethod: "session"
+          },
+          "Revoked Firebase session cookie."
+        );
+      }
+
+      fastify.clearSession(reply);
+
+      const response: AuthSessionResponse = {
+        authenticated: false,
+        user: null,
+        authMethod: "none"
+      };
+
+      return response;
+    }
+  );
+};
+
+export default authRoutes;

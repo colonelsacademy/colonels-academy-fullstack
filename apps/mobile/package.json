@@ -1,0 +1,35 @@
+{
+  "name": "@colonels-academy/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start --clear",
+    "start": "expo start --clear",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "build": "expo export --platform ios --platform android --output-dir dist",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@colonels-academy/api-client": "workspace:*",
+    "@colonels-academy/config": "workspace:*",
+    "@colonels-academy/contracts": "workspace:*",
+    "@colonels-academy/design-tokens": "workspace:*",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~55.0.9",
+    "expo-router": "55.0.8",
+    "expo-status-bar": "~55.0.4",
+    "firebase": "^11.10.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.4",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "babel-preset-expo": "~55.0.13",
+    "typescript": "^5.8.3"
+  }
+}

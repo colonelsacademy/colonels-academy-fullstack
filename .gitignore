@@ -1,0 +1,17 @@
+node_modules
+.next
+.expo
+dist
+.turbo
+.pnpm-store
+.DS_Store
+.env
+.env.local
+.env.*.local
+coverage
+.vercel
+android
+ios
+*.log
+pnpm-debug.log*
+*.tsbuildinfo

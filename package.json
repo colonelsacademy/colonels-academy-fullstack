@@ -1,0 +1,39 @@
+{
+  "name": "colonels-academy-fullstack",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "node ./scripts/run-turbo.mjs dev --parallel --continue --filter=@colonels-academy/web --filter=@colonels-academy/api --filter=@colonels-academy/worker",
+    "dev:mobile": "node ./scripts/run-turbo.mjs dev --filter=@colonels-academy/mobile",
+    "build": "node ./scripts/run-turbo.mjs build",
+    "typecheck": "node ./scripts/run-turbo.mjs typecheck",
+    "check:boundaries": "node ./scripts/check-boundaries.mjs",
+    "validate": "corepack pnpm run check:boundaries && corepack pnpm run typecheck && corepack pnpm run build",
+    "db:generate": "corepack pnpm --filter @colonels-academy/database run db:generate",
+    "db:migrate": "corepack pnpm --filter @colonels-academy/database run db:migrate",
+    "db:deploy": "corepack pnpm --filter @colonels-academy/database run db:deploy",
+    "db:status": "corepack pnpm --filter @colonels-academy/database run db:status",
+    "db:push": "corepack pnpm --filter @colonels-academy/database run db:push",
+    "db:seed": "corepack pnpm --filter @colonels-academy/database run db:seed"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "msgpackr-extract",
+      "prisma",
+      "protobufjs",
+      "sharp"
+    ]
+  },
+  "devDependencies": {
+    "turbo": "^2.5.3"
+  }
+}
