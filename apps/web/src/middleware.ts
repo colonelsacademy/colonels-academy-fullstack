@@ -9,7 +9,7 @@ const AUTH_ROUTES = ["/login"];
 
 export function middleware(request: NextRequest) {
   const { nextUrl, cookies } = request;
-  const sessionToken = cookies.get("__session")?.value;
+  const sessionToken = cookies.get("ca_session")?.value;
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
     nextUrl.pathname.startsWith(route)
@@ -35,5 +35,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/courses/enroll/:path*", "/login"],
 };

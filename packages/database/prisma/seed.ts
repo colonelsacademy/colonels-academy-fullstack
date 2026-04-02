@@ -89,7 +89,11 @@ async function main() {
     });
   }
 
-  await prisma.liveSession.deleteMany();
+  // Only reset live sessions when explicitly requested (e.g. CI or local dev reset).
+  // Prevents destructive wipe on shared/staging environments during routine seeding.
+  if (process.env.SEED_RESET_LIVE_SESSIONS === "true") {
+    await prisma.liveSession.deleteMany();
+  }
 
   for (const session of upcomingSessions) {
     const course = await prisma.course.findUnique({

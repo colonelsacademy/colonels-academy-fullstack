@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 
 import { type Category, type Course } from '@/data/gateway';
-import { db } from '@colonels-academy/database';
+import { getCourses, getInstructors } from '@/lib/api';
 
 import GatewayHero from './gateway/components/GatewayHero';
 import IntakeBanner from './gateway/components/IntakeBanner';
@@ -37,47 +37,48 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const activeCategory = (resolvedParams.category as Category) ?? 'all';
   const mentorCategory = (resolvedParams.mentorCategory as Category) ?? 'all';
 
-  // 1. Fetch courses directly from the database based on the URL parameter
-  const whereClause = activeCategory !== 'all' ? { track: activeCategory } : {};
-  
-  const dbCourses = await db.course.findMany({
-    where: { ...whereClause },
-    include: { 
-      instructorLinks: {
-        include: { instructor: true }
-      }
-    },
-    take: 12, // Fetch more for variety if needed
-    orderBy: { createdAt: 'desc' }
-  });
+  // 1. Fetch from the API (single source of truth across all pages)
+  const [apiCourses, apiInstructors] = await Promise.all([
+    getCourses(),
+    getInstructors(),
+  ]);
 
-  // 2. Map the DB data to match our UI CourseGrid props
-  const mappedCourses: Course[] = dbCourses.map(course => ({
-    id: course.id,
+  const instructorNameBySlug = new Map(apiInstructors.map(i => [i.slug, i.name]));
+
+  // 2. Map to UI shape and apply category filter
+  const allMappedCourses: Course[] = apiCourses.map(course => ({
+    id: course.slug,
     title: course.title,
     category: course.track as Category,
     description: course.summary,
-    instructor: course.instructorLinks[0]?.instructor.name || 'Expert Faculty',
+    instructor: course.instructorSlugs[0]
+      ? (instructorNameBySlug.get(course.instructorSlugs[0]) ?? 'Expert Faculty')
+      : 'Expert Faculty',
     rating: 4.8,
     ratingCount: 1200,
     students: 1500,
     duration: course.durationLabel,
     lessons: course.lessonCount,
     iconId: 'Target',
-    thumbnail: course.heroImageUrl || '/images/placeholder.jpg',
+    thumbnail: course.heroImageUrl ?? '/images/placeholder.jpg',
     price: course.priceNpr,
-    originalPrice: course.originalPriceNpr || course.priceNpr,
-    color: course.accentColor || '#D4AF37',
+    originalPrice: course.originalPriceNpr ?? course.priceNpr,
+    color: course.accentColor ?? '#D4AF37',
     lightColor: '#FEFCE8',
     tag: course.track.toUpperCase(),
     level: course.level,
-    isBestseller: course.isFeatured,
+    isBestseller: course.featured,
     comingSoon: false,
   }));
 
+  const mappedCourses =
+    activeCategory !== 'all'
+      ? allMappedCourses.filter(c => c.category === activeCategory)
+      : allMappedCourses;
+
   // 3. Selection for UI components
   const mainCourses = mappedCourses.slice(0, 8);
-  const topPick = mappedCourses.find(c => c.isBestseller) || mappedCourses[0];
+  const topPick = mappedCourses.find(c => c.isBestseller) ?? mappedCourses[0];
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans selection:bg-blue-100 selection:text-blue-900">

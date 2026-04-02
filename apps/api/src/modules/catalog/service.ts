@@ -1,3 +1,5 @@
+import type { FastifyBaseLogger } from "fastify";
+
 import type { CourseDetail, InstructorProfile } from "@colonels-academy/contracts";
 import { courseCatalog, instructors } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
@@ -67,7 +69,7 @@ function mapInstructorRecord(record: InstructorRecord): InstructorProfile {
   };
 }
 
-export async function listCourses(prisma: DatabaseClient): Promise<CourseDetail[]> {
+export async function listCourses(prisma: DatabaseClient, log: FastifyBaseLogger): Promise<CourseDetail[]> {
   try {
     const records = await loadCourseRecords(prisma);
 
@@ -76,12 +78,13 @@ export async function listCourses(prisma: DatabaseClient): Promise<CourseDetail[
     }
 
     return records.map(mapCourseRecord);
-  } catch {
+  } catch (error) {
+    log.error({ err: error }, "catalog.listCourses: database query failed, serving contract fallback");
     return courseCatalog;
   }
 }
 
-export async function getCourseBySlug(prisma: DatabaseClient, slug: string): Promise<CourseDetail | null> {
+export async function getCourseBySlug(prisma: DatabaseClient, log: FastifyBaseLogger, slug: string): Promise<CourseDetail | null> {
   const fallback = courseCatalog.find((course) => course.slug === slug) ?? null;
 
   try {
@@ -100,12 +103,13 @@ export async function getCourseBySlug(prisma: DatabaseClient, slug: string): Pro
     });
 
     return record ? mapCourseRecord(record) : fallback;
-  } catch {
+  } catch (error) {
+    log.error({ err: error, slug }, "catalog.getCourseBySlug: database query failed, serving contract fallback");
     return fallback;
   }
 }
 
-export async function listInstructors(prisma: DatabaseClient): Promise<InstructorProfile[]> {
+export async function listInstructors(prisma: DatabaseClient, log: FastifyBaseLogger): Promise<InstructorProfile[]> {
   try {
     const records = await loadInstructorRecords(prisma);
 
@@ -114,7 +118,8 @@ export async function listInstructors(prisma: DatabaseClient): Promise<Instructo
     }
 
     return records.map(mapInstructorRecord);
-  } catch {
+  } catch (error) {
+    log.error({ err: error }, "catalog.listInstructors: database query failed, serving contract fallback");
     return instructors;
   }
 }

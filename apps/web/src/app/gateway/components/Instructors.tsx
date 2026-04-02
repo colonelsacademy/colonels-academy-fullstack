@@ -1,46 +1,40 @@
 import Link from 'next/link';
 import { Star, ChevronRight } from 'lucide-react';
-import { MENTORS, type Category } from '@/data/gateway';
+import { type Category } from '@/data/gateway';
 import ImageWithSkeleton from '@/components/ui/ImageWithSkeleton';
-import { db } from '@colonels-academy/database';
+import { getInstructors } from '@/lib/api';
 
 interface InstructorsProps {
   activeTab: Category;
 }
 
+// Maps UI category filter to instructor branch name stored in the API
+const BRANCH_MAP: Record<string, string> = {
+  army: 'Nepal Army',
+  police: 'Nepal Police',
+  apf: 'APF Nepal',
+};
+
 export const Instructors = async ({ activeTab = 'all' }: InstructorsProps) => {
-  // Mapping UI categories to DB branch names
-  const branchMap: Record<string, string> = {
-    army: 'Nepal Army',
-    police: 'Nepal Police',
-    apf: 'APF Nepal',
-  };
+  const allInstructors = await getInstructors();
 
-  // Fetch from Database
-  const branchName = activeTab !== 'all' ? branchMap[activeTab] : undefined;
-  const dbInstructors = await db.instructor.findMany({ 
-    where: branchName ? { branch: branchName } : {},
-    orderBy: { createdAt: 'desc' }
-  });
+  const branchName = activeTab !== 'all' ? BRANCH_MAP[activeTab] : undefined;
+  const filtered = branchName
+    ? allInstructors.filter(i => i.branch === branchName)
+    : allInstructors;
 
-  // Merge with static data for metrics (rating, etc.) or use fallback
-  const mentors = dbInstructors.map(dbM => {
-    // Find existing static mentor for metrics fallback
-    const staticFallback = MENTORS.find(m => m.name === dbM.name);
-    return {
-      name: dbM.name,
-      rank: dbM.branch,
-      experience: dbM.experienceLabel,
-      specialization: dbM.specialization,
-      image: dbM.avatarUrl || '/images/placeholder-avatar.jpg',
-      category: activeTab,
-      rating: staticFallback?.rating || 4.8,
-      reviews: staticFallback?.reviews || 1200,
-      students: staticFallback?.students || 500,
-      courses: staticFallback?.courses || 4,
-      bio: dbM.bio
-    };
-  });
+  const mentors = filtered.map(i => ({
+    name: i.name,
+    rank: i.branch,
+    experience: i.experience,
+    specialization: i.specialization,
+    image: i.avatarUrl ?? '/images/placeholder-avatar.jpg',
+    rating: 4.8,
+    reviews: 1200,
+    students: 500,
+    courses: 4,
+    bio: i.bio,
+  }));
 
   const tabs = [
     { id: 'all', label: 'All Instructors' },

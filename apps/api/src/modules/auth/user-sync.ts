@@ -1,7 +1,9 @@
+import type { FastifyBaseLogger } from "fastify";
+
 import { type DatabaseClient } from "@colonels-academy/database";
 import { type AuthUser } from "../../plugins/auth";
 
-export async function syncUserWithPostgres(prisma: DatabaseClient, authUser: AuthUser) {
+export async function syncUserWithPostgres(prisma: DatabaseClient, authUser: AuthUser, log: FastifyBaseLogger) {
   const { uid, email, claims } = authUser;
 
   // UPSERT: Create user if not exists, otherwise update
@@ -24,8 +26,8 @@ export async function syncUserWithPostgres(prisma: DatabaseClient, authUser: Aut
     });
     return user;
   } catch (error) {
-    // Non-fatal error: Postgres sync failure shouldn't block Firebase login.
-    console.warn(`[UserSync] Failed to sync user ${uid} with Postgres:`, error);
+    // Non-fatal: Postgres sync failure should not block the Firebase login flow.
+    log.warn({ err: error, uid }, "user-sync: failed to sync user with Postgres");
     return null;
   }
 }

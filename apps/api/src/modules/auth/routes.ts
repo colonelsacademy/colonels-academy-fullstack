@@ -89,7 +89,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       const authUser = await fastify.createSession(reply, idToken);
 
       // Phase 2: Sync with PostgreSQL
-      await syncUserWithPostgres(fastify.prisma, authUser);
+      await syncUserWithPostgres(fastify.prisma, authUser, request.log);
 
       fastify.log.info(
         {
