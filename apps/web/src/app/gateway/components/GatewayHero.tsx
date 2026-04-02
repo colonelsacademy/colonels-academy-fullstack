@@ -81,7 +81,7 @@ const GatewayHero = () => {
 
             {/* Brand pill */}
             <div className="mb-8 fade-in-up [animation-delay:100ms]">
-              <span className="bg-[#0B1120] text-white text-[11px] sm:text-[12px] font-black tracking-[0.25em] uppercase px-5 py-3 rounded-xl font-['Rajdhani'] shadow-2xl border border-gray-800 flex items-center">
+              <span className="bg-[#0B1120] text-white text-[11px] sm:text-[12px] font-black tracking-[0.25em] uppercase px-5 py-3 rounded-xl font-rajdhani shadow-2xl border border-gray-800 flex items-center">
                 <span>Nepal&apos;s </span>
                 <span className="text-amber-400 mx-1.5 font-black text-[14px]">#1</span>
                 <span> Ranked Instructor Team</span>
@@ -90,12 +90,12 @@ const GatewayHero = () => {
 
             {/* Heading */}
             <h1 className="mb-10 fade-in-up [animation-delay:200ms]">
-              <span className="block text-fluid-hero font-extrabold text-[#0B1120] tracking-tight leading-[1.1] mb-2">
+              <span className="block text-fluid-hero font-extrabold text-[#0B1120] tracking-tight leading-[1.1] mb-2 font-rajdhani">
                 Army, Police & APF
               </span>
-              <span className="block text-fluid-hero font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-red-600 tracking-tight leading-[1.05] relative">
+              <span className="block text-fluid-hero font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-red-600 tracking-tight leading-[1.05] relative font-rajdhani">
                 Careers
-                <div className="absolute -bottom-1.5 left-0 w-full h-1 bg-gradient-to-r from-blue-700 to-red-600 origin-left rounded-full opacity-80" />
+                <div className="absolute -bottom-1.5 left-0 w-full h-1 bg-gradient-to-r from-blue-700 to-red-600 origin-left animate-scale-x-in [animation-delay:800ms] rounded-full opacity-80" />
               </span>
             </h1>
 

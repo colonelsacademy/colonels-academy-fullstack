@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 
-import { type Category, DEFAULT_COURSES } from '@/data/gateway';
+import { type Category, type Course, DEFAULT_COURSES } from '@/data/gateway';
+import { db } from '@colonels-academy/database';
 
 import GatewayHero from './gateway/components/GatewayHero';
 import IntakeBanner from './gateway/components/IntakeBanner';
@@ -36,14 +37,54 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const activeCategory = (resolvedParams.category as Category) ?? 'all';
   const mentorCategory = (resolvedParams.mentorCategory as Category) ?? 'all';
 
-  const filteredCourses = activeCategory === 'all'
-    ? DEFAULT_COURSES
-    : DEFAULT_COURSES.filter(
-      (c) => c.category === activeCategory || (activeCategory === 'army' && c.category === 'cadet')
-    );
+  // 1. Fetch courses directly from the database based on the URL parameter
+  const whereClause = activeCategory !== 'all' ? { track: activeCategory } : {};
+  
+  const dbCourses = await db.course.findMany({
+    where: { ...whereClause },
+    include: { 
+      instructorLinks: {
+        include: { instructor: true }
+      }
+    },
+    take: 8, // Fetch more for variety if needed
+  });
 
-  const mainCourses = filteredCourses.slice(0, 4);
-  const topPick = DEFAULT_COURSES.find(c => c.id === 'military-history');
+  // 2. Map the DB data to match our UI CourseGrid props
+  const mappedCourses: Course[] = dbCourses.map(course => ({
+    id: course.id,
+    title: course.title,
+    category: course.track as Category,
+    description: course.summary,
+    instructor: course.instructorLinks[0]?.instructor.name || 'Expert Faculty',
+    rating: 4.8,
+    ratingCount: 1200,
+    students: 1500,
+    duration: course.durationLabel,
+    lessons: course.lessonCount,
+    iconId: 'Target',
+    thumbnail: course.heroImageUrl || '/images/placeholder.jpg',
+    price: course.priceNpr,
+    originalPrice: course.originalPriceNpr || course.priceNpr,
+    color: course.accentColor || '#D4AF37',
+    lightColor: '#FEFCE8',
+    tag: course.track.toUpperCase(),
+    level: course.level,
+    isBestseller: course.isFeatured,
+    comingSoon: false,
+  }));
+
+  // 3. Fallback to static data if database is empty (for resilience during seeding)
+  const finalCourses: Course[] = mappedCourses.length > 0 ? mappedCourses : (
+    activeCategory === 'all'
+      ? DEFAULT_COURSES
+      : DEFAULT_COURSES.filter(
+        (c) => c.category === activeCategory || (activeCategory === 'army' && c.category === 'cadet')
+      )
+  );
+
+  const mainCourses = finalCourses.slice(0, 4);
+  const topPick = (mappedCourses.find(c => c.isBestseller) as Course | undefined) || DEFAULT_COURSES.find(c => c.id === 'military-history');
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans selection:bg-blue-100 selection:text-blue-900">

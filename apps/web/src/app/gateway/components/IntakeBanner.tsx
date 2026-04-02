@@ -107,7 +107,7 @@ const IntakeBanner = () => {
                 exit={{ opacity: 0, x: 10 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-2xl font-black text-gray-900 font-['Rajdhani'] uppercase tracking-tight">{current.title}</h2>
+                <h2 className="text-2xl font-black text-gray-900 font-rajdhani uppercase tracking-tight">{current.title}</h2>
                 <p className="text-xs text-gray-400 font-medium truncate mt-0.5">{current.subtitle}</p>
               </motion.div>
             </AnimatePresence>

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@colonels-academy/api-client": "workspace:*",
+    "@colonels-academy/database": "workspace:*",
     "@colonels-academy/config": "workspace:*",
     "@colonels-academy/contracts": "workspace:*",
     "@colonels-academy/ui": "workspace:*",

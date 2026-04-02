@@ -15,7 +15,7 @@ export const CourseSection = ({ title, subtitle, children, className = '' }: {
 }) => (
   <div className={`py-10 ${className}`}>
     <div className="mb-8 text-center max-w-3xl mx-auto">
-      <h2 className="text-fluid-2xl font-bold text-gray-900 font-['Rajdhani'] uppercase tracking-tight">{title}</h2>
+      <h2 className="text-fluid-2xl font-bold text-gray-900 font-rajdhani uppercase tracking-tight">{title}</h2>
       {subtitle && <p className="text-gray-500 mt-2 font-medium">{subtitle}</p>}
     </div>
     {children}
@@ -142,7 +142,7 @@ export const CourseGrid = ({ courses, onCourseClick, enrolledCourseIds, eagerCou
 
                 {/* Body */}
                 <div className="flex flex-col flex-grow text-left p-1">
-                  <h4 className="text-[16px] font-bold text-[#1c1d1f] leading-[1.2] mb-1.5 line-clamp-2 min-h-[40px]">{course.title}</h4>
+                  <h4 className="text-[16px] font-bold text-[#1c1d1f] leading-[1.2] mb-1.5 line-clamp-2 min-h-[40px] font-rajdhani">{course.title}</h4>
                   <p className="text-[12px] text-[#6a6f73] mb-1.5 truncate">{course.instructor}</p>
 
                   <div className="flex items-center gap-1 mb-1">

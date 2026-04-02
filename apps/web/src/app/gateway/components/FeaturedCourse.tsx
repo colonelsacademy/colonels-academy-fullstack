@@ -13,7 +13,7 @@ export const FeaturedCourse = ({ course, isEnrolled = false }: FeaturedCoursePro
         <section className="py-20 px-4">
             <div className="max-w-[1400px] mx-auto">
                 <div className="mb-12">
-                    <h2 className="text-fluid-3xl font-bold text-gray-900 font-['Rajdhani'] uppercase tracking-tight">Our Top Pick for You</h2>
+                    <h2 className="text-fluid-3xl font-bold text-gray-900 font-rajdhani uppercase tracking-tight">Our Top Pick for You</h2>
                     <p className="text-gray-500 mt-2 font-medium">Specially selected based on current service recruitment trends.</p>
                 </div>
 

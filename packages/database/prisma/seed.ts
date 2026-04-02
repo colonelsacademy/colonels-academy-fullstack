@@ -111,6 +111,88 @@ async function main() {
       }
     });
   }
+
+  console.log('Seeding Manual Featured Courses...');
+
+  // 1. Army Officer Cadet
+  const armyInstructor = await prisma.instructor.findUnique({ where: { slug: 'rajesh-thapa' } });
+  if (armyInstructor) {
+    const armyCourse = await prisma.course.upsert({
+      where: { slug: 'army-officer-cadet-prep' },
+      update: {},
+      create: {
+        title: 'Officer Cadet Comprehensive Preparation',
+        slug: 'army-officer-cadet-prep',
+        track: 'army',
+        summary: 'Expert-led preparation for the Nepal Army Officer Cadet selection.',
+        description: 'Master the IQ, GK, and physical requirements for the Nepal Army Officer Cadet selection board. Guided by retired officers with decades of experience.',
+        level: 'Advanced',
+        durationLabel: '12 Weeks',
+        lessonCount: 45,
+        priceNpr: 4500,
+        originalPriceNpr: 6000,
+        accentColor: '#8F7A38',
+        heroImageUrl: '/images/courses/officer-cadet-elite.jpg',
+        isFeatured: true,
+      },
+    });
+
+    await prisma.courseInstructor.upsert({
+      where: {
+        courseId_instructorId: {
+          courseId: armyCourse.id,
+          instructorId: armyInstructor.id,
+        },
+      },
+      update: {},
+      create: {
+        courseId: armyCourse.id,
+        instructorId: armyInstructor.id,
+        displayOrder: 0,
+      },
+    });
+  }
+
+  // 2. Police Inspector
+  const policeInstructor = await prisma.instructor.findUnique({ where: { slug: 'kp-sharma' } });
+  if (policeInstructor) {
+    const policeCourse = await prisma.course.upsert({
+      where: { slug: 'police-inspector-prep' },
+      update: {},
+      create: {
+        title: 'Nepal Police Inspector Preparation',
+        slug: 'police-inspector-prep',
+        track: 'police',
+        summary: 'Comprehensive legal and procedural coaching for Inspector candidates.',
+        description: 'Intensive study module covering criminal law, constitution, and general knowledge. Includes mock oral boards and case analysis drills.',
+        level: 'Intermediate',
+        durationLabel: '8 Weeks',
+        lessonCount: 32,
+        priceNpr: 3500,
+        originalPriceNpr: 5000,
+        accentColor: '#224785',
+        heroImageUrl: '/images/courses/police-inspector-cadet.jpg',
+        isFeatured: true,
+      },
+    });
+
+    await prisma.courseInstructor.upsert({
+      where: {
+        courseId_instructorId: {
+          courseId: policeCourse.id,
+          instructorId: policeInstructor.id,
+        },
+      },
+      update: {},
+      create: {
+        courseId: policeCourse.id,
+        instructorId: policeInstructor.id,
+        displayOrder: 0,
+      },
+    });
+  }
+
+  console.log('✅ Manual courses seeded successfully.');
 }
 
 main()

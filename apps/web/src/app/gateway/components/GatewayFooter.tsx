@@ -15,8 +15,8 @@ export const GatewayCTA = () => {
             </div>
 
             {/* Text Content */}
-            <div className="space-y-3 max-w-lg">
-              <h4 className="text-3xl md:text-5xl font-bold font-['Rajdhani'] text-white leading-[1.1] tracking-tight">
+            <div className="space-y-3 max-w-lg font-rajdhani">
+              <h4 className="text-3xl md:text-5xl font-bold font-rajdhani text-white leading-[1.1] tracking-tight">
                 Lost in the <br className="hidden md:block" />
                 <span className="text-[#D4AF37]">Selection Process?</span>
               </h4>
