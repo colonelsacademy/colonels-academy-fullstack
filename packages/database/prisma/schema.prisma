@@ -27,6 +27,14 @@ enum LessonAccessKind {
   DOWNLOADABLE
 }
 
+enum ContentType {
+  VIDEO
+  PDF
+  LIVE
+  QUIZ
+  TEXT
+}
+
 enum VideoAssetStatus {
   DRAFT
   UPLOADING
@@ -93,11 +101,25 @@ model Course {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   instructorLinks  CourseInstructor[]
+  modules          Module[]
   lessons          Lesson[]
   enrollments      Enrollment[]
   liveSessions     LiveSession[]
   videoAssets      VideoAsset[]
   orderItems       PurchaseOrderItem[]
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  position  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+
+  @@unique([courseId, position])
 }
 
 model CourseInstructor {
@@ -113,19 +135,40 @@ model CourseInstructor {
 model Lesson {
   id              String           @id @default(cuid())
   courseId        String
+  moduleId        String?
   title           String
   synopsis        String
   position        Int
   durationMinutes Int?
+  contentType     ContentType      @default(VIDEO)
   accessKind      LessonAccessKind @default(STANDARD)
   bunnyVideoId    String?
   videoAssetId    String?
+  meetingUrl      String?
+  pdfUrl          String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module          Module?          @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   videoAsset      VideoAsset?      @relation(fields: [videoAssetId], references: [id])
+  quizQuestions   QuizQuestion[]
 
   @@unique([courseId, position])
+}
+
+model QuizQuestion {
+  id                 String   @id @default(cuid())
+  lessonId           String
+  question           String
+  options            Json
+  correctOptionIndex Int
+  explanation        String?
+  position           Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  lesson             Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, position])
 }
 
 model Enrollment {

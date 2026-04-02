@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - dev
 
 permissions:
   contents: read
@@ -18,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       code: ${{ steps.filter.outputs.code }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+      database: ${{ steps.filter.outputs.database }}
       web: ${{ steps.filter.outputs.web }}
       api: ${{ steps.filter.outputs.api }}
       worker: ${{ steps.filter.outputs.worker }}
@@ -28,6 +31,12 @@ jobs:
         id: filter
         with:
           filters: |
+            # Any change to the shared contract or database layer triggers a full quality check.
+            # These packages require Backend Lead review before merging (enforce in GitHub branch rules).
+            contracts:
+              - 'packages/contracts/**'
+            database:
+              - 'packages/database/**'
             code:
               - 'apps/**'
               - 'packages/**'
@@ -164,3 +173,39 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @colonels-academy/mobile run build
+
+  # ─── Required gate ────────────────────────────────────────────────────────────
+  # This is the SINGLE required status check to configure in GitHub branch
+  # protection for both `dev` and `main`. It only passes when every triggered
+  # build job has succeeded (or was skipped because no relevant files changed).
+  # Add "ci-gate" as the required check name in: Settings → Branches → Rules.
+  ci-gate:
+    if: always()
+    needs: [quality, build-web, build-api, build-worker, build-mobile]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all jobs passed
+        run: |
+          results="${{ join(needs.*.result, ' ') }}"
+          for result in $results; do
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              echo "❌ A required job failed or was cancelled: $result"
+              exit 1
+            fi
+          done
+          echo "✅ All required checks passed."
+
+  # ─── Contracts / Database change guard ───────────────────────────────────────
+  # Warns when a PR touches packages/contracts or packages/database.
+  # Configure Backend Lead as a required reviewer for these paths in:
+  # Settings → Code and Automation → Code owners (CODEOWNERS file).
+  guard-sensitive-packages:
+    needs: changes
+    if: needs.changes.outputs.contracts == 'true' || needs.changes.outputs.database == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Flag sensitive package changes
+        run: |
+          echo "⚠️  This PR touches packages/contracts or packages/database."
+          echo "    These changes require Backend Lead review before merging."
+          echo "    Ensure a CODEOWNERS rule routes this PR for approval."

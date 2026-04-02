@@ -1,5 +1,52 @@
 export type CourseTrack = "army" | "police" | "apf" | "staff" | "mission";
 
+export type ContentType = "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT";
+
+export interface QuizOption {
+  text: string;
+}
+
+export interface QuizQuestionDetail {
+  id: string;
+  question: string;
+  options: QuizOption[];
+  correctOptionIndex: number;
+  explanation?: string;
+  position: number;
+}
+
+export interface LessonDetail {
+  id: string;
+  courseId: string;
+  moduleId?: string;
+  title: string;
+  synopsis: string;
+  position: number;
+  durationMinutes?: number;
+  contentType: ContentType;
+  accessKind: "PREVIEW" | "STANDARD" | "LIVE_REPLAY" | "DOWNLOADABLE";
+  bunnyVideoId?: string;
+  meetingUrl?: string;
+  pdfUrl?: string;
+  quizQuestions?: QuizQuestionDetail[];
+}
+
+export interface ModuleDetail {
+  id: string;
+  courseId: string;
+  title: string;
+  position: number;
+  lessons: LessonDetail[];
+}
+
+export interface EnrollmentGuardResponse {
+  enrolled: boolean;
+  status: "ACTIVE" | "PENDING" | "EXPIRED" | "REFUNDED" | null;
+  courseSlug: string;
+  /** Only present when enrolled and lesson contentType is LIVE */
+  meetingUrl?: string;
+}
+
 export interface InstructorProfile {
   slug: string;
   name: string;

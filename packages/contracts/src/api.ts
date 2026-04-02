@@ -1,4 +1,12 @@
-import type { CourseDetail, DashboardSnapshot, InstructorProfile, LiveSessionPreview } from "./types";
+import type {
+  CourseDetail,
+  DashboardSnapshot,
+  EnrollmentGuardResponse,
+  InstructorProfile,
+  LiveSessionPreview,
+  ModuleDetail,
+  LessonDetail,
+} from "./types";
 
 export interface AuthSessionUser {
   uid: string;
@@ -41,6 +49,14 @@ export interface LiveSessionsResponse {
   items: LiveSessionPreview[];
   transport: string;
 }
+
+export interface CourseLessonsResponse {
+  courseSlug: string;
+  modules: ModuleDetail[];
+  unorganisedLessons: LessonDetail[];
+}
+
+export type { EnrollmentGuardResponse };
 
 export interface QueueDepthSnapshot {
   waiting: number;

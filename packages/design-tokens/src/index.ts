@@ -58,3 +58,42 @@ export const mobileTheme = {
   typography: typographyTokens,
   shadows: shadowTokens
 } as const;
+
+/**
+ * CSS custom property map for web (Tailwind CSS / global stylesheet).
+ * Usage: inject via a <style> tag or CSS-in-JS at the root layout.
+ * Example:  `style={{ '--color-accent': webCssVars['--color-accent'] }}`
+ */
+export const webCssVars = {
+  "--color-ink":            colorTokens.ink,
+  "--color-surface":        colorTokens.surface,
+  "--color-surface-muted":  colorTokens.surfaceMuted,
+  "--color-card":           colorTokens.card,
+  "--color-border":         colorTokens.border,
+  "--color-accent":         colorTokens.accent,
+  "--color-accent-strong":  colorTokens.accentStrong,
+  "--color-success":        colorTokens.success,
+  "--color-danger":         colorTokens.danger,
+  "--color-info":           colorTokens.info,
+  "--color-text-primary":   colorTokens.textPrimary,
+  "--color-text-secondary": colorTokens.textSecondary,
+  "--color-text-inverse":   colorTokens.textInverse,
+  "--spacing-xs":  `${spacingTokens.xs}px`,
+  "--spacing-sm":  `${spacingTokens.sm}px`,
+  "--spacing-md":  `${spacingTokens.md}px`,
+  "--spacing-lg":  `${spacingTokens.lg}px`,
+  "--spacing-xl":  `${spacingTokens.xl}px`,
+  "--spacing-xxl": `${spacingTokens.xxl}px`,
+  "--radius-sm":   `${radiusTokens.sm}px`,
+  "--radius-md":   `${radiusTokens.md}px`,
+  "--radius-lg":   `${radiusTokens.lg}px`,
+  "--radius-pill": `${radiusTokens.pill}px`,
+} as const;
+
+/** Generates a :root { … } CSS block string from the token map. */
+export function generateCssVarBlock(): string {
+  const declarations = Object.entries(webCssVars)
+    .map(([key, value]) => `  ${key}: ${value};`)
+    .join("\n");
+  return `:root {\n${declarations}\n}`;
+}
