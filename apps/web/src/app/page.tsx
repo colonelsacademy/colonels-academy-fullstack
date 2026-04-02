@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 
-import { type Category, type Course, DEFAULT_COURSES } from '@/data/gateway';
+import { type Category, type Course } from '@/data/gateway';
 import { db } from '@colonels-academy/database';
 
 import GatewayHero from './gateway/components/GatewayHero';
@@ -47,7 +47,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         include: { instructor: true }
       }
     },
-    take: 8, // Fetch more for variety if needed
+    take: 12, // Fetch more for variety if needed
+    orderBy: { createdAt: 'desc' }
   });
 
   // 2. Map the DB data to match our UI CourseGrid props
@@ -74,17 +75,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     comingSoon: false,
   }));
 
-  // 3. Fallback to static data if database is empty (for resilience during seeding)
-  const finalCourses: Course[] = mappedCourses.length > 0 ? mappedCourses : (
-    activeCategory === 'all'
-      ? DEFAULT_COURSES
-      : DEFAULT_COURSES.filter(
-        (c) => c.category === activeCategory || (activeCategory === 'army' && c.category === 'cadet')
-      )
-  );
-
-  const mainCourses = finalCourses.slice(0, 4);
-  const topPick = (mappedCourses.find(c => c.isBestseller) as Course | undefined) || DEFAULT_COURSES.find(c => c.id === 'military-history');
+  // 3. Selection for UI components
+  const mainCourses = mappedCourses.slice(0, 8);
+  const topPick = mappedCourses.find(c => c.isBestseller) || mappedCourses[0];
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans selection:bg-blue-100 selection:text-blue-900">
