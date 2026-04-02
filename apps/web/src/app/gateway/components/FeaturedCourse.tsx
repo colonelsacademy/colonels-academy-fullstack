@@ -1,17 +1,14 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { Star, ShieldCheck, ArrowRight, Clock } from 'lucide-react';
 import { type Course } from '@/data/gateway';
 import ImageWithSkeleton from '@/components/ui/ImageWithSkeleton';
+import Link from 'next/link';
 
 interface FeaturedCourseProps {
     course: Course;
-    onClick: (course: Course) => void;
     isEnrolled?: boolean;
 }
 
-export const FeaturedCourse = ({ course, onClick, isEnrolled = false }: FeaturedCourseProps) => {
+export const FeaturedCourse = ({ course, isEnrolled = false }: FeaturedCourseProps) => {
     return (
         <section className="py-20 px-4">
             <div className="max-w-[1400px] mx-auto">
@@ -20,13 +17,7 @@ export const FeaturedCourse = ({ course, onClick, isEnrolled = false }: Featured
                     <p className="text-gray-500 mt-2 font-medium">Specially selected based on current service recruitment trends.</p>
                 </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    onClick={() => !course.comingSoon && onClick(course)}
-                    className={`group relative bg-white rounded-[2.5rem] border border-gray-200 overflow-hidden shadow-sm transition-all duration-500 flex flex-col lg:flex-row ${course.comingSoon ? 'cursor-default' : 'cursor-pointer hover:shadow-2xl'}`}
-                >
+                <div className="group relative bg-white rounded-[2.5rem] border border-gray-200 overflow-hidden shadow-sm transition-all duration-500 flex flex-col lg:flex-row fade-in-up">
                     {/* Image Column */}
                     <div className="lg:w-1/2 relative aspect-video lg:aspect-auto overflow-hidden">
                         <ImageWithSkeleton
@@ -97,22 +88,14 @@ export const FeaturedCourse = ({ course, onClick, isEnrolled = false }: Featured
                                     <Clock className="w-5 h-5" />
                                     <span>Coming Soon</span>
                                 </button>
-                            ) : isEnrolled ? (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onClick(course); }}
-                                    className="w-full sm:w-auto px-10 py-5 bg-[#00693E] hover:bg-[#005a34] text-white text-base font-bold rounded-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-3 active:scale-95"
-                                >
-                                    <span>Go to Course</span>
-                                    <ArrowRight className="w-5 h-5" />
-                                </button>
                             ) : (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onClick(course); }}
-                                    className="w-full sm:w-auto px-10 py-5 bg-[#1c1d1f] hover:bg-black text-white text-base font-bold rounded-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-3 active:scale-95"
+                                <Link
+                                    href={isEnrolled ? `/classroom/${course.id}` : `/course/${course.id}`}
+                                    className={`w-full sm:w-auto px-10 py-5 ${isEnrolled ? 'bg-[#00693E] hover:bg-[#005a34]' : 'bg-[#1c1d1f] hover:bg-black'} text-white text-base font-bold rounded-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-3 active:scale-95`}
                                 >
-                                    <span>View Details</span>
+                                    <span>{isEnrolled ? 'Go to Course' : 'View Details'}</span>
                                     <ArrowRight className="w-5 h-5" />
-                                </button>
+                                </Link>
                             )}
                             <div className="flex items-baseline gap-2">
                                 {course.comingSoon ? (
@@ -128,7 +111,7 @@ export const FeaturedCourse = ({ course, onClick, isEnrolled = false }: Featured
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

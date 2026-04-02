@@ -1,11 +1,7 @@
-'use client';
-
 import { Compass, ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export const GatewayCTA = () => {
-  const router = useRouter();
-
   return (
     <section className="py-24 px-4 overflow-hidden">
       <div className="max-w-[1200px] mx-auto relative">
@@ -30,16 +26,16 @@ export const GatewayCTA = () => {
             </div>
           </div>
 
-          {/* Action Button */}
-          <button
-            onClick={() => router.push('/contact')}
+          {/* Action Link: Now using Next.js Link instead of router hook */}
+          <Link
+            href="/contact"
             className="group/btn relative z-10 flex items-center gap-4 pl-10 pr-8 py-5 bg-white text-gray-900 rounded-full font-black uppercase tracking-[0.1em] text-sm shadow-xl shadow-white/5 hover:shadow-white/10 hover:scale-105 transition-all active:scale-95 shrink-0"
           >
             <span>Talk to Us</span>
             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover/btn:bg-gray-200 transition-colors">
               <ArrowRight className="w-5 h-5" />
             </div>
-          </button>
+          </Link>
         </div>
       </div>
     </section>

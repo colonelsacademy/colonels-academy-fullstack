@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { 
   WifiOff, 
   Bell, 
@@ -68,14 +65,10 @@ export const MobilePlatform = () => {
           </div>
         </div>
 
-        {/* HIGH FIDELITY CSS MOCKUP - TODO: Replace sample static data with real dynamic tracking data */}
+        {/* HIGH FIDELITY CSS MOCKUP - RSC Version */}
         <div className="hidden lg:flex flex-1 relative z-10 justify-end overflow-visible">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="relative w-[280px] h-[550px] bg-gray-900 rounded-[3rem] border-[8px] border-gray-800 shadow-2xl overflow-hidden ring-1 ring-white/10"
+          <div
+            className="relative w-[280px] h-[550px] bg-gray-900 rounded-[3rem] border-[8px] border-gray-800 shadow-2xl overflow-hidden ring-1 ring-white/10 fade-in-up"
           >
             {/* Status Bar */}
             <div className="absolute top-0 left-0 right-0 h-10 z-30 flex items-end justify-between px-6 pb-2 text-white/90">
@@ -197,7 +190,7 @@ export const MobilePlatform = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Ambient Background Glow */}
           <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[700px] rounded-[4rem] -z-10 bg-gradient-to-tr from-blue-500/5 to-purple-500/5"></div>

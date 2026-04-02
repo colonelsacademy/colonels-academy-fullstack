@@ -3,6 +3,16 @@ import { getAssetUrl } from '@/utils/assetUtils';
 
 export type Category = 'all' | 'army' | 'police' | 'apf' | 'staff';
 
+export const ICON_MAP = {
+  'BookOpen': BookOpen,
+  'Shield': Shield,
+  'Users': Users,
+  'Target': Target,
+  'BookMarked': BookMarked,
+};
+
+export type IconKey = keyof typeof ICON_MAP;
+
 export interface Course {
   id: string;
   title: string;
@@ -14,8 +24,7 @@ export interface Course {
   students: number;
   duration: string;
   lessons: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: any;
+  iconId: IconKey;
   thumbnail?: string;
   price: number;
   memberPrice?: number;
@@ -46,10 +55,10 @@ export interface Mentor {
 }
 
 export const CATEGORIES = [
-  { id: 'all', label: 'All Forces', icon: BookOpen },
-  { id: 'army', label: 'Nepal Army', icon: Shield },
-  { id: 'police', label: 'Nepal Police', icon: Users },
-  { id: 'apf', label: 'APF', icon: Target },
+  { id: 'all', label: 'All Forces', iconId: 'BookOpen' as IconKey },
+  { id: 'army', label: 'Nepal Army', iconId: 'Shield' as IconKey },
+  { id: 'police', label: 'Nepal Police', iconId: 'Users' as IconKey },
+  { id: 'apf', label: 'APF', iconId: 'Target' as IconKey },
 ];
 
 export const MENTORS: Mentor[] = [
@@ -106,7 +115,7 @@ export const DEFAULT_COURSES: Course[] = [
     students: 2450,
     duration: '60 Hours',
     lessons: 75,
-    icon: BookMarked,
+    iconId: 'BookMarked',
     thumbnail: getAssetUrl('/images/courses/nepal-army-staff-college.jpg'),
     price: 8500,
     originalPrice: 12000,
@@ -129,7 +138,7 @@ export const DEFAULT_COURSES: Course[] = [
     students: 1800,
     duration: '50 Hours',
     lessons: 65,
-    icon: Shield,
+    iconId: 'Shield',
     thumbnail: getAssetUrl('/images/courses/nepal-police-inspector-cadet.jpg'),
     price: 4500,
     originalPrice: 7500,
@@ -150,7 +159,7 @@ export const DEFAULT_COURSES: Course[] = [
     students: 1200,
     duration: '45 Hours',
     lessons: 55,
-    icon: Target,
+    iconId: 'Target',
     thumbnail: getAssetUrl('/images/courses/apf-inspector-cadet.jpg'),
     price: 4500,
     originalPrice: 7000,
@@ -172,7 +181,7 @@ export const DEFAULT_COURSES: Course[] = [
     students: 3200,
     duration: '45 Hours',
     lessons: 50,
-    icon: Target,
+    iconId: 'Target',
     thumbnail: getAssetUrl('/images/courses/nepal-army-officer-cadet.jpg'),
     price: 4500,
     originalPrice: 7000,

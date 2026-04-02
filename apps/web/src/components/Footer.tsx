@@ -1,7 +1,5 @@
-'use client';
-
-import React, { Fragment } from 'react';
 import Link from 'next/link';
+import { Fragment } from 'react';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();

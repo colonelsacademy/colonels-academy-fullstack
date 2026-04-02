@@ -3,8 +3,8 @@
 import React from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion';
 import { Star } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { CATEGORIES, type Category, type Course } from '@/data/gateway';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CATEGORIES, ICON_MAP, type Category, type Course } from '@/data/gateway';
 import ImageWithSkeleton from '@/components/ui/ImageWithSkeleton';
 
 export const CourseSection = ({ title, subtitle, children, className = '' }: {
@@ -24,37 +24,48 @@ export const CourseSection = ({ title, subtitle, children, className = '' }: {
 
 interface CourseFilterProps {
   activeCategory: Category;
-  setActiveCategory: (cat: Category) => void;
 }
 
-export const CourseFilter = ({ activeCategory, setActiveCategory }: CourseFilterProps) => (
-  <div className="flex flex-col items-center pt-2 pb-4 gap-1">
-    <div className="inline-flex flex-wrap justify-center bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
-      {CATEGORIES.map((cat) => {
-        const Icon = cat.icon;
-        const isActive = activeCategory === cat.id;
-        let activeClass = 'bg-gray-900 text-white';
-        if (isActive) {
-          if (cat.id === 'army') activeClass = 'bg-[#00693E] text-white';
-          else if (cat.id === 'police') activeClass = 'bg-[#1E3A8A] text-white';
-          else if (cat.id === 'apf') activeClass = 'bg-[#D97706] text-white';
-        }
-        return (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id as Category)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              isActive ? `${activeClass} shadow-md transform scale-105` : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-            {cat.label}
-          </button>
-        );
-      })}
+export const CourseFilter = ({ activeCategory }: CourseFilterProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleFilter = (cat: Category) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (cat === 'all') params.delete('category');
+    else params.set('category', cat);
+    router.push(`/?${params.toString()}`, { scroll: false });
+  };
+
+  return (
+    <div className="flex flex-col items-center pt-2 pb-4 gap-1">
+      <div className="inline-flex flex-wrap justify-center bg-white p-2 rounded-2xl border border-gray-200 shadow-sm transition-all duration-300">
+        {CATEGORIES.map((cat) => {
+          const Icon = ICON_MAP[cat.iconId];
+          const isActive = activeCategory === cat.id;
+          let activeClass = 'bg-gray-900 text-white';
+          if (isActive) {
+            if (cat.id === 'army') activeClass = 'bg-[#00693E] text-white shadow-[#00693E]/20';
+            else if (cat.id === 'police') activeClass = 'bg-[#1E3A8A] text-white shadow-[#1E3A8A]/20';
+            else if (cat.id === 'apf') activeClass = 'bg-[#D97706] text-white shadow-[#D97706]/20';
+          }
+          return (
+            <button
+              key={cat.id}
+              onClick={() => handleFilter(cat.id as Category)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+                isActive ? `${activeClass} shadow-lg scale-105` : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+              {cat.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const TiltCard = ({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
   const shouldReduceMotion = useReducedMotion();
@@ -87,7 +98,7 @@ const TiltCard = ({ children, onClick, className }: { children: React.ReactNode;
 
 interface CourseGridProps {
   courses: Course[];
-  onCourseClick: (course: Course) => void;
+  onCourseClick?: (course: Course) => void;
   enrolledCourseIds?: Set<string>;
   eagerCount?: number;
   highPriorityCount?: number;
@@ -110,7 +121,7 @@ export const CourseGrid = ({ courses, onCourseClick, enrolledCourseIds, eagerCou
               transition={{ duration: 0.4 }}
             >
               <TiltCard
-                onClick={() => isEnrolled ? router.push(`/classroom/${course.id}`) : onCourseClick(course)}
+                onClick={() => isEnrolled ? router.push(`/classroom/${course.id}`) : onCourseClick?.(course)}
                 className="group h-full cursor-pointer flex flex-col bg-white border border-gray-200/80 rounded-xl p-3 shadow-[0_1px_0_rgba(0,0,0,0.02)] hover:border-gray-300 transition-colors"
               >
                 {/* Thumbnail */}
@@ -199,7 +210,7 @@ export const CourseGrid = ({ courses, onCourseClick, enrolledCourseIds, eagerCou
                     ) : (
                       <button
                         className="w-full px-4 py-2.5 bg-[#1c1d1f] hover:bg-black text-white text-[14px] font-bold rounded transition-all duration-200 active:scale-[0.98] shadow-sm"
-                        onClick={(e) => { e.stopPropagation(); onCourseClick(course); }}
+                        onClick={(e) => { e.stopPropagation(); onCourseClick?.(course); }}
                       >
                         View Details
                       </button>

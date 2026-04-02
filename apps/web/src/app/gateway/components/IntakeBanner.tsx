@@ -72,11 +72,8 @@ const IntakeBanner = () => {
   }, [isPaused]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm overflow-hidden relative group max-w-5xl mx-auto w-full"
+    <div
+      className="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm overflow-hidden relative group max-w-5xl mx-auto w-full fade-in-up [animation-delay:800ms]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -148,7 +145,7 @@ const IntakeBanner = () => {
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
