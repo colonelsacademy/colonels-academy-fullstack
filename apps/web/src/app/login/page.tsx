@@ -9,24 +9,18 @@ import {
 } from "firebase/auth";
 import { Shield, Lock } from "lucide-react";
 import { getFirebaseClientAuth } from "@/lib/firebase";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  async function persistSession(idToken: string) {
-    // TODO: replace with a POST to /api/auth/session that uses Firebase Admin
-    // verifyIdToken() + createSessionCookie() and sets an HttpOnly cookie.
-    // For now we write the raw ID token as a client-accessible cookie so
-    // middleware can at least confirm the user authenticated.
-    document.cookie = `__session=${idToken}; path=/; max-age=3600; SameSite=Strict`;
-  }
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +31,7 @@ export default function LoginPage() {
       if (!auth) throw new Error("Firebase is not configured.");
       const { user } = await signInWithEmailAndPassword(auth, email, password);
       const token = await user.getIdToken();
-      await persistSession(token);
+      await login(token);
       router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
@@ -55,7 +49,7 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       const { user } = await signInWithPopup(auth, provider);
       const token = await user.getIdToken();
-      await persistSession(token);
+      await login(token);
       router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");

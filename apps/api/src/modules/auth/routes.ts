@@ -7,6 +7,7 @@ import type {
 } from "@colonels-academy/contracts";
 
 import type { AuthUser } from "../../plugins/auth";
+import { syncUserWithPostgres } from "./user-sync";
 
 function toSessionUser(authUser: AuthUser): AuthSessionUser {
   return {
@@ -87,12 +88,15 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
       const authUser = await fastify.createSession(reply, idToken);
 
+      // Phase 2: Sync with PostgreSQL
+      await syncUserWithPostgres(fastify.prisma, authUser);
+
       fastify.log.info(
         {
           uid: authUser.uid,
           authMethod: "session"
         },
-        "Issued Firebase session cookie."
+        "Issued Firebase session cookie and synced with Postgres."
       );
 
       const response: AuthSessionResponse = {

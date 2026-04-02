@@ -1,27 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-// Protected routes — anyone without a session cookie gets bounced to /login.
-// TODO: upgrade cookie validation to Firebase Admin SDK verifySessionCookie()
-// once the server-side session minting endpoint (/api/auth/session) is wired up.
-const PROTECTED: string[] = ["/admin", "/dashboard"];
-const SESSION_COOKIE = "__session";
+// Standard routes that require authentication
+const PROTECTED_ROUTES = ["/dashboard", "/admin", "/courses/enroll"];
+
+// Routes that are only for unauthenticated users
+const AUTH_ROUTES = ["/login"];
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { nextUrl, cookies } = request;
+  const sessionToken = cookies.get("__session")?.value;
 
-  const isProtected = PROTECTED.some((route) => pathname.startsWith(route));
-  if (!isProtected) return NextResponse.next();
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+    nextUrl.pathname.startsWith(route)
+  );
+  const isAuthRoute = AUTH_ROUTES.some((route) =>
+    nextUrl.pathname.startsWith(route)
+  );
 
-  const session = request.cookies.get(SESSION_COOKIE);
-  if (!session?.value) {
+  // 1. If trying to access a protected route without a session
+  if (isProtectedRoute && !sessionToken) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.searchParams.set("next", nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // 2. If trying to access an auth route (like /login) with an active session
+  if (isAuthRoute && sessionToken) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
 }
 
+// See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/login"],
 };
