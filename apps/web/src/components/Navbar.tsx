@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -132,6 +132,8 @@ const Navbar = () => {
   const { user, authenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   async function handleLogout() {
     await logout();
@@ -139,7 +141,12 @@ const Navbar = () => {
   }
 
   useEffect(() => {
-    const handleClick = () => setActiveDropdown(null);
+    const handleClick = (e: MouseEvent) => {
+      setActiveDropdown(null);
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, []);
@@ -196,25 +203,45 @@ const Navbar = () => {
             <div className="h-6 w-[1px] bg-white/20 hidden md:block" />
 
             {authenticated && user ? (
-              <div className="hidden md:flex items-center gap-2">
-                <Link
-                  href="/dashboard"
+              <div className="hidden md:flex items-center relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen((v) => !v)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-all"
                 >
                   <div className="w-7 h-7 rounded-full bg-[#D4AF37] flex items-center justify-center">
                     <User className="w-4 h-4 text-[#0F1C15]" />
                   </div>
-                  <span className="font-['Rajdhani'] font-bold text-xs uppercase tracking-[0.15em] text-white/90 max-w-[120px] truncate">
+                  <span className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.15em] text-white/90 max-w-[120px] truncate">
                     {user.email?.split("@")[0]}
                   </span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 text-white/60 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all"
-                  aria-label="Sign out"
-                >
-                  <LogOut className="w-4 h-4" />
+                  <ChevronDown
+                    className={`w-3 h-3 text-white/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-[calc(100%+0.5rem)] w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <User className="w-4 h-4 text-gray-400" />
+                      Dashboard
+                    </Link>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link
