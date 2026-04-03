@@ -26,4 +26,15 @@ EOF
 
 chmod +x .git/hooks/pre-commit
 
-echo "setup-hooks: pre-commit hook installed at .git/hooks/pre-commit"
+cat > .git/hooks/pre-push << 'EOF'
+#!/usr/bin/env sh
+# Ensure the codebase matches the CI quality gate before pushing.
+# This matches the 'quality' and 'build' jobs in .github/workflows/ci.yml.
+
+echo "🔍 Running pre-push quality gate (this matches GitHub CI)..."
+pnpm run validate
+EOF
+
+chmod +x .git/hooks/pre-push
+
+echo "setup-hooks: hooks installed at .git/hooks/pre-commit and .git/hooks/pre-push"

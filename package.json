@@ -13,7 +13,7 @@
     "build": "node ./scripts/run-turbo.mjs build",
     "typecheck": "node ./scripts/run-turbo.mjs typecheck",
     "check:boundaries": "node ./scripts/check-boundaries.mjs",
-    "validate": "corepack pnpm run check:boundaries && corepack pnpm run typecheck && corepack pnpm run build",
+    "validate": "pnpm run biome:check && pnpm run check:boundaries && pnpm run typecheck && pnpm run build",
     "db:generate": "corepack pnpm --filter @colonels-academy/database run db:generate",
     "db:migrate": "corepack pnpm --filter @colonels-academy/database run db:migrate",
     "db:deploy": "corepack pnpm --filter @colonels-academy/database run db:deploy",

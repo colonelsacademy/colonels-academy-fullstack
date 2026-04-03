@@ -189,7 +189,7 @@ export async function getCourseLessons(
     });
 
     // Fetch user context if provided
-    let userProgress: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
+    const userProgress: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
     let isEnrolled = false;
 
     if (userId) {
@@ -203,14 +203,29 @@ export async function getCourseLessons(
       ]);
 
       isEnrolled = enrollment?.status === "ACTIVE";
-      progressRecords.forEach((pr) => {
-        userProgress[pr.lessonId] = pr.status as any;
-      });
+      for (const pr of progressRecords) {
+        userProgress[pr.lessonId] = pr.status as "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+      }
     }
 
     const isAdminOrDs = userRole?.toLowerCase() === "admin" || userRole?.toLowerCase() === "ds";
 
-    const mapLesson = (l: any): LessonDetail => {
+    const mapLesson = (l: {
+      id: string;
+      courseId: string;
+      moduleId?: string | null;
+      title: string;
+      synopsis: string;
+      position: number;
+      durationMinutes?: number | null;
+      contentType: string;
+      accessKind: string;
+      bunnyVideoId?: string | null;
+      meetingUrl?: string | null;
+      pdfUrl?: string | null;
+      prerequisiteId?: string | null;
+      prerequisite?: { title: string } | null;
+    }): LessonDetail => {
       const status = userProgress[l.id] ?? "NOT_STARTED";
       let isLocked = false;
       let unlockRequirement: string | undefined;
@@ -226,24 +241,27 @@ export async function getCourseLessons(
         }
       }
 
-      return {
+      const lesson: LessonDetail = {
         id: l.id,
         courseId: l.courseId,
-        moduleId: l.moduleId ?? undefined,
         title: l.title,
         synopsis: l.synopsis,
         position: l.position,
-        durationMinutes: l.durationMinutes ?? undefined,
-        contentType: l.contentType as any,
-        accessKind: l.accessKind as any,
-        bunnyVideoId: l.bunnyVideoId ?? undefined,
-        meetingUrl: l.meetingUrl ?? undefined,
-        pdfUrl: l.pdfUrl ?? undefined,
-        prerequisiteId: l.prerequisiteId ?? undefined,
+        contentType: l.contentType as LessonDetail["contentType"],
+        accessKind: l.accessKind as LessonDetail["accessKind"],
         isLocked,
-        unlockRequirement,
         progressStatus: status
       };
+
+      if (l.moduleId) lesson.moduleId = l.moduleId;
+      if (l.durationMinutes) lesson.durationMinutes = l.durationMinutes;
+      if (l.bunnyVideoId) lesson.bunnyVideoId = l.bunnyVideoId;
+      if (l.meetingUrl) lesson.meetingUrl = l.meetingUrl;
+      if (l.pdfUrl) lesson.pdfUrl = l.pdfUrl;
+      if (l.prerequisiteId) lesson.prerequisiteId = l.prerequisiteId;
+      if (unlockRequirement) lesson.unlockRequirement = unlockRequirement;
+
+      return lesson;
     };
 
     return {
