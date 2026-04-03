@@ -1,9 +1,10 @@
 "use client";
 
-import { getOptimizedAssetUrl } from "@/utils/assetUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
+
+const CDN = "https://ca-assets.b-cdn.net";
 
 const INTAKE_SCHEDULE = [
   {
@@ -11,7 +12,7 @@ const INTAKE_SCHEDULE = [
     label: "Nepal Army",
     title: "Officer Cadet 2083",
     subtitle: "Lead with Honor and Courage.",
-    image: getOptimizedAssetUrl("/images/army-logo.png", { width: 160, quality: 82 }),
+    image: `${CDN}/images/army-logo.png?width=160&quality=82`,
     applyBy: "Falgun 30",
     written: "Chaitra 15",
     physical: "Baisakh 25"
@@ -21,7 +22,7 @@ const INTAKE_SCHEDULE = [
     label: "Nepal Army",
     title: "Staff College 2083",
     subtitle: "Strategic Leadership Mastery.",
-    image: getOptimizedAssetUrl("/images/army-logo.png", { width: 160, quality: 82 }),
+    image: `${CDN}/images/army-logo.png?width=160&quality=82`,
     applyBy: "Magh 30",
     written: "Falgun 15",
     physical: "Chaitra 20"
@@ -31,7 +32,7 @@ const INTAKE_SCHEDULE = [
     label: "Nepal Police",
     title: "Inspector 2083",
     subtitle: "Serve with Truth and Integrity.",
-    image: getOptimizedAssetUrl("/images/police-logo.png", { width: 160, quality: 82 }),
+    image: `${CDN}/images/police-logo.png?width=160&quality=82`,
     applyBy: "Falgun 10",
     written: "Chaitra 05",
     physical: "Baisakh 15"
@@ -41,7 +42,7 @@ const INTAKE_SCHEDULE = [
     label: "Nepal Police",
     title: "Sub-Inspector ASI 2083",
     subtitle: "Dedicated to Public Safety.",
-    image: getOptimizedAssetUrl("/images/police-logo.png", { width: 160, quality: 82 }),
+    image: `${CDN}/images/police-logo.png?width=160&quality=82`,
     applyBy: "Falgun 15",
     written: "Chaitra 10",
     physical: "Baisakh 20"
@@ -51,7 +52,7 @@ const INTAKE_SCHEDULE = [
     label: "APF Nepal",
     title: "APF Inspector 2083",
     subtitle: "Security, Peace, Commitment.",
-    image: getOptimizedAssetUrl("/images/apf-logo.png", { width: 160, quality: 82 }),
+    image: `${CDN}/images/apf-logo.png?width=160&quality=82`,
     applyBy: "Falgun 25",
     written: "Chaitra 15",
     physical: "Baisakh 30"

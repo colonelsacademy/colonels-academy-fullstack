@@ -35,17 +35,15 @@ const MagneticButton = ({
     y.set((clientY - (top + height / 2)) * 0.3);
   };
 
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
     <motion.button
       ref={ref}
       style={{ x: mouseX, y: mouseY }}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={() => {
+        x.set(0);
+        y.set(0);
+      }}
       onClick={onClick}
       className={className}
     >
@@ -60,7 +58,7 @@ const GatewayHero = () => {
   return (
     <div className="w-full pt-2 pb-6">
       <div className="w-[99%] mx-auto bg-white rounded-none min-h-[85vh] md:min-h-[72vh] flex flex-col justify-center p-fluid-section relative overflow-hidden shadow-sm border border-white">
-        {/* Hero image layer */}
+        {/* Hero image */}
         <div className="absolute inset-0 z-0">
           <Image
             src="https://ca-assets.b-cdn.net/images/gateway/hero.jpg"
@@ -77,7 +75,7 @@ const GatewayHero = () => {
         {/* Grid texture */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#f5f5f5_1px,transparent_1px),linear-gradient(to_bottom,#f5f5f5_1px,transparent_1px)] bg-[size:3rem_3rem] -z-0 opacity-20 mix-blend-multiply pointer-events-none" />
 
-        {/* Animated content - Now using CSS fade-in-up */}
+        {/* Content */}
         <div className="relative z-10 w-full flex flex-col justify-center min-h-[85vh] md:min-h-[72vh] fade-in-up">
           <div className="max-w-3xl mr-auto flex flex-col items-start text-left">
             {/* Brand pill */}
@@ -119,7 +117,7 @@ const GatewayHero = () => {
               </MagneticButton>
 
               <MagneticButton
-                onClick={() => router.push("/classroom/military-history")}
+                onClick={() => router.push("/demo-class")}
                 className="group w-full sm:w-auto px-8 py-5 bg-white/50 backdrop-blur-sm text-gray-900 border border-gray-200 rounded-xl font-bold text-base tracking-wider uppercase shadow-sm hover:shadow-md hover:bg-white flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
                 <PlayCircle className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />

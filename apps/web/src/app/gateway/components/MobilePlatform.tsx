@@ -1,4 +1,3 @@
-import { getOptimizedAssetUrl } from "@/utils/assetUtils";
 import {
   Battery,
   Bell,
@@ -16,11 +15,11 @@ import {
   WifiOff
 } from "lucide-react";
 
+const PREVIEW_IMAGE =
+  "https://ca-assets.b-cdn.net/images/gateway/mobile-app-preview.jpg?width=560&quality=78";
+
 export const MobilePlatform = () => {
-  const previewImageUrl = getOptimizedAssetUrl("/images/gateway/mobile-app-preview.jpg", {
-    width: 560,
-    quality: 78
-  });
+  const previewImageUrl = PREVIEW_IMAGE;
 
   return (
     <section className="py-12 max-w-[1400px] mx-auto px-4">

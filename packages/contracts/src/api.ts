@@ -11,6 +11,7 @@ import type {
 export interface AuthSessionUser {
   uid: string;
   email?: string;
+  displayName?: string;
   role?: string;
 }
 
