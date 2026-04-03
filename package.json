@@ -8,7 +8,7 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "node ./scripts/run-turbo.mjs dev --parallel --continue --filter=@colonels-academy/web --filter=@colonels-academy/api --filter=@colonels-academy/worker",
+    "dev": "docker compose up -d && node ./scripts/run-turbo.mjs dev --parallel --continue --filter=@colonels-academy/web --filter=@colonels-academy/api --filter=@colonels-academy/worker --filter=@colonels-academy/database",
     "dev:mobile": "node ./scripts/run-turbo.mjs dev --filter=@colonels-academy/mobile",
     "build": "node ./scripts/run-turbo.mjs build",
     "typecheck": "node ./scripts/run-turbo.mjs typecheck",
@@ -20,6 +20,9 @@
     "db:status": "corepack pnpm --filter @colonels-academy/database run db:status",
     "db:push": "corepack pnpm --filter @colonels-academy/database run db:push",
     "db:seed": "corepack pnpm --filter @colonels-academy/database run db:seed",
+    "db:studio": "corepack pnpm --filter @colonels-academy/database run db:studio",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "biome:check": "biome check .",
     "biome:format": "biome format --write .",
     "prepare": "sh scripts/setup-hooks.sh"
