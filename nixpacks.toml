@@ -4,3 +4,12 @@ cmds = [
   "npm install -g pnpm@10.0.0",
   "pnpm install --frozen-lockfile"
 ]
+
+[phases.build]
+cmds = [
+  "corepack disable",
+  "pnpm run build --filter=@colonels-academy/api"
+]
+
+[start]
+cmd = "node apps/api/dist/index.js"
