@@ -62,20 +62,20 @@ export const mockModules: ModuleDetail[] = [
     courseId: "officer-cadet-elite",
     title: "Module 1: Selection Process Overview",
     position: 0,
-    lessons: [mockLessons[0]]
+    lessons: [mockLessons[0]!]
   },
   {
     id: "module-mock-02",
     courseId: "officer-cadet-elite",
     title: "Module 2: Aptitude & Assessment",
     position: 1,
-    lessons: [mockLessons[1], mockLessons[2]]
+    lessons: [mockLessons[1]!, mockLessons[2]!]
   },
   {
     id: "module-mock-03",
     courseId: "officer-cadet-elite",
     title: "Module 3: Interview Readiness",
     position: 2,
-    lessons: [mockLessons[3]]
+    lessons: [mockLessons[3]!]
   }
 ];

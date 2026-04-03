@@ -13,19 +13,18 @@ export async function syncUserWithPostgres(
   // UPSERT: Create user if not exists, otherwise update
   // We use firebaseUid as the unique identifier.
   try {
+    const displayName = (claims.name as string) || undefined;
     const user = await prisma.user.upsert({
       where: { firebaseUid: uid },
       update: {
-        // email || undefined: If email is missing in the token, Prisma will ignore this field
-        // in the update, preserving any existing email in the database.
-        email: email || undefined,
-        displayName: (claims.name as string) || undefined
+        ...(email ? { email } : {}),
+        ...(displayName ? { displayName } : {})
       },
       create: {
         firebaseUid: uid,
-        email: email || undefined,
-        displayName: (claims.name as string) || undefined,
-        role: "STUDENT" // Default role
+        ...(email ? { email } : {}),
+        ...(displayName ? { displayName } : {}),
+        role: "STUDENT"
       }
     });
     return user;

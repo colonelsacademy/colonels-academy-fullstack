@@ -107,8 +107,10 @@ function matchesCsrfToken(cookieToken?: string, headerValue?: string | string[])
 }
 
 function clearAuthContext(request: FastifyRequest) {
-  request.authUser = undefined;
-  request.authMethod = undefined;
+  // biome-ignore lint/performance/noDelete: exactOptionalPropertyTypes requires delete, not undefined assignment
+  delete request.authUser;
+  // biome-ignore lint/performance/noDelete: exactOptionalPropertyTypes requires delete, not undefined assignment
+  delete request.authMethod;
 }
 
 function attachAuthContext(request: FastifyRequest, authResult: AuthResult) {
