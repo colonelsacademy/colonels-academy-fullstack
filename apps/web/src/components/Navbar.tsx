@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useCart } from "@/contexts/CartContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookMarked,
@@ -126,6 +127,7 @@ const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, authenticated, logout } = useAuth();
+  const { itemCount, items, removeItem, total } = useCart();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
@@ -214,6 +216,11 @@ const Navbar = () => {
               aria-label="Cart"
             >
               <ShoppingCart className="w-5 h-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+                  {itemCount}
+                </span>
+              )}
             </button>
 
             <div className="h-6 w-[1px] bg-white/20 hidden md:block" />
@@ -368,20 +375,51 @@ const Navbar = () => {
               <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-[#0F1C15] text-white">
                 <div className="flex items-center gap-3">
                   <ShoppingCart className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="font-['Rajdhani'] font-bold text-lg uppercase tracking-wider">Your Cart</span>
+                  <span className="font-['Rajdhani'] font-bold text-lg uppercase tracking-wider">Your Cart ({itemCount})</span>
                 </div>
                 <button type="button" aria-label="Close cart" onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-50">
-                <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
-                <p className="font-bold text-gray-400 text-lg">Your cart is empty</p>
-                <button type="button" onClick={() => setIsCartOpen(false)} className="text-[#0F1C15] underline font-bold text-sm mt-2">
-                  Continue Browsing
-                </button>
-              </div>
+              {itemCount === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-50">
+                  <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
+                  <p className="font-bold text-gray-400 text-lg">Your cart is empty</p>
+                  <button type="button" onClick={() => setIsCartOpen(false)} className="text-[#0F1C15] underline font-bold text-sm mt-2">
+                    Continue Browsing
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex gap-4">
+                      <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                        {item.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <ShoppingCart className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm text-gray-900 line-clamp-2">{item.title}</p>
+                        <p className="text-xs text-gray-500 mt-1 capitalize">{item.type ?? "course"}</p>
+                        <p className="font-bold text-[#0F1C15] mt-1">NPR {item.price.toLocaleString()}</p>
+                      </div>
+                      <button type="button" onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500 transition-colors shrink-0">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="p-6 border-t border-gray-100">
+                {itemCount > 0 && (
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-gray-500 font-bold text-sm">Subtotal</span>
+                    <span className="text-xl font-bold text-[#0F1C15]">NPR {total.toLocaleString()}</span>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => { setIsCartOpen(false); router.push("/checkout"); }}

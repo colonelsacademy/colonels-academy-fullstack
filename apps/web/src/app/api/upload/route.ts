@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const BUNNY_API_KEY = process.env.BUNNY_STORAGE_API_KEY!;
 const BUNNY_ZONE = process.env.BUNNY_STORAGE_ZONE!;
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
       method: "PUT",
       headers: {
         AccessKey: BUNNY_API_KEY,
-        "Content-Type": file.type || "application/octet-stream",
+        "Content-Type": file.type || "application/octet-stream"
       },
-      body: buffer,
+      body: buffer
     });
 
     if (!res.ok) {

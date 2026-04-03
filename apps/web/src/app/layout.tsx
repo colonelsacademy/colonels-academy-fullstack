@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { CartProvider } from "@/contexts/CartContext";
 import { SiteShell } from "@/components/site-shell";
 import type { Metadata } from "next";
 import { Inter, Rajdhani } from "next/font/google";
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${inter.variable} ${rajdhani.variable}`}>
       <body>
         <AuthProvider>
-          <SiteShell>{children}</SiteShell>
+          <CartProvider>
+            <SiteShell>{children}</SiteShell>
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

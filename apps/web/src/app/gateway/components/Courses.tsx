@@ -1,5 +1,6 @@
 "use client";
 
+import { useCart } from "@/contexts/CartContext";
 import { CATEGORIES, type Category, type Course, ICON_MAP } from "@/data/gateway";
 import {
   AnimatePresence,
@@ -110,6 +111,8 @@ const TiltCard = ({
 // ─────────────────────────────────────────────
 function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
   const router = useRouter();
+  const { addItem, items } = useCart();
+  const inCart = items.some((i) => i.id === course.id);
   const wing = WING_BADGE[course.category] ?? { badge: "bg-gray-600", accent: "#4b5563" };
   const wingLabel = WING_LABEL[course.category] ?? course.category;
   const hasDiscount = course.originalPrice > course.price;
@@ -254,12 +257,27 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/courses/${course.id}`);
+                      if (!inCart) {
+                        addItem({
+                          id: course.id,
+                          title: course.title,
+                          price: course.price,
+                          image: course.thumbnail,
+                          category: course.category,
+                          type: "course",
+                        });
+                      } else {
+                        router.push("/checkout");
+                      }
                     }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 shrink-0 active:scale-[0.97] bg-[#1c1d1f] hover:bg-black text-white shadow-sm"
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 shrink-0 active:scale-[0.97] shadow-sm ${
+                      inCart
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "bg-[#1c1d1f] hover:bg-black text-white"
+                    }`}
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
-                    Buy
+                    {inCart ? "In Cart" : "Buy"}
                   </button>
                 )}
               </div>

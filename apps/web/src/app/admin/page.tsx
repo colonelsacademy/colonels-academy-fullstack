@@ -1,30 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  AreaChart, Area, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from "recharts";
+import type { CourseDetail, InstructorProfile } from "@colonels-academy/contracts";
 import {
   Activity,
   BarChart2,
-  Users,
+  Bell,
+  BookMarked,
   BookOpen,
   Calendar,
-  BookMarked,
-  Bell,
-  ClipboardList,
   CheckSquare,
-  ShieldAlert,
   ChevronRight,
-  ToggleLeft,
-  ToggleRight,
+  ClipboardList,
+  Palette,
   Plus,
   Send,
-  X,
-  Palette,
+  ShieldAlert,
+  ToggleLeft,
+  ToggleRight,
+  Users,
+  X
 } from "lucide-react";
-import type { CourseDetail, InstructorProfile } from "@colonels-academy/contracts";
+import { useEffect, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,35 +98,96 @@ interface IQSubmission {
 // ─── Mock / seed data ─────────────────────────────────────────────────────────
 
 const MOCK_USERS: MockUser[] = [
-  { id: "1", name: "Arjun Thapa", email: "arjun@example.com", role: "cadet", tier: "premium", isAdmin: false },
-  { id: "2", name: "Sita Rai", email: "sita@example.com", role: "cadet", tier: "basic", isAdmin: false },
-  { id: "3", name: "Bikash Gurung", email: "bikash@example.com", role: "instructor", tier: "premium", isAdmin: false },
-  { id: "4", name: "Priya Shrestha", email: "priya@example.com", role: "cadet", tier: "basic", isAdmin: true },
+  {
+    id: "1",
+    name: "Arjun Thapa",
+    email: "arjun@example.com",
+    role: "cadet",
+    tier: "premium",
+    isAdmin: false
+  },
+  {
+    id: "2",
+    name: "Sita Rai",
+    email: "sita@example.com",
+    role: "cadet",
+    tier: "basic",
+    isAdmin: false
+  },
+  {
+    id: "3",
+    name: "Bikash Gurung",
+    email: "bikash@example.com",
+    role: "instructor",
+    tier: "premium",
+    isAdmin: false
+  },
+  {
+    id: "4",
+    name: "Priya Shrestha",
+    email: "priya@example.com",
+    role: "cadet",
+    tier: "basic",
+    isAdmin: true
+  }
 ];
 
 const MOCK_LIVE_CLASSES: LiveClass[] = [
-  { id: "1", topic: "Physical Fitness Standards", instructor: "Col. Sharma", date: "2025-07-20", time: "09:00", type: "Training" },
-  { id: "2", topic: "Written Exam Prep", instructor: "Maj. Thapa", date: "2025-07-22", time: "14:00", type: "Academic" },
-  { id: "3", topic: "Interview Techniques", instructor: "Lt. Col. Rai", date: "2025-07-25", time: "11:00", type: "Soft Skills" },
+  {
+    id: "1",
+    topic: "Physical Fitness Standards",
+    instructor: "Col. Sharma",
+    date: "2025-07-20",
+    time: "09:00",
+    type: "Training"
+  },
+  {
+    id: "2",
+    topic: "Written Exam Prep",
+    instructor: "Maj. Thapa",
+    date: "2025-07-22",
+    time: "14:00",
+    type: "Academic"
+  },
+  {
+    id: "3",
+    topic: "Interview Techniques",
+    instructor: "Lt. Col. Rai",
+    date: "2025-07-25",
+    time: "11:00",
+    type: "Soft Skills"
+  }
 ];
 
 const MOCK_TODOS: TodoItem[] = [
   { id: "1", task: "Review new cadet applications", completed: false },
   { id: "2", task: "Update course syllabus for Army track", completed: true },
   { id: "3", task: "Schedule next live session", completed: false },
-  { id: "4", task: "Send weekly briefing notes", completed: false },
+  { id: "4", task: "Send weekly briefing notes", completed: false }
 ];
 
 const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  { id: "1", title: "New Live Class Scheduled", message: "Physical Fitness session on July 20", type: "info", sentAt: "2025-07-15 10:00" },
-  { id: "2", title: "System Maintenance", message: "Scheduled downtime on Sunday 2am-4am", type: "warning", sentAt: "2025-07-14 08:00" },
+  {
+    id: "1",
+    title: "New Live Class Scheduled",
+    message: "Physical Fitness session on July 20",
+    type: "info",
+    sentAt: "2025-07-15 10:00"
+  },
+  {
+    id: "2",
+    title: "System Maintenance",
+    message: "Scheduled downtime on Sunday 2am-4am",
+    type: "warning",
+    sentAt: "2025-07-14 08:00"
+  }
 ];
 
 const MOCK_IQ_SUBMISSIONS: IQSubmission[] = [
   { id: "1", cadet: "Arjun Thapa", score: 87, submittedAt: "2025-07-15", status: "Reviewed" },
   { id: "2", cadet: "Sita Rai", score: 72, submittedAt: "2025-07-14", status: "Pending" },
   { id: "3", cadet: "Bikash Gurung", score: 91, submittedAt: "2025-07-13", status: "Reviewed" },
-  { id: "4", cadet: "Priya Shrestha", score: 65, submittedAt: "2025-07-12", status: "Pending" },
+  { id: "4", cadet: "Priya Shrestha", score: 65, submittedAt: "2025-07-12", status: "Pending" }
 ];
 
 const INITIAL_FLAGS: FeatureFlag[] = [
@@ -124,7 +195,7 @@ const INITIAL_FLAGS: FeatureFlag[] = [
   { id: "iq_tests", label: "Cadet IQ Tests", enabled: true },
   { id: "notifications", label: "Push Notifications", enabled: false },
   { id: "coming_soon", label: "Coming Soon Mode", enabled: false },
-  { id: "maintenance", label: "Maintenance Mode", enabled: false },
+  { id: "maintenance", label: "Maintenance Mode", enabled: false }
 ];
 
 // ─── Sidebar nav config ───────────────────────────────────────────────────────
@@ -138,12 +209,16 @@ const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "courses", label: "Courses", icon: BookMarked },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "cadetiq", label: "Cadet IQ", icon: ClipboardList },
-  { id: "missionlog", label: "Mission Log", icon: CheckSquare },
+  { id: "missionlog", label: "Mission Log", icon: CheckSquare }
 ];
 
 // ─── Chart helpers ────────────────────────────────────────────────────────────
 
-function AreaChartComponent({ data, dataKey, color }: { data: Record<string, unknown>[]; dataKey: string; color: string }) {
+function AreaChartComponent({
+  data,
+  dataKey,
+  color
+}: { data: Record<string, unknown>[]; dataKey: string; color: string }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data}>
@@ -154,24 +229,65 @@ function AreaChartComponent({ data, dataKey, color }: { data: Record<string, unk
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1A2E1F" />
-        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
+        <XAxis
+          dataKey="month"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#6B7280", fontSize: 11 }}
+        />
         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
-        <Tooltip contentStyle={{ background: "#0F1C15", border: "1px solid #D4AF37", borderRadius: 8, color: "#fff" }} />
-        <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} fillOpacity={1} fill={`url(#grad-${dataKey})`} />
+        <Tooltip
+          contentStyle={{
+            background: "#0F1C15",
+            border: "1px solid #D4AF37",
+            borderRadius: 8,
+            color: "#fff"
+          }}
+        />
+        <Area
+          type="monotone"
+          dataKey={dataKey}
+          stroke={color}
+          strokeWidth={2}
+          fillOpacity={1}
+          fill={`url(#grad-${dataKey})`}
+        />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
-function LineChartComponent({ data, dataKey, color }: { data: Record<string, unknown>[]; dataKey: string; color: string }) {
+function LineChartComponent({
+  data,
+  dataKey,
+  color
+}: { data: Record<string, unknown>[]; dataKey: string; color: string }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1A2E1F" />
-        <XAxis dataKey="test" axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
+        <XAxis
+          dataKey="test"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#6B7280", fontSize: 11 }}
+        />
         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
-        <Tooltip contentStyle={{ background: "#0F1C15", border: "1px solid #D4AF37", borderRadius: 8, color: "#fff" }} />
-        <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={3} dot={{ r: 4, fill: color }} />
+        <Tooltip
+          contentStyle={{
+            background: "#0F1C15",
+            border: "1px solid #D4AF37",
+            borderRadius: 8,
+            color: "#fff"
+          }}
+        />
+        <Line
+          type="monotone"
+          dataKey={dataKey}
+          stroke={color}
+          strokeWidth={3}
+          dot={{ r: 4, fill: color }}
+        />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -182,12 +298,36 @@ function BarChartComponent({ data }: { data: Record<string, unknown>[] }) {
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1A2E1F" />
-        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
+        <XAxis
+          dataKey="name"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#6B7280", fontSize: 11 }}
+        />
         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
-        <Tooltip contentStyle={{ background: "#0F1C15", border: "1px solid #D4AF37", borderRadius: 8, color: "#fff" }} />
+        <Tooltip
+          contentStyle={{
+            background: "#0F1C15",
+            border: "1px solid #D4AF37",
+            borderRadius: 8,
+            color: "#fff"
+          }}
+        />
         <Legend wrapperStyle={{ color: "#9CA3AF", fontSize: 12 }} />
-        <Bar dataKey="hours" name="Study Hours" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
-        <Bar dataKey="quizzes" name="Quizzes Done" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+        <Bar
+          dataKey="hours"
+          name="Study Hours"
+          fill="#3b82f6"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={40}
+        />
+        <Bar
+          dataKey="quizzes"
+          name="Quizzes Done"
+          fill="#10b981"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={40}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -228,7 +368,7 @@ function ComingSoonBadge() {
 function OverviewTab({
   courses,
   flags,
-  setFlags,
+  setFlags
 }: {
   courses: CourseDetail[];
   flags: FeatureFlag[];
@@ -246,7 +386,11 @@ function OverviewTab({
           <StatCard label="Active Personnel" value="—" sub="Firebase — Coming Soon" />
           <StatCard label="Active Courses" value={courses.length} sub="Live in catalog" />
           <StatCard label="Scheduled Classes" value={MOCK_LIVE_CLASSES.length} sub="This week" />
-          <StatCard label="Pending Missions" value={MOCK_TODOS.filter((t) => !t.completed).length} sub="Open tasks" />
+          <StatCard
+            label="Pending Missions"
+            value={MOCK_TODOS.filter((t) => !t.completed).length}
+            sub="Open tasks"
+          />
         </div>
       </div>
 
@@ -257,7 +401,7 @@ function OverviewTab({
           {flags.map((flag) => (
             <div key={flag.id} className="flex items-center justify-between px-5 py-3">
               <span className="text-white text-sm font-medium">{flag.label}</span>
-              <button onClick={() => toggle(flag.id)} className="focus:outline-none">
+              <button type="button" onClick={() => toggle(flag.id)} className="focus:outline-none">
                 {flag.enabled ? (
                   <ToggleRight className="w-7 h-7 text-[#D4AF37]" />
                 ) : (
@@ -285,13 +429,18 @@ function OverviewTab({
             </thead>
             <tbody>
               {MOCK_LIVE_CLASSES.map((cls) => (
-                <tr key={cls.id} className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors">
+                <tr
+                  key={cls.id}
+                  className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors"
+                >
                   <td className="px-5 py-3 text-white font-medium">{cls.topic}</td>
                   <td className="px-5 py-3 text-gray-300">{cls.instructor}</td>
                   <td className="px-5 py-3 text-gray-300">{cls.date}</td>
                   <td className="px-5 py-3 text-gray-300">{cls.time}</td>
                   <td className="px-5 py-3">
-                    <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold">{cls.type}</span>
+                    <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold">
+                      {cls.type}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -313,16 +462,24 @@ function AnalyticsTab({ courses }: { courses: CourseDetail[] }) {
   const maxCount = Math.max(...Object.values(trackCounts), 1);
 
   const cumulativeData = [
-    { month: "Jan", hours: 100 }, { month: "Feb", hours: 250 },
-    { month: "Mar", hours: 450 }, { month: "Apr", hours: 700 }, { month: "May", hours: 1000 },
+    { month: "Jan", hours: 100 },
+    { month: "Feb", hours: 250 },
+    { month: "Mar", hours: 450 },
+    { month: "Apr", hours: 700 },
+    { month: "May", hours: 1000 }
   ];
   const iqTrend = [
-    { test: "Test 1", avg: 100 }, { test: "Test 2", avg: 102 },
-    { test: "Test 3", avg: 105 }, { test: "Test 4", avg: 108 }, { test: "Test 5", avg: 112 },
+    { test: "Test 1", avg: 100 },
+    { test: "Test 2", avg: 102 },
+    { test: "Test 3", avg: 105 },
+    { test: "Test 4", avg: 108 },
+    { test: "Test 5", avg: 112 }
   ];
   const studentData = [
-    { name: "Alice", hours: 45, quizzes: 12 }, { name: "Bob", hours: 30, quizzes: 8 },
-    { name: "Charlie", hours: 60, quizzes: 15 }, { name: "Diana", hours: 55, quizzes: 14 },
+    { name: "Alice", hours: 45, quizzes: 12 },
+    { name: "Bob", hours: 30, quizzes: 8 },
+    { name: "Charlie", hours: 60, quizzes: 15 },
+    { name: "Diana", hours: 55, quizzes: 14 }
   ];
 
   return (
@@ -368,7 +525,10 @@ function AnalyticsTab({ courses }: { courses: CourseDetail[] }) {
               <span className="text-[#D4AF37] font-bold">{count}</span>
             </div>
             <div className="h-2 bg-[#0F1C15] rounded-full overflow-hidden">
-              <div className="h-full bg-[#D4AF37] rounded-full" style={{ width: `${(count / maxCount) * 100}%` }} />
+              <div
+                className="h-full bg-[#D4AF37] rounded-full"
+                style={{ width: `${(count / maxCount) * 100}%` }}
+              />
             </div>
           </div>
         ))}
@@ -382,9 +542,18 @@ function AnalyticsTab({ courses }: { courses: CourseDetail[] }) {
 function RosterTab() {
   const [users, setUsers] = useState<MockUser[]>(MOCK_USERS);
   const [editing, setEditing] = useState<MockUser | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", role: "cadet", tier: "basic", isAdmin: false });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    role: "cadet",
+    tier: "basic",
+    isAdmin: false
+  });
 
-  const openEdit = (u: MockUser) => { setEditing(u); setForm({ name: u.name, email: u.email, role: u.role, tier: u.tier, isAdmin: u.isAdmin }); };
+  const openEdit = (u: MockUser) => {
+    setEditing(u);
+    setForm({ name: u.name, email: u.email, role: u.role, tier: u.tier, isAdmin: u.isAdmin });
+  };
   const save = () => {
     if (editing) {
       setUsers((prev) => prev.map((u) => (u.id === editing.id ? { ...u, ...form } : u)));
@@ -398,7 +567,9 @@ function RosterTab() {
         <SectionTitle>Cadet Roster</SectionTitle>
         <ComingSoonBadge />
       </div>
-      <p className="text-gray-400 text-sm -mt-4">User management is Firebase-based. Showing mock data.</p>
+      <p className="text-gray-400 text-sm -mt-4">
+        User management is Firebase-based. Showing mock data.
+      </p>
 
       <div className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
@@ -414,16 +585,29 @@ function RosterTab() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors">
+              <tr
+                key={u.id}
+                className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors"
+              >
                 <td className="px-5 py-3 text-white font-medium">{u.name}</td>
                 <td className="px-5 py-3 text-gray-300">{u.email}</td>
                 <td className="px-5 py-3 text-gray-300 capitalize">{u.role}</td>
                 <td className="px-5 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded font-bold ${u.tier === "premium" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "bg-gray-700 text-gray-300"}`}>{u.tier}</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-bold ${u.tier === "premium" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "bg-gray-700 text-gray-300"}`}
+                  >
+                    {u.tier}
+                  </span>
                 </td>
                 <td className="px-5 py-3 text-gray-300">{u.isAdmin ? "✓" : "—"}</td>
                 <td className="px-5 py-3">
-                  <button onClick={() => openEdit(u)} className="text-xs text-[#D4AF37] hover:underline">Edit</button>
+                  <button
+                    type="button"
+                    onClick={() => openEdit(u)}
+                    className="text-xs text-[#D4AF37] hover:underline"
+                  >
+                    Edit
+                  </button>
                 </td>
               </tr>
             ))}
@@ -434,40 +618,79 @@ function RosterTab() {
       {editing && (
         <div className="bg-[#1A2E1F] border border-[#D4AF37]/30 rounded-xl p-6 space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[#D4AF37] font-bold uppercase tracking-wider text-sm">Edit Cadet</h3>
-            <button onClick={() => setEditing(null)}><X className="w-4 h-4 text-gray-400" /></button>
+            <h3 className="text-[#D4AF37] font-bold uppercase tracking-wider text-sm">
+              Edit Cadet
+            </h3>
+            <button type="button" onClick={() => setEditing(null)}>
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {(["name", "email"] as const).map((field) => (
               <div key={field}>
-                <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">{field}</label>
-                <input value={form[field]} onChange={(e) => setForm((p) => ({ ...p, [field]: e.target.value }))}
-                  className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]" />
+                <label
+                  className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                  htmlFor="field"
+                >
+                  {field}
+                </label>
+                <input
+                  value={form[field]}
+                  onChange={(e) => setForm((p) => ({ ...p, [field]: e.target.value }))}
+                  className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                />
               </div>
             ))}
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Role</label>
-              <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Role
+              </label>
+              <select
+                value={form.role}
+                onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
                 <option value="cadet">Cadet</option>
                 <option value="instructor">Instructor</option>
                 <option value="staff">Staff</option>
               </select>
             </div>
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Tier</label>
-              <select value={form.tier} onChange={(e) => setForm((p) => ({ ...p, tier: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Tier
+              </label>
+              <select
+                value={form.tier}
+                onChange={(e) => setForm((p) => ({ ...p, tier: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
                 <option value="basic">Basic</option>
                 <option value="premium">Premium</option>
               </select>
             </div>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.isAdmin} onChange={(e) => setForm((p) => ({ ...p, isAdmin: e.target.checked }))} className="accent-[#D4AF37]" />
+            <input
+              type="checkbox"
+              checked={form.isAdmin}
+              onChange={(e) => setForm((p) => ({ ...p, isAdmin: e.target.checked }))}
+              className="accent-[#D4AF37]"
+            />
             <span className="text-white text-sm">Admin Access</span>
           </label>
-          <button onClick={save} className="px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors">Save Changes</button>
+          <button
+            type="button"
+            onClick={save}
+            className="px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors"
+          >
+            Save Changes
+          </button>
         </div>
       )}
     </div>
@@ -478,7 +701,14 @@ function RosterTab() {
 
 function TrainingTab({ courses }: { courses: CourseDetail[] }) {
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", track: "army", price: "", description: "", thumbnail: "", comingSoon: false });
+  const [form, setForm] = useState({
+    title: "",
+    track: "army",
+    price: "",
+    description: "",
+    thumbnail: "",
+    comingSoon: false
+  });
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
@@ -508,10 +738,15 @@ function TrainingTab({ courses }: { courses: CourseDetail[] }) {
 
   const field = (key: keyof typeof form, label: string, type = "text") => (
     <div>
-      <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">{label}</label>
-      <input type={type} value={form[key] as string}
+      <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1" htmlFor="field">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={form[key] as string}
         onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-        className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]" />
+        className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+      />
     </div>
   );
 
@@ -519,37 +754,67 @@ function TrainingTab({ courses }: { courses: CourseDetail[] }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <SectionTitle>Training Modules</SectionTitle>
-        <button onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-xs hover:bg-[#c9a227] transition-colors">
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="flex items-center gap-1 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-xs hover:bg-[#c9a227] transition-colors"
+        >
           <Plus className="w-3 h-3" /> Add Course
         </button>
       </div>
 
       {showForm && (
         <div className="bg-[#1A2E1F] border border-[#D4AF37]/30 rounded-xl p-6 space-y-4">
-          <h3 className="text-[#D4AF37] font-bold uppercase tracking-wider text-sm mb-2">New Training Module</h3>
+          <h3 className="text-[#D4AF37] font-bold uppercase tracking-wider text-sm mb-2">
+            New Training Module
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             {field("title", "Title")}
             {field("price", "Price (NPR)", "number")}
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Wing / Category</label>
-              <select value={form.track} onChange={(e) => setForm((p) => ({ ...p, track: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Wing / Category
+              </label>
+              <select
+                value={form.track}
+                onChange={(e) => setForm((p) => ({ ...p, track: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
                 {["army", "police", "apf", "staff", "mission"].map((t) => (
-                  <option key={t} value={t}>{t.toUpperCase()}</option>
+                  <option key={t} value={t}>
+                    {t.toUpperCase()}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Image Upload */}
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Course Image</label>
-              <label className={`flex items-center justify-center gap-2 w-full border border-dashed border-[#D4AF37]/40 rounded-lg px-3 py-3 cursor-pointer hover:border-[#D4AF37] transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""}`}>
-                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Course Image
+              </label>
+              <label
+                className={`flex items-center justify-center gap-2 w-full border border-dashed border-[#D4AF37]/40 rounded-lg px-3 py-3 cursor-pointer hover:border-[#D4AF37] transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
                 {uploading ? (
                   <span className="text-[#D4AF37] text-xs">Uploading to Bunny CDN...</span>
                 ) : form.thumbnail ? (
-                  <span className="text-emerald-400 text-xs truncate">✓ {form.thumbnail.split("/").pop()}</span>
+                  <span className="text-emerald-400 text-xs truncate">
+                    ✓ {form.thumbnail.split("/").pop()}
+                  </span>
                 ) : (
                   <span className="text-gray-500 text-xs">Click to upload image → Bunny CDN</span>
                 )}
@@ -557,22 +822,51 @@ function TrainingTab({ courses }: { courses: CourseDetail[] }) {
               {uploadError && <p className="text-red-400 text-xs mt-1">{uploadError}</p>}
               {form.thumbnail && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={form.thumbnail} alt="preview" className="mt-2 h-20 w-full object-cover rounded-lg" />
+                <img
+                  src={form.thumbnail}
+                  alt="preview"
+                  className="mt-2 h-20 w-full object-cover rounded-lg"
+                />
               )}
             </div>
           </div>
           <div>
-            <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Description</label>
-            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3}
-              className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] resize-none" />
+            <label
+              className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+              htmlFor="field"
+            >
+              Description
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              rows={3}
+              className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] resize-none"
+            />
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.comingSoon} onChange={(e) => setForm((p) => ({ ...p, comingSoon: e.target.checked }))} className="accent-[#D4AF37]" />
+            <input
+              type="checkbox"
+              checked={form.comingSoon}
+              onChange={(e) => setForm((p) => ({ ...p, comingSoon: e.target.checked }))}
+              className="accent-[#D4AF37]"
+            />
             <span className="text-white text-sm">Mark as Coming Soon</span>
           </label>
           <div className="flex gap-3">
-            <button className="px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors">Save Module</button>
-            <button onClick={() => setShowForm(false)} className="px-5 py-2 bg-[#0F1C15] text-gray-300 font-bold rounded-lg text-sm hover:bg-[#1A2E1F] transition-colors">Cancel</button>
+            <button
+              type="button"
+              className="px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors"
+            >
+              Save Module
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-5 py-2 bg-[#0F1C15] text-gray-300 font-bold rounded-lg text-sm hover:bg-[#1A2E1F] transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -590,9 +884,16 @@ function TrainingTab({ courses }: { courses: CourseDetail[] }) {
           </thead>
           <tbody>
             {courses.map((c) => (
-              <tr key={c.slug} className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors">
+              <tr
+                key={c.slug}
+                className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors"
+              >
                 <td className="px-5 py-3 text-white font-medium">{c.title}</td>
-                <td className="px-5 py-3"><span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase">{c.track}</span></td>
+                <td className="px-5 py-3">
+                  <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase">
+                    {c.track}
+                  </span>
+                </td>
                 <td className="px-5 py-3 text-gray-300">NPR {c.priceNpr.toLocaleString()}</td>
                 <td className="px-5 py-3 text-gray-300 capitalize">{c.format}</td>
                 <td className="px-5 py-3 text-gray-300">{c.featured ? "✓" : "—"}</td>
@@ -609,17 +910,30 @@ function TrainingTab({ courses }: { courses: CourseDetail[] }) {
 
 function StaffHQTab({ instructors }: { instructors: InstructorProfile[] }) {
   const [form, setForm] = useState({
-    day: "", date: "", time: "", topic: "", instructor: "", type: "Training",
-    meetLink: "", category: "army",
+    day: "",
+    date: "",
+    time: "",
+    topic: "",
+    instructor: "",
+    type: "Training",
+    meetLink: "",
+    category: "army"
   });
-  const [notes, setNotes] = useState("Weekly briefing: Focus on physical fitness standards this week. All instructors to submit lesson plans by Friday.");
+  const [notes, setNotes] = useState(
+    "Weekly briefing: Focus on physical fitness standards this week. All instructors to submit lesson plans by Friday."
+  );
 
   const textField = (key: keyof typeof form, label: string, type = "text") => (
     <div>
-      <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">{label}</label>
-      <input type={type} value={form[key]}
+      <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1" htmlFor="field">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={form[key]}
         onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-        className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]" />
+        className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+      />
     </div>
   );
 
@@ -634,30 +948,67 @@ function StaffHQTab({ instructors }: { instructors: InstructorProfile[] }) {
             {textField("time", "Time", "time")}
             {textField("topic", "Topic")}
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Instructor</label>
-              <select value={form.instructor} onChange={(e) => setForm((p) => ({ ...p, instructor: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Instructor
+              </label>
+              <select
+                value={form.instructor}
+                onChange={(e) => setForm((p) => ({ ...p, instructor: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
                 <option value="">Select instructor</option>
-                {instructors.map((i) => <option key={i.slug} value={i.name}>{i.name}</option>)}
+                {instructors.map((i) => (
+                  <option key={i.slug} value={i.name}>
+                    {i.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Type</label>
-              <select value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
-                {["Training", "Academic", "Soft Skills", "Mock Test", "Orientation"].map((t) => <option key={t}>{t}</option>)}
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Type
+              </label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
+                {["Training", "Academic", "Soft Skills", "Mock Test", "Orientation"].map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
               </select>
             </div>
             {textField("meetLink", "Meet Link (URL)")}
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Category</label>
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
-                {["army", "police", "apf", "staff", "mission"].map((t) => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Category
+              </label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
+                {["army", "police", "apf", "staff", "mission"].map((t) => (
+                  <option key={t} value={t}>
+                    {t.toUpperCase()}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
-          <button className="px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors">
+          <button
+            type="button"
+            className="px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors"
+          >
             Schedule Class
           </button>
         </div>
@@ -666,9 +1017,16 @@ function StaffHQTab({ instructors }: { instructors: InstructorProfile[] }) {
       <div>
         <SectionTitle>Briefing Notes</SectionTitle>
         <div className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl p-6">
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5}
-            className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] resize-none" />
-          <button className="mt-3 px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors">
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={5}
+            className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] resize-none"
+          />
+          <button
+            type="button"
+            className="mt-3 px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors"
+          >
             Save Notes
           </button>
         </div>
@@ -689,15 +1047,22 @@ function CoursesTab({ courses }: { courses: CourseDetail[] }) {
       <SectionTitle>Course Catalog</SectionTitle>
       <div className="flex gap-2 flex-wrap">
         {tracks.map((t) => (
-          <button key={t} onClick={() => setFilter(t)}
-            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${filter === t ? "bg-[#D4AF37] text-[#0F1C15]" : "bg-[#1A2E1F] text-gray-400 border border-[#D4AF37]/20 hover:border-[#D4AF37]/50"}`}>
+          <button
+            type="button"
+            key={t}
+            onClick={() => setFilter(t)}
+            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${filter === t ? "bg-[#D4AF37] text-[#0F1C15]" : "bg-[#1A2E1F] text-gray-400 border border-[#D4AF37]/20 hover:border-[#D4AF37]/50"}`}
+          >
             {t}
           </button>
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((c) => (
-          <div key={c.slug} className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-colors">
+          <div
+            key={c.slug}
+            className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-colors"
+          >
             {c.heroImageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.heroImageUrl} alt={c.title} className="w-full h-32 object-cover" />
@@ -705,12 +1070,20 @@ function CoursesTab({ courses }: { courses: CourseDetail[] }) {
             <div className="p-4">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="text-white font-bold text-sm leading-tight">{c.title}</h3>
-                {c.featured && <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase shrink-0">Featured</span>}
+                {c.featured && (
+                  <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase shrink-0">
+                    Featured
+                  </span>
+                )}
               </div>
               <p className="text-gray-400 text-xs mb-3 line-clamp-2">{c.summary}</p>
               <div className="flex items-center justify-between">
-                <span className="text-xs bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase">{c.track}</span>
-                <span className="text-[#D4AF37] font-bold text-sm">NPR {c.priceNpr.toLocaleString()}</span>
+                <span className="text-xs bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase">
+                  {c.track}
+                </span>
+                <span className="text-[#D4AF37] font-bold text-sm">
+                  NPR {c.priceNpr.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
@@ -730,7 +1103,7 @@ function NotificationsTab() {
     if (!form.title || !form.message) return;
     setHistory((prev) => [
       { id: String(Date.now()), ...form, sentAt: new Date().toLocaleString() },
-      ...prev,
+      ...prev
     ]);
     setForm({ title: "", message: "", type: "info" });
   };
@@ -742,14 +1115,30 @@ function NotificationsTab() {
         <div className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Title</label>
-              <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]" />
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Title
+              </label>
+              <input
+                value={form.title}
+                onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              />
             </div>
             <div>
-              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Type</label>
-              <select value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
+              <label
+                className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+                htmlFor="field"
+              >
+                Type
+              </label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+                className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              >
                 <option value="info">Info</option>
                 <option value="warning">Warning</option>
                 <option value="success">Success</option>
@@ -758,11 +1147,24 @@ function NotificationsTab() {
             </div>
           </div>
           <div>
-            <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Message</label>
-            <textarea value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} rows={3}
-              className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] resize-none" />
+            <label
+              className="text-gray-400 text-xs uppercase tracking-wider block mb-1"
+              htmlFor="field"
+            >
+              Message
+            </label>
+            <textarea
+              value={form.message}
+              onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
+              rows={3}
+              className="w-full bg-[#0F1C15] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] resize-none"
+            />
           </div>
-          <button onClick={send} className="flex items-center gap-2 px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors">
+          <button
+            type="button"
+            onClick={send}
+            className="flex items-center gap-2 px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors"
+          >
             <Send className="w-3 h-3" /> Send Notification
           </button>
         </div>
@@ -772,10 +1174,17 @@ function NotificationsTab() {
         <SectionTitle>Notification History</SectionTitle>
         <div className="space-y-3">
           {history.map((n) => (
-            <div key={n.id} className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl px-5 py-4">
+            <div
+              key={n.id}
+              className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl px-5 py-4"
+            >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-white font-bold text-sm">{n.title}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${n.type === "warning" ? "bg-amber-500/20 text-amber-400" : n.type === "success" ? "bg-emerald-500/20 text-emerald-400" : "bg-blue-500/20 text-blue-400"}`}>{n.type}</span>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${n.type === "warning" ? "bg-amber-500/20 text-amber-400" : n.type === "success" ? "bg-emerald-500/20 text-emerald-400" : "bg-blue-500/20 text-blue-400"}`}
+                >
+                  {n.type}
+                </span>
               </div>
               <p className="text-gray-400 text-xs">{n.message}</p>
               <p className="text-gray-600 text-xs mt-1">{n.sentAt}</p>
@@ -796,7 +1205,9 @@ function CadetIQTab() {
         <SectionTitle>Cadet IQ Submissions</SectionTitle>
         <ComingSoonBadge />
       </div>
-      <p className="text-gray-400 text-sm -mt-4">IQ test system is Firebase-based. Showing mock data.</p>
+      <p className="text-gray-400 text-sm -mt-4">
+        IQ test system is Firebase-based. Showing mock data.
+      </p>
       <div className="bg-[#1A2E1F] border border-[#D4AF37]/20 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -809,14 +1220,25 @@ function CadetIQTab() {
           </thead>
           <tbody>
             {MOCK_IQ_SUBMISSIONS.map((s) => (
-              <tr key={s.id} className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors">
+              <tr
+                key={s.id}
+                className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-colors"
+              >
                 <td className="px-5 py-3 text-white font-medium">{s.cadet}</td>
                 <td className="px-5 py-3">
-                  <span className={`font-bold ${s.score >= 80 ? "text-emerald-400" : s.score >= 65 ? "text-[#D4AF37]" : "text-red-400"}`}>{s.score}</span>
+                  <span
+                    className={`font-bold ${s.score >= 80 ? "text-emerald-400" : s.score >= 65 ? "text-[#D4AF37]" : "text-red-400"}`}
+                  >
+                    {s.score}
+                  </span>
                 </td>
                 <td className="px-5 py-3 text-gray-300">{s.submittedAt}</td>
                 <td className="px-5 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded font-bold ${s.status === "Reviewed" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>{s.status}</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-bold ${s.status === "Reviewed" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}
+                  >
+                    {s.status}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -835,7 +1257,10 @@ function MissionLogTab() {
 
   const add = () => {
     if (!newTask.trim()) return;
-    setTodos((prev) => [...prev, { id: String(Date.now()), task: newTask.trim(), completed: false }]);
+    setTodos((prev) => [
+      ...prev,
+      { id: String(Date.now()), task: newTask.trim(), completed: false }
+    ]);
     setNewTask("");
   };
 
@@ -848,23 +1273,44 @@ function MissionLogTab() {
     <div className="space-y-6">
       <SectionTitle>Mission Log</SectionTitle>
       <div className="flex gap-3">
-        <input value={newTask} onChange={(e) => setNewTask(e.target.value)}
+        <input
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
           placeholder="Add new mission task..."
-          className="flex-1 bg-[#1A2E1F] border border-[#D4AF37]/30 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] placeholder-gray-600" />
-        <button onClick={add} className="flex items-center gap-1 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors">
+          className="flex-1 bg-[#1A2E1F] border border-[#D4AF37]/30 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] placeholder-gray-600"
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="flex items-center gap-1 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors"
+        >
           <Plus className="w-3 h-3" /> Add
         </button>
       </div>
       <div className="space-y-2">
         {todos.map((t) => (
-          <div key={t.id} className={`flex items-center gap-3 bg-[#1A2E1F] border rounded-xl px-5 py-3 transition-colors ${t.completed ? "border-emerald-500/20 opacity-60" : "border-[#D4AF37]/20"}`}>
-            <button onClick={() => toggle(t.id)}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${t.completed ? "bg-emerald-500 border-emerald-500" : "border-[#D4AF37]/50 hover:border-[#D4AF37]"}`}>
+          <div
+            key={t.id}
+            className={`flex items-center gap-3 bg-[#1A2E1F] border rounded-xl px-5 py-3 transition-colors ${t.completed ? "border-emerald-500/20 opacity-60" : "border-[#D4AF37]/20"}`}
+          >
+            <button
+              type="button"
+              onClick={() => toggle(t.id)}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${t.completed ? "bg-emerald-500 border-emerald-500" : "border-[#D4AF37]/50 hover:border-[#D4AF37]"}`}
+            >
               {t.completed && <span className="text-white text-xs">✓</span>}
             </button>
-            <span className={`flex-1 text-sm ${t.completed ? "line-through text-gray-500" : "text-white"}`}>{t.task}</span>
-            <button onClick={() => remove(t.id)} className="text-gray-600 hover:text-red-400 transition-colors">
+            <span
+              className={`flex-1 text-sm ${t.completed ? "line-through text-gray-500" : "text-white"}`}
+            >
+              {t.task}
+            </span>
+            <button
+              type="button"
+              onClick={() => remove(t.id)}
+              className="text-gray-600 hover:text-red-400 transition-colors"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -889,9 +1335,7 @@ export default function AdminPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [{ getCourses, getInstructors }] = await Promise.all([
-          import("@/lib/api"),
-        ]);
+        const [{ getCourses, getInstructors }] = await Promise.all([import("@/lib/api")]);
         const [c, i] = await Promise.all([getCourses(), getInstructors()]);
         setCourses(c);
         setInstructors(i);
@@ -908,20 +1352,31 @@ export default function AdminPage() {
     if (loading) {
       return (
         <div className="flex items-center justify-center h-64">
-          <div className="text-[#D4AF37] animate-pulse text-sm uppercase tracking-widest">Loading...</div>
+          <div className="text-[#D4AF37] animate-pulse text-sm uppercase tracking-widest">
+            Loading...
+          </div>
         </div>
       );
     }
     switch (activeTab) {
-      case "overview": return <OverviewTab courses={courses} flags={flags} setFlags={setFlags} />;
-      case "analytics": return <AnalyticsTab courses={courses} />;
-      case "roster": return <RosterTab />;
-      case "training": return <TrainingTab courses={courses} />;
-      case "staffhq": return <StaffHQTab instructors={instructors} />;
-      case "courses": return <CoursesTab courses={courses} />;
-      case "notifications": return <NotificationsTab />;
-      case "cadetiq": return <CadetIQTab />;
-      case "missionlog": return <MissionLogTab />;
+      case "overview":
+        return <OverviewTab courses={courses} flags={flags} setFlags={setFlags} />;
+      case "analytics":
+        return <AnalyticsTab courses={courses} />;
+      case "roster":
+        return <RosterTab />;
+      case "training":
+        return <TrainingTab courses={courses} />;
+      case "staffhq":
+        return <StaffHQTab instructors={instructors} />;
+      case "courses":
+        return <CoursesTab courses={courses} />;
+      case "notifications":
+        return <NotificationsTab />;
+      case "cadetiq":
+        return <CadetIQTab />;
+      case "missionlog":
+        return <MissionLogTab />;
     }
   };
 
@@ -936,8 +1391,12 @@ export default function AdminPage() {
               <ShieldAlert className="w-5 h-5 text-[#0F1C15]" />
             </div>
             <div>
-              <div className="text-[#D4AF37] font-bold text-sm uppercase tracking-widest leading-none">Command</div>
-              <div className="text-white font-bold text-xs uppercase tracking-widest leading-none mt-0.5">HQ</div>
+              <div className="text-[#D4AF37] font-bold text-sm uppercase tracking-widest leading-none">
+                Command
+              </div>
+              <div className="text-white font-bold text-xs uppercase tracking-widest leading-none mt-0.5">
+                HQ
+              </div>
             </div>
           </div>
         </div>
@@ -947,12 +1406,16 @@ export default function AdminPage() {
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
             const active = activeTab === id;
             return (
-              <button key={id} onClick={() => setActiveTab(id)}
+              <button
+                type="button"
+                key={id}
+                onClick={() => setActiveTab(id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left ${
                   active
                     ? "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}>
+                }`}
+              >
                 <Icon className={`w-4 h-4 shrink-0 ${active ? "text-[#D4AF37]" : ""}`} />
                 <span className="flex-1">{label}</span>
                 {active && <ChevronRight className="w-3 h-3 text-[#D4AF37]" />}
@@ -963,14 +1426,20 @@ export default function AdminPage() {
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-[#D4AF37]/20 space-y-3">
-          <a href="/brandbook" target="_blank" rel="noopener noreferrer"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <a
+            href="/brandbook"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+          >
             <Palette className="w-4 h-4 shrink-0" />
             <span>Brand Book</span>
           </a>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-400 text-xs font-bold uppercase tracking-wider">System Online</span>
+            <span className="text-emerald-400 text-xs font-bold uppercase tracking-wider">
+              System Online
+            </span>
           </div>
         </div>
       </aside>
@@ -991,9 +1460,7 @@ export default function AdminPage() {
         </header>
 
         {/* Tab content */}
-        <div className="flex-1 p-8 overflow-y-auto">
-          {renderTab()}
-        </div>
+        <div className="flex-1 p-8 overflow-y-auto">{renderTab()}</div>
       </main>
     </div>
   );
