@@ -2,15 +2,15 @@ import { NextResponse, NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/apiClient";
 
 export async function POST(request: NextRequest) {
-  const sessionCookie = request.cookies.get("ca_session");
   const csrfToken = request.headers.get("x-csrf-token");
+  const cookie = request.headers.get("cookie");
 
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/session-logout`, {
       method: "POST",
       headers: {
-        Cookie: `ca_session=${sessionCookie?.value}`,
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+        ...(cookie ? { cookie } : {})
       }
     });
 

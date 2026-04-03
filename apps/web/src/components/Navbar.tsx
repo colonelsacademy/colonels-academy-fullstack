@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield,
@@ -11,11 +11,13 @@ import {
   BookMarked,
   ChevronDown,
   ShoppingCart,
-  Target,
   Lock,
   Menu,
-  X
+  X,
+  LogOut,
+  User
 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 // Inline brand mark — gold gradient icon + text, matches the official brand assets
 const AcademyLogo = () => (
@@ -78,7 +80,7 @@ const Dropdown = ({
         aria-expanded={isOpen}
       >
         <span
-          className={`font-['Rajdhani'] font-bold text-xs uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}
+          className={`font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}
         >
           {label}
         </span>
@@ -126,8 +128,15 @@ const Dropdown = ({
 
 const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, authenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
 
   useEffect(() => {
     const handleClick = () => setActiveDropdown(null);
@@ -161,7 +170,7 @@ const Navbar = () => {
             />
             <Link
               href="/#mentors"
-              className="font-['Rajdhani'] font-bold text-xs uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 cursor-pointer rounded-lg hover:bg-white/5"
+              className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 cursor-pointer rounded-lg hover:bg-white/5"
             >
               Directing Staff
             </Link>
@@ -186,10 +195,36 @@ const Navbar = () => {
 
             <div className="h-6 w-[1px] bg-white/20 hidden md:block" />
 
-            <button className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-['Rajdhani'] font-bold text-[9px] uppercase tracking-[0.2em] rounded hover:bg-white transition-all shadow-md">
-              <Lock className="w-3.5 h-3.5" />
-              <span>HQ Login</span>
-            </button>
+            {authenticated && user ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-all"
+                >
+                  <div className="w-7 h-7 rounded-full bg-[#D4AF37] flex items-center justify-center">
+                    <User className="w-4 h-4 text-[#0F1C15]" />
+                  </div>
+                  <span className="font-['Rajdhani'] font-bold text-xs uppercase tracking-[0.15em] text-white/90 max-w-[120px] truncate">
+                    {user.email?.split("@")[0]}
+                  </span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-white/60 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-['Rajdhani'] font-bold text-xs uppercase tracking-[0.2em] rounded hover:bg-white transition-all shadow-md"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>HQ Login</span>
+              </Link>
+            )}
 
             <button
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -226,10 +261,37 @@ const Navbar = () => {
             >
               Directing Staff
             </Link>
-            <button className="w-full mt-2 py-3 bg-[#D4AF37] text-[#0F1C15] font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2">
-              <Target className="w-4 h-4" />
-              HQ Login / Apply
-            </button>
+            {authenticated && user ? (
+              <div className="flex flex-col gap-2 mt-2">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full py-3 border border-white/20 text-white font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  {user.email?.split("@")[0]}
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full py-3 border border-red-500/30 text-red-400 font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full mt-2 py-3 bg-[#D4AF37] text-[#0F1C15] font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2"
+              >
+                <Lock className="w-4 h-4" />
+                HQ Login
+              </Link>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

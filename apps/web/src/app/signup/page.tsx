@@ -1,15 +1,14 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithRedirect,
-  signInWithPopup,
-  getRedirectResult
+  signInWithPopup
 } from "firebase/auth";
-import { Shield, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Shield, Lock, Mail, Eye, EyeOff, User } from "lucide-react";
 import Link from "next/link";
 import { getFirebaseClientAuth } from "@/lib/firebase";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -35,54 +34,36 @@ const GoogleIcon = () => (
   </svg>
 );
 
-function LoginForm() {
+function SignupForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dashboard";
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
-  useEffect(() => {
-    if (useEmulator) return;
-    async function handleRedirectResult() {
-      const auth = getFirebaseClientAuth();
-      if (!auth) return;
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          setLoading(true);
-          const token = await result.user.getIdToken();
-          await login(token);
-          router.push(next);
-        }
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Sign-in failed.");
-        setLoading(false);
-      }
-    }
-    handleRedirectResult();
-  }, [login, next, router, useEmulator]);
-
-  async function handleEmail(e: React.FormEvent) {
+  async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
       const auth = getFirebaseClientAuth();
       if (!auth) throw new Error("Firebase is not configured.");
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
       const token = await user.getIdToken();
       await login(token);
-      router.push(next);
+      router.push("/dashboard");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign-in failed.");
+      setError(err instanceof Error ? err.message : "Sign-up failed.");
     } finally {
       setLoading(false);
     }
@@ -99,12 +80,12 @@ function LoginForm() {
         const { user } = await signInWithPopup(auth, provider);
         const token = await user.getIdToken();
         await login(token);
-        router.push(next);
+        router.push("/dashboard");
       } else {
         await signInWithRedirect(auth, provider);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign-in failed.");
+      setError(err instanceof Error ? err.message : "Sign-up failed.");
       setLoading(false);
     }
   }
@@ -120,7 +101,7 @@ function LoginForm() {
           <h1 className="font-['Rajdhani'] font-bold text-gray-900 text-xl uppercase tracking-wider">
             The Colonel&apos;s Academy
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">Sign in to your account</p>
+          <p className="text-gray-500 text-sm mt-0.5">Create your account</p>
         </div>
       </div>
 
@@ -146,7 +127,7 @@ function LoginForm() {
           </div>
         </div>
 
-        <form onSubmit={handleEmail} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
               Email
@@ -173,10 +154,11 @@ function LoginForm() {
               <input
                 type={showPassword ? "text" : "password"}
                 required
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
-                placeholder="••••••••"
+                placeholder="Min. 8 characters"
               />
               <button
                 type="button"
@@ -189,6 +171,23 @@ function LoginForm() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
+                placeholder="Re-enter password"
+              />
+            </div>
+          </div>
+
           {error && (
             <p className="text-red-600 text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               {error}
@@ -198,19 +197,19 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-[#D4AF37] text-white font-semibold text-sm rounded-xl hover:bg-[#C9A227] active:bg-[#B8860B] transition-all disabled:opacity-50 shadow-sm mt-2"
+            className="w-full py-2.5 bg-[#2D6A4F] text-white font-semibold text-sm rounded-xl hover:bg-[#1B4332] active:bg-[#081C15] transition-all disabled:opacity-50 shadow-sm mt-2"
           >
-            {loading ? "Signing in…" : "Sign In"}
+            {loading ? "Creating account…" : "Create Account"}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/signup"
-            className="text-[#2D6A4F] font-semibold hover:text-[#1B4332] transition-colors"
+            href="/login"
+            className="text-[#D4AF37] font-semibold hover:text-[#B8860B] transition-colors"
           >
-            Create one
+            Sign in
           </Link>
         </p>
       </div>
@@ -218,18 +217,18 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <Suspense
         fallback={
           <div className="w-full max-w-md animate-pulse">
             <div className="h-16 w-48 bg-gray-200 rounded-lg mx-auto mb-8" />
-            <div className="h-[420px] bg-white rounded-2xl shadow border border-gray-100" />
+            <div className="h-[500px] bg-white rounded-2xl shadow border border-gray-100" />
           </div>
         }
       >
-        <LoginForm />
+        <SignupForm />
       </Suspense>
     </div>
   );
