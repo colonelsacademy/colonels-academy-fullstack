@@ -14,7 +14,10 @@ const BUNNY_LIBRARY_ID = "596237";
 const _BUNNY_PULL_ZONE = process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE ?? "";
 
 // ─── Thumbnail Overlay ────────────────────────────────────────────────────────
-const ThumbnailOverlay = ({ poster, onPlay }: { poster?: string | undefined; onPlay: () => void }) => (
+const ThumbnailOverlay = ({
+  poster,
+  onPlay
+}: { poster?: string | undefined; onPlay: () => void }) => (
   <button
     type="button"
     className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:scale-105 transition-transform duration-700 z-10 w-full h-full p-0 border-0 bg-transparent"
