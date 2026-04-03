@@ -3,9 +3,9 @@ import type {
   DashboardSnapshot,
   EnrollmentGuardResponse,
   InstructorProfile,
+  LessonDetail,
   LiveSessionPreview,
-  ModuleDetail,
-  LessonDetail
+  ModuleDetail
 } from "./types";
 
 export interface AuthSessionUser {

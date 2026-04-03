@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 
-import { createDatabaseClient, type DatabaseClient } from "@colonels-academy/database";
+import { type DatabaseClient, createDatabaseClient } from "@colonels-academy/database";
 
 declare module "fastify" {
   interface FastifyInstance {

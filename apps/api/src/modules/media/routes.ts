@@ -1,5 +1,5 @@
-import type { FastifyPluginAsync } from "fastify";
 import type { BunnyPlaybackResponse, MediaSyncResponse } from "@colonels-academy/contracts";
+import type { FastifyPluginAsync } from "fastify";
 
 const mediaRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { bunnyVideoId: string } }>(

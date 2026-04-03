@@ -1,20 +1,20 @@
-import {
-  WifiOff,
-  Bell,
-  Moon,
-  Smartphone,
-  CheckCircle,
-  Play,
-  Download,
-  Search,
-  Home,
-  Book,
-  User,
-  Battery,
-  Wifi,
-  Signal
-} from "lucide-react";
 import { getOptimizedAssetUrl } from "@/utils/assetUtils";
+import {
+  Battery,
+  Bell,
+  Book,
+  CheckCircle,
+  Download,
+  Home,
+  Moon,
+  Play,
+  Search,
+  Signal,
+  Smartphone,
+  User,
+  Wifi,
+  WifiOff
+} from "lucide-react";
 
 export const MobilePlatform = () => {
   const previewImageUrl = getOptimizedAssetUrl("/images/gateway/mobile-app-preview.jpg", {
@@ -56,9 +56,9 @@ export const MobilePlatform = () => {
               { icon: Bell, title: "Instant Alerts", desc: "Exam dates & class reminders" },
               { icon: Moon, title: "Dark Mode", desc: "Comfortable night reading" },
               { icon: CheckCircle, title: "Progress Sync", desc: "Pick up where you left off" }
-            ].map((item, i) => (
+            ].map((item) => (
               <div
-                key={i}
+                key={item.title}
                 className="flex gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-default group"
               >
                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 group-hover:bg-blue-500/30 transition-colors">
@@ -87,7 +87,7 @@ export const MobilePlatform = () => {
             </div>
 
             {/* Notch */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-30"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-30" />
 
             {/* APP INTERFACE */}
             <div className="w-full h-full bg-white overflow-hidden relative flex flex-col pt-0">
@@ -112,7 +112,7 @@ export const MobilePlatform = () => {
                     <span>45:00</span>
                   </div>
                   <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
-                    <div className="w-1/3 h-full bg-blue-500 rounded-full"></div>
+                    <div className="w-1/3 h-full bg-blue-500 rounded-full" />
                   </div>
                 </div>
               </div>
@@ -184,9 +184,9 @@ export const MobilePlatform = () => {
                       playing: false,
                       done: false
                     }
-                  ].map((item, i) => (
+                  ].map((item, idx) => (
                     <div
-                      key={i}
+                      key={item.title}
                       className={`flex items-start gap-3 p-3 rounded-2xl transition-all cursor-pointer ${item.playing ? "bg-white border-2 border-blue-100 shadow-sm" : "bg-white border border-gray-100"}`}
                     >
                       <div
@@ -197,7 +197,7 @@ export const MobilePlatform = () => {
                         ) : item.done ? (
                           <CheckCircle className="w-3.5 h-3.5" />
                         ) : (
-                          i + 1
+                          idx + 1
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -249,7 +249,7 @@ export const MobilePlatform = () => {
           </div>
 
           {/* Ambient Background Glow */}
-          <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[700px] rounded-[4rem] -z-10 bg-gradient-to-tr from-blue-500/5 to-purple-500/5"></div>
+          <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[700px] rounded-[4rem] -z-10 bg-gradient-to-tr from-blue-500/5 to-purple-500/5" />
         </div>
       </div>
     </section>

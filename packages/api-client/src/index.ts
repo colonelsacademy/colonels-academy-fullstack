@@ -1,6 +1,7 @@
 import type {
   AuthCsrfResponse,
   AuthSessionResponse,
+  BunnyPlaybackResponse,
   CatalogCoursesResponse,
   CatalogInstructorsResponse,
   CourseDetail,
@@ -119,6 +120,12 @@ export function createApiClient(options: CreateApiClientOptions) {
           idToken
         })
       });
+    },
+    getVideoPlayback(bunnyVideoId: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<BunnyPlaybackResponse>(
+        `/v1/media/video-assets/${bunnyVideoId}/playback`,
+        requestOptions
+      );
     },
     logoutSession(csrfToken: string, requestOptions: ApiRequestOptions = {}) {
       const headers = new Headers(requestOptions.headers);

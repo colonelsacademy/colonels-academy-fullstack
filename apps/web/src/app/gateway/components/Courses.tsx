@@ -1,18 +1,18 @@
 "use client";
 
-import React from "react";
+import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
+import { CATEGORIES, type Category, type Course, ICON_MAP } from "@/data/gateway";
 import {
-  motion,
   AnimatePresence,
+  motion,
   useMotionValue,
+  useReducedMotion,
   useSpring,
-  useTransform,
-  useReducedMotion
+  useTransform
 } from "framer-motion";
 import { Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CATEGORIES, ICON_MAP, type Category, type Course } from "@/data/gateway";
-import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
+import type React from "react";
 
 export const CourseSection = ({
   title,
@@ -66,6 +66,7 @@ export const CourseFilter = ({ activeCategory }: CourseFilterProps) => {
           }
           return (
             <button
+              type="button"
               key={cat.id}
               onClick={() => handleFilter(cat.id as Category)}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
@@ -249,6 +250,7 @@ export const CourseGrid = ({
 
                     {course.comingSoon ? (
                       <button
+                        type="button"
                         className="w-full px-4 py-2.5 bg-gray-300 text-gray-600 text-[14px] font-bold rounded cursor-not-allowed"
                         disabled
                       >
@@ -256,6 +258,7 @@ export const CourseGrid = ({
                       </button>
                     ) : isEnrolled ? (
                       <button
+                        type="button"
                         className="w-full px-4 py-2.5 bg-[#00693E] hover:bg-[#005a34] text-white text-[14px] font-bold rounded transition-all duration-200 active:scale-[0.98] shadow-sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -266,6 +269,7 @@ export const CourseGrid = ({
                       </button>
                     ) : (
                       <button
+                        type="button"
                         className="w-full px-4 py-2.5 bg-[#1c1d1f] hover:bg-black text-white text-[14px] font-bold rounded transition-all duration-200 active:scale-[0.98] shadow-sm"
                         onClick={(e) => {
                           e.stopPropagation();

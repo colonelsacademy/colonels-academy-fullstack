@@ -1,18 +1,18 @@
 import {
+  type PropsWithChildren,
   createContext,
   useContext,
   useEffect,
   useMemo,
-  useState,
-  type PropsWithChildren
+  useState
 } from "react";
 
 import {
+  type User,
   getFirebaseMobileAuth,
   onIdTokenChanged,
   signInWithEmailAndPassword,
-  signOut,
-  type User
+  signOut
 } from "../lib/firebase";
 
 interface AuthContextValue {

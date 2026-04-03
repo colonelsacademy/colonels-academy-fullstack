@@ -1,12 +1,12 @@
 import { createApiClient } from "@colonels-academy/api-client";
-import {
-  type CatalogCoursesResponse,
-  type CatalogInstructorsResponse,
-  type DashboardOverviewResponse,
-  type CourseDetail,
-  type InstructorProfile
-} from "@colonels-academy/contracts";
 import { readPublicWebEnv } from "@colonels-academy/config";
+import type {
+  CatalogCoursesResponse,
+  CatalogInstructorsResponse,
+  CourseDetail,
+  DashboardOverviewResponse,
+  InstructorProfile
+} from "@colonels-academy/contracts";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ??

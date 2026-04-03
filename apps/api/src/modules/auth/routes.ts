@@ -1,10 +1,10 @@
-import type { FastifyPluginAsync } from "fastify";
 import type {
   AuthCsrfResponse,
   AuthSessionLoginRequest,
   AuthSessionResponse,
   AuthSessionUser
 } from "@colonels-academy/contracts";
+import type { FastifyPluginAsync } from "fastify";
 
 import type { AuthUser } from "../../plugins/auth";
 import { syncUserWithPostgres } from "./user-sync";

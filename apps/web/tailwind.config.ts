@@ -48,9 +48,9 @@ const config: Config = {
   },
   plugins: [
     require("@tailwindcss/typography"),
-    function ({
+    ({
       addUtilities
-    }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
+    }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) => {
       addUtilities({
         ".glass-panel": {
           background: "rgba(255, 255, 255, 0.7)",

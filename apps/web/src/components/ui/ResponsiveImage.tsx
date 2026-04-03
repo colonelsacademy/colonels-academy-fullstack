@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 import { getOptimizedResponsiveImageUrl } from "@/utils/assetUtils";
+import type React from "react";
 
 const DEFAULT_WIDTHS = [640, 1080, 1600, 2560];
 
@@ -41,6 +41,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
+    // biome-ignore lint/a11y/useAltText: alt is a required prop enforced by the interface
     <img
       src={fallbackSrc}
       srcSet={srcSet}

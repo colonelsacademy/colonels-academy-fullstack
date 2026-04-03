@@ -1,7 +1,7 @@
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { SiteShell } from "@/components/site-shell";
 import type { Metadata } from "next";
 import { Inter, Rajdhani } from "next/font/google";
-import { SiteShell } from "@/components/site-shell";
-import { AuthProvider } from "@/components/auth/AuthProvider";
 
 import "./globals.css";
 

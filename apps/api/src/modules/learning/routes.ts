@@ -1,10 +1,10 @@
-import type { FastifyPluginAsync } from "fastify";
 import {
-  dashboardSnapshot,
   type DashboardOverviewResponse,
   type LiveSessionsResponse,
+  dashboardSnapshot,
   upcomingSessions
 } from "@colonels-academy/contracts";
+import type { FastifyPluginAsync } from "fastify";
 
 const learningRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/dashboard/overview", async (request) => {

@@ -1,5 +1,5 @@
-import fp from "fastify-plugin";
 import { Queue } from "bullmq";
+import fp from "fastify-plugin";
 import Redis from "ioredis";
 
 import { defaultJobOptions, loadApiEnv, queueNames } from "@colonels-academy/config";

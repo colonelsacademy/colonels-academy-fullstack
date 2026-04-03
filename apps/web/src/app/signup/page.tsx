@@ -1,17 +1,17 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  signInWithPopup
-} from "firebase/auth";
-import { Shield, Lock, Mail, Eye, EyeOff, User } from "lucide-react";
-import Link from "next/link";
-import { getFirebaseClientAuth } from "@/lib/firebase";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { getFirebaseClientAuth } from "@/lib/firebase";
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signInWithRedirect
+} from "firebase/auth";
+import { Eye, EyeOff, Lock, Mail, Shield, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
@@ -108,6 +108,7 @@ function SignupForm() {
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
         {/* Google button */}
         <button
+          type="button"
           onClick={handleGoogle}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-gray-200 rounded-xl text-gray-700 text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 shadow-sm"
@@ -129,12 +130,16 @@ function SignupForm() {
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+            <label
+              htmlFor="signup-email"
+              className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5"
+            >
               Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
+                id="signup-email"
                 type="email"
                 required
                 value={email}
@@ -146,12 +151,16 @@ function SignupForm() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+            <label
+              htmlFor="signup-password"
+              className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5"
+            >
               Password
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
+                id="signup-password"
                 type={showPassword ? "text" : "password"}
                 required
                 minLength={8}
@@ -172,12 +181,16 @@ function SignupForm() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+            <label
+              htmlFor="signup-confirm"
+              className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5"
+            >
               Confirm Password
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
+                id="signup-confirm"
                 type={showPassword ? "text" : "password"}
                 required
                 value={confirm}

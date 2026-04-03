@@ -9,8 +9,8 @@ export default function CoursesLoading() {
           </div>
         </div>
         <div className="grid-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-52 bg-gray-100 rounded-xl" />
+          {["a", "b", "c", "d", "e", "f"].map((id) => (
+            <div key={id} className="h-52 bg-gray-100 rounded-xl" />
           ))}
         </div>
       </section>

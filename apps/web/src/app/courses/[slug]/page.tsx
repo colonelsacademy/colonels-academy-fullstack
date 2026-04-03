@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
 import { instructors as fallbackInstructors } from "@colonels-academy/contracts";
 import { InstructorCard } from "@colonels-academy/ui";
+import { notFound } from "next/navigation";
 
 import { getCourseBySlug, getInstructors } from "@/lib/api";
 

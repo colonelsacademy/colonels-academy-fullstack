@@ -1,6 +1,6 @@
-import { Star, ShieldCheck, ArrowRight, Clock } from "lucide-react";
-import { type Course } from "@/data/gateway";
 import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
+import type { Course } from "@/data/gateway";
+import { ArrowRight, Clock, ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
 
 interface FeaturedCourseProps {
@@ -52,8 +52,8 @@ export const FeaturedCourse = ({ course, isEnrolled = false }: FeaturedCoursePro
           <div className="lg:w-1/2 p-fluid-xl flex flex-col justify-center">
             <div className="flex items-center gap-2 mb-6">
               <div className="flex text-amber-500">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-current" />
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star key={n} className="w-4 h-4 fill-current" />
                 ))}
               </div>
               <span className="text-sm font-bold text-gray-900">{course.rating}</span>
@@ -96,6 +96,7 @@ export const FeaturedCourse = ({ course, isEnrolled = false }: FeaturedCoursePro
             <div className="flex flex-col sm:flex-row items-center gap-6">
               {course.comingSoon ? (
                 <button
+                  type="button"
                   disabled
                   className="w-full sm:w-auto px-10 py-5 bg-gray-300 text-gray-500 text-base font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-3"
                 >

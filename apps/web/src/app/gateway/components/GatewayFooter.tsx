@@ -1,4 +1,4 @@
-import { Compass, ArrowRight } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
 import Link from "next/link";
 
 export const GatewayCTA = () => {

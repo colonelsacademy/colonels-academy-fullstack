@@ -2,9 +2,9 @@
 
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import { ChevronDown, PlayCircle, Target } from "lucide-react";
-import { useRef } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 const MagneticButton = ({
   children,

@@ -1,13 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
+import { type FirebaseOptions, getApp, getApps, initializeApp } from "firebase/app";
 import {
+  type User,
   getAuth,
   getReactNativePersistence,
   initializeAuth,
   onIdTokenChanged,
   signInWithEmailAndPassword,
-  signOut,
-  type User
+  signOut
 } from "firebase/auth";
 
 import { readPublicMobileEnv } from "@colonels-academy/config";

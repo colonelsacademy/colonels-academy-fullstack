@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  BookMarked,
+  BookOpen,
+  ChevronDown,
+  FileText,
+  Lock,
+  LogOut,
+  Menu,
+  Shield,
+  ShoppingCart,
+  User,
+  X
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Shield,
-  BookOpen,
-  FileText,
-  BookMarked,
-  ChevronDown,
-  ShoppingCart,
-  Lock,
-  Menu,
-  X,
-  LogOut,
-  User
-} from "lucide-react";
-import { useAuth } from "@/components/auth/AuthProvider";
+import { useEffect, useRef, useState } from "react";
 
 // Inline brand mark — gold gradient icon + text, matches the official brand assets
 const AcademyLogo = () => (
@@ -72,6 +72,7 @@ const Dropdown = ({
   return (
     <div className="relative flex items-center h-full">
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           setActiveId(isOpen ? null : id);
@@ -151,6 +152,7 @@ const Navbar = () => {
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setState setters are stable and don't need to be listed
   useEffect(() => {
     setIsMenuOpen(false);
     setActiveDropdown(null);
@@ -194,6 +196,7 @@ const Navbar = () => {
           {/* Right actions */}
           <div className="flex items-center gap-3 md:gap-4">
             <button
+              type="button"
               className="hidden md:flex items-center justify-center relative p-2.5 text-white/80 hover:text-[#D4AF37] hover:bg-white/5 rounded-lg transition-all"
               aria-label="Cart"
             >
@@ -205,6 +208,7 @@ const Navbar = () => {
             {authenticated && user ? (
               <div className="hidden md:flex items-center relative" ref={userMenuRef}>
                 <button
+                  type="button"
                   onClick={() => setUserMenuOpen((v) => !v)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-all"
                 >
@@ -231,6 +235,7 @@ const Navbar = () => {
                     </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <button
+                      type="button"
                       onClick={() => {
                         setUserMenuOpen(false);
                         handleLogout();
@@ -254,6 +259,7 @@ const Navbar = () => {
             )}
 
             <button
+              type="button"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
               className="md:hidden text-white ml-1 p-2.5 rounded-lg hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -299,6 +305,7 @@ const Navbar = () => {
                   {user.email?.split("@")[0]}
                 </Link>
                 <button
+                  type="button"
                   onClick={() => {
                     setIsMenuOpen(false);
                     handleLogout();

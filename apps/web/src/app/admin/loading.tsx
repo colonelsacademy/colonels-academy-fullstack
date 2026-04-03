@@ -9,8 +9,8 @@ export default function AdminLoading() {
           </div>
         </div>
         <div className="admin-grid">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="admin-card h-28 bg-gray-100 rounded-xl" />
+          {["a", "b", "c", "d"].map((id) => (
+            <div key={id} className="admin-card h-28 bg-gray-100 rounded-xl" />
           ))}
         </div>
       </section>

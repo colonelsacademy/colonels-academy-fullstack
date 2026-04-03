@@ -1,7 +1,7 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 
-import fp from "fastify-plugin";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import fp from "fastify-plugin";
 import type { DecodedIdToken } from "firebase-admin/auth";
 
 import { loadApiEnv } from "@colonels-academy/config";
@@ -107,8 +107,8 @@ function matchesCsrfToken(cookieToken?: string, headerValue?: string | string[])
 }
 
 function clearAuthContext(request: FastifyRequest) {
-  delete request.authUser;
-  delete request.authMethod;
+  request.authUser = undefined;
+  request.authMethod = undefined;
 }
 
 function attachAuthContext(request: FastifyRequest, authResult: AuthResult) {

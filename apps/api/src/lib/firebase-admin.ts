@@ -1,5 +1,5 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
+import { type Auth, getAuth } from "firebase-admin/auth";
 
 import type { ApiEnv } from "@colonels-academy/config";
 

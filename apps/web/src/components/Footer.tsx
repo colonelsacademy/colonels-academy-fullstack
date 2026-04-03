@@ -66,7 +66,9 @@ export const Footer = () => {
                 <Fragment key={social.id}>
                   {/* TODO: Replace placeholder link with actual profile URL */}
                   <a
-                    href="#"
+                    href={`https://${social.id === "fb" ? "facebook" : social.id === "ig" ? "instagram" : "tiktok"}.com`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-11 h-11 flex items-center justify-center rounded-full bg-[#F3F4F6] border border-gray-100 hover:bg-white hover:shadow-xl hover:shadow-black/5 hover:border-blue-100 transition-all duration-300 group"
                     aria-label={social.label}
                   >
@@ -76,16 +78,20 @@ export const Footer = () => {
                         viewBox="0 0 24 24"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                       >
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        <title>{social.label}</title>
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                       </svg>
                     ) : (
                       <svg
                         className="w-4 h-4 text-gray-400 group-hover:text-[#0F1C15] fill-current transition-colors"
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
                       >
+                        <title>{social.label}</title>
                         <path d={social.d} />
                       </svg>
                     )}

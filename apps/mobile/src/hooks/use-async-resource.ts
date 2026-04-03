@@ -1,4 +1,4 @@
-import { useEffect, useState, type DependencyList } from "react";
+import { type DependencyList, useEffect, useState } from "react";
 
 interface AsyncResourceState<T> {
   data: T;
@@ -53,7 +53,7 @@ export function useAsyncResource<T>(
     return () => {
       isCancelled = true;
     };
-  }, dependencies);
+  }, [loader, ...dependencies]);
 
   return state;
 }

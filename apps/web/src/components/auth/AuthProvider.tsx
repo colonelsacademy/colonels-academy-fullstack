@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { type AuthSessionUser } from "@colonels-academy/contracts";
+import type { AuthSessionUser } from "@colonels-academy/contracts";
+import type React from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   user: AuthSessionUser | null;

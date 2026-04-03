@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { courseCatalog, type CourseDetail } from "@colonels-academy/contracts";
+import { type CourseDetail, courseCatalog } from "@colonels-academy/contracts";
 import { mobileTheme } from "@colonels-academy/design-tokens";
 
 import { ScreenShell } from "../../src/components/screen-shell";

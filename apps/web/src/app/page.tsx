@@ -1,17 +1,17 @@
-import { Suspense } from "react";
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { type Category, type Course } from "@/data/gateway";
+import type { Category, Course } from "@/data/gateway";
 import { getCourses, getInstructors } from "@/lib/api";
 
-import GatewayHero from "./gateway/components/GatewayHero";
-import IntakeBanner from "./gateway/components/IntakeBanner";
+import { Footer } from "@/components/Footer";
 import { CourseFilter, CourseGrid, CourseSection } from "./gateway/components/Courses";
 import { FeaturedCourse } from "./gateway/components/FeaturedCourse";
-import { MobilePlatform } from "./gateway/components/MobilePlatform";
-import { Instructors } from "./gateway/components/Instructors";
 import { GatewayCTA } from "./gateway/components/GatewayFooter";
-import { Footer } from "@/components/Footer";
+import GatewayHero from "./gateway/components/GatewayHero";
+import { Instructors } from "./gateway/components/Instructors";
+import IntakeBanner from "./gateway/components/IntakeBanner";
+import { MobilePlatform } from "./gateway/components/MobilePlatform";
 
 import { ArrowRight } from "lucide-react";
 
@@ -24,9 +24,9 @@ const SectionFallback = ({ className = "" }: { className?: string }) => (
 
 const CourseGridSkeleton = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-Fluid-md">
-    {[...Array(4)].map((_, i) => (
+    {["a", "b", "c", "d"].map((id) => (
       <div
-        key={i}
+        key={id}
         className="h-[400px] rounded-xl border border-gray-100 bg-white/50 animate-pulse"
       />
     ))}

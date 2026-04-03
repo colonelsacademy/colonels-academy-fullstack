@@ -1,7 +1,7 @@
 import type { FastifyBaseLogger } from "fastify";
 
-import { type DatabaseClient } from "@colonels-academy/database";
-import { type AuthUser } from "../../plugins/auth";
+import type { DatabaseClient } from "@colonels-academy/database";
+import type { AuthUser } from "../../plugins/auth";
 
 export async function syncUserWithPostgres(
   prisma: DatabaseClient,

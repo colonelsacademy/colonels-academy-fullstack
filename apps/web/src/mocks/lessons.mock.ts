@@ -1,4 +1,4 @@
-import type { ModuleDetail, LessonDetail } from "@colonels-academy/contracts";
+import type { LessonDetail, ModuleDetail } from "@colonels-academy/contracts";
 
 export const mockLessons: LessonDetail[] = [
   {

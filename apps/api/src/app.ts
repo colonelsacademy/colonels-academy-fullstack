@@ -1,20 +1,20 @@
-import Fastify from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import sensible from "@fastify/sensible";
+import Fastify from "fastify";
 
 import { loadApiEnv } from "@colonels-academy/config";
 
-import authPlugin from "./plugins/auth";
-import infrastructurePlugin from "./plugins/infrastructure";
-import prismaPlugin from "./plugins/prisma";
 import authRoutes from "./modules/auth/routes";
 import catalogRoutes from "./modules/catalog/routes";
 import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
+import authPlugin from "./plugins/auth";
+import infrastructurePlugin from "./plugins/infrastructure";
+import prismaPlugin from "./plugins/prisma";
 
 export function buildApp() {
   const env = loadApiEnv();

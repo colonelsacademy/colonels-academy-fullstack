@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/apiClient";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
 
     // Forward Set-Cookie headers from Fastify to the browser
     const setCookieHeaders = apiResponse.headers.getSetCookie();
-    setCookieHeaders.forEach((cookie) => {
+    for (const cookie of setCookieHeaders) {
       response.headers.append("Set-Cookie", cookie);
-    });
+    }
 
     return response;
   } catch (error) {

@@ -1,5 +1,5 @@
-import { NextResponse, NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/apiClient";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const sessionCookie = request.cookies.get("ca_session");

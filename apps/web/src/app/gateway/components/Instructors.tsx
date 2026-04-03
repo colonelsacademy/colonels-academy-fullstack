@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { Star, ChevronRight } from "lucide-react";
-import { type Category } from "@/data/gateway";
 import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
+import type { Category } from "@/data/gateway";
 import { getInstructors } from "@/lib/api";
+import { ChevronRight, Star } from "lucide-react";
+import Link from "next/link";
 
 interface InstructorsProps {
   activeTab: Category;
@@ -90,7 +90,9 @@ export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
           {mentors.map((m, index) => (
             <div
               key={m.name}
-              className={`relative h-[500px] rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 fade-in-up`}
+              className={
+                "relative h-[500px] rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 fade-in-up"
+              }
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Background image */}
