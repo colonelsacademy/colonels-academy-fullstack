@@ -29,6 +29,11 @@ export interface LessonDetail {
   meetingUrl?: string;
   pdfUrl?: string;
   quizQuestions?: QuizQuestionDetail[];
+  // ─── Iron Guard gating fields ───────────────────────────────────────────────
+  prerequisiteId?: string;
+  isLocked: boolean;
+  unlockRequirement?: string; // human-readable e.g. "Complete 'Tactical Basics' first"
+  progressStatus: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
 }
 
 export interface ModuleDetail {

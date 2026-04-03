@@ -10,7 +10,9 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 12,
     contentType: "VIDEO",
     accessKind: "PREVIEW",
-    bunnyVideoId: "mock-bunny-id-01"
+    bunnyVideoId: "mock-bunny-id-01",
+    isLocked: false,
+    progressStatus: "NOT_STARTED"
   },
   {
     id: "lesson-mock-02",
@@ -21,7 +23,10 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 30,
     contentType: "VIDEO",
     accessKind: "STANDARD",
-    bunnyVideoId: "mock-bunny-id-02"
+    bunnyVideoId: "mock-bunny-id-02",
+    prerequisiteId: "lesson-mock-01",
+    isLocked: false,
+    progressStatus: "NOT_STARTED"
   },
   {
     id: "lesson-mock-03",
@@ -32,6 +37,8 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 15,
     contentType: "QUIZ",
     accessKind: "STANDARD",
+    isLocked: false,
+    progressStatus: "NOT_STARTED",
     quizQuestions: [
       {
         id: "q-01",
@@ -52,7 +59,9 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 60,
     contentType: "LIVE",
     accessKind: "LIVE_REPLAY",
-    meetingUrl: "https://zoom.us/j/mock-session"
+    meetingUrl: "https://zoom.us/j/mock-session",
+    isLocked: false,
+    progressStatus: "NOT_STARTED"
   }
 ];
 

@@ -2,10 +2,11 @@ import { Worker } from "bullmq";
 import Redis from "ioredis";
 
 import { defaultJobOptions, loadWorkerEnv, queueNames } from "@colonels-academy/config";
-import type { NotificationJob, VideoSyncJob } from "@colonels-academy/contracts";
+import type { NotificationJob, ProgressRecalcJob, VideoSyncJob } from "@colonels-academy/contracts";
 import { db } from "@colonels-academy/database";
 
 import { handleNotification } from "./jobs/notifications";
+import { handleProgressRecalc } from "./jobs/progress-recalc";
 import { handleVideoSync } from "./jobs/video-sync";
 
 function logWorker(level: "info" | "error", event: string, metadata: Record<string, unknown> = {}) {
@@ -64,11 +65,31 @@ async function start() {
     }
   );
 
+  const progressRecalcWorker = new Worker<ProgressRecalcJob>(
+    queueNames.progressRecalc,
+    async (job) => {
+      logWorker("info", "progress-recalc.started", {
+        userId: job.data.userId,
+        courseId: job.data.courseId,
+        jobId: job.id
+      });
+      return handleProgressRecalc(job);
+    },
+    {
+      connection,
+      concurrency: env.WORKER_CONCURRENCY
+    }
+  );
+
   async function close(signal: string) {
     logWorker("info", "worker.shutdown", {
       signal
     });
-    await Promise.all([videoSyncWorker.close(), notificationWorker.close()]);
+    await Promise.all([
+      videoSyncWorker.close(),
+      notificationWorker.close(),
+      progressRecalcWorker.close()
+    ]);
     await connection.quit().catch(() => {
       connection.disconnect();
     });
@@ -84,7 +105,11 @@ async function start() {
     void close("SIGTERM");
   });
 
-  await Promise.all([videoSyncWorker.waitUntilReady(), notificationWorker.waitUntilReady()]);
+  await Promise.all([
+    videoSyncWorker.waitUntilReady(),
+    notificationWorker.waitUntilReady(),
+    progressRecalcWorker.waitUntilReady()
+  ]);
 
   videoSyncWorker.on("completed", (job) => {
     logWorker("info", "video-sync.completed", {
@@ -98,6 +123,14 @@ async function start() {
       audience: job.data.audience,
       jobId: job.id,
       kind: job.data.kind
+    });
+  });
+
+  progressRecalcWorker.on("completed", (job) => {
+    logWorker("info", "progress-recalc.completed", {
+      userId: job.data.userId,
+      courseId: job.data.courseId,
+      jobId: job.id
     });
   });
 
@@ -118,9 +151,18 @@ async function start() {
     });
   });
 
+  progressRecalcWorker.on("failed", (job, error) => {
+    logWorker("error", "progress-recalc.failed", {
+      userId: job?.data.userId,
+      courseId: job?.data.courseId,
+      error: error.message,
+      jobId: job?.id
+    });
+  });
+
   logWorker("info", "worker.ready", {
     concurrency: env.WORKER_CONCURRENCY,
-    queues: [queueNames.videoSync, queueNames.notifications],
+    queues: [queueNames.videoSync, queueNames.notifications, queueNames.progressRecalc],
     retryAttempts: defaultJobOptions.attempts
   });
 }
