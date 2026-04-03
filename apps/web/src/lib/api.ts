@@ -1,5 +1,5 @@
 import { createApiClient } from "@colonels-academy/api-client";
-import { readPublicWebEnv } from "@colonels-academy/config";
+import { getAssetUrl, readPublicWebEnv } from "@colonels-academy/config";
 import {
   courseCatalog,
   dashboardSnapshot,
@@ -32,7 +32,11 @@ const apiClient = createApiClient({
 export async function getCourses(): Promise<CourseDetail[]> {
   try {
     const data: CatalogCoursesResponse = await apiClient.getCourses();
-    return data.items;
+    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
+    return data.items.map((course) => ({
+      ...course,
+      ...(course.heroImageUrl ? { heroImageUrl: getAssetUrl(course.heroImageUrl, cdnUrl) } : {})
+    }));
   } catch (error) {
     console.error("Failed to fetch courses, using fallback:", error);
     return courseCatalog;
@@ -41,7 +45,13 @@ export async function getCourses(): Promise<CourseDetail[]> {
 
 export async function getCourseBySlug(slug: string): Promise<CourseDetail | null> {
   try {
-    return await apiClient.getCourseBySlug(slug);
+    const course = await apiClient.getCourseBySlug(slug);
+    if (!course) return null;
+    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
+    return {
+      ...course,
+      ...(course.heroImageUrl ? { heroImageUrl: getAssetUrl(course.heroImageUrl, cdnUrl) } : {})
+    };
   } catch (error) {
     console.error(`Failed to fetch course ${slug}, using fallback:`, error);
     return courseCatalog.find((c) => c.slug === slug) ?? null;
@@ -51,7 +61,11 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
 export async function getInstructors(): Promise<InstructorProfile[]> {
   try {
     const data: CatalogInstructorsResponse = await apiClient.getInstructors();
-    return data.items;
+    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
+    return data.items.map((instructor) => ({
+      ...instructor,
+      ...(instructor.avatarUrl ? { avatarUrl: getAssetUrl(instructor.avatarUrl, cdnUrl) } : {})
+    }));
   } catch (error) {
     console.error("Failed to fetch instructors, using fallback:", error);
     return fallbackInstructors;

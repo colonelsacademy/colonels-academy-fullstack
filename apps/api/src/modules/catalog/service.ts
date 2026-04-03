@@ -1,11 +1,11 @@
 import type { FastifyBaseLogger } from "fastify";
 
+import { getAssetUrl } from "@colonels-academy/config";
 import type {
   CourseDetail,
   CourseLessonsResponse,
   InstructorProfile,
-  LessonDetail,
-  ModuleDetail
+  LessonDetail
 } from "@colonels-academy/contracts";
 import { courseCatalog, instructors } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
@@ -61,11 +61,12 @@ function mapCourseRecord(record: CourseRecord): CourseDetail {
     outcomeBullets: fallback?.outcomeBullets ?? [],
     syllabus: fallback?.syllabus ?? [],
     ...(record.originalPriceNpr !== null ? { originalPriceNpr: record.originalPriceNpr } : {}),
-    ...(record.heroImageUrl ? { heroImageUrl: record.heroImageUrl } : {})
+    heroImageUrl: getAssetUrl(record.heroImageUrl ?? fallback?.heroImageUrl ?? "")
   };
 }
 
 function mapInstructorRecord(record: InstructorRecord): InstructorProfile {
+  const fallback = instructors.find((i) => i.slug === record.slug);
   return {
     slug: record.slug,
     name: record.name,
@@ -73,7 +74,7 @@ function mapInstructorRecord(record: InstructorRecord): InstructorProfile {
     experience: record.experienceLabel,
     specialization: record.specialization,
     bio: record.bio,
-    ...(record.avatarUrl ? { avatarUrl: record.avatarUrl } : {})
+    avatarUrl: getAssetUrl(record.avatarUrl ?? fallback?.avatarUrl ?? "")
   };
 }
 

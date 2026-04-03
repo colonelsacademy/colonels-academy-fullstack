@@ -149,9 +149,12 @@ export default fp(async (fastify) => {
       return null;
     }
 
-    const decoded = await adminAuth.verifyIdToken(token);
-
-    return mapAuthUser(decoded);
+    try {
+      const decoded = await adminAuth.verifyIdToken(token);
+      return mapAuthUser(decoded);
+    } catch {
+      return null;
+    }
   }
 
   async function verifySessionCookie(sessionCookie?: string): Promise<AuthUser | null> {
@@ -159,12 +162,15 @@ export default fp(async (fastify) => {
       return null;
     }
 
-    const decoded = await adminAuth.verifySessionCookie(
-      sessionCookie,
-      env.FIREBASE_CHECK_REVOKED_SESSIONS
-    );
-
-    return mapAuthUser(decoded);
+    try {
+      const decoded = await adminAuth.verifySessionCookie(
+        sessionCookie,
+        env.FIREBASE_CHECK_REVOKED_SESSIONS
+      );
+      return mapAuthUser(decoded);
+    } catch {
+      return null;
+    }
   }
 
   async function authenticateRequest(request: FastifyRequest): Promise<AuthResult> {

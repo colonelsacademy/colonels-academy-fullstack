@@ -1,6 +1,6 @@
 "use client";
 
-import { getOptimizedResponsiveImageUrl } from "@/utils/assetUtils";
+import { getOptimizedResponsiveImageUrl } from "@colonels-academy/config";
 import type React from "react";
 
 const DEFAULT_WIDTHS = [640, 1080, 1600, 2560];
@@ -28,7 +28,9 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
 }) => {
   const effectiveDecoding = decoding ?? (loading === "eager" ? "auto" : "async");
   const normalizedWidths = Array.from(new Set(widths)).sort((a, b) => a - b);
-  const buildUrl = (width: number) => getOptimizedResponsiveImageUrl(src, { width, quality });
+  const CDN_URL = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
+  const buildUrl = (width: number) =>
+    getOptimizedResponsiveImageUrl(src, { width, quality }, CDN_URL);
 
   const variants = normalizedWidths.map((width) => ({ width, url: buildUrl(width) }));
   const uniqueUrls = new Set(variants.map((v) => v.url));

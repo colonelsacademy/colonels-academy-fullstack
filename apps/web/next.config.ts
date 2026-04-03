@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "ca-assets.b-cdn.net"
+      },
+      {
+        protocol: "https",
+        hostname: "dev.thecolonelsacademy.com"
+      },
+      {
+        protocol: "https",
+        hostname: "colonels-alpha.b-cdn.net"
       }
     ]
   }

@@ -59,6 +59,7 @@ const apiEnvSchema = z.object({
   FIREBASE_CLIENT_EMAIL: optionalString,
   FIREBASE_PRIVATE_KEY: optionalString,
   FIREBASE_CHECK_REVOKED_SESSIONS: booleanFlag(true),
+  BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net"),
   BUNNY_STREAM_LIBRARY_ID: optionalString,
   BUNNY_STREAM_API_KEY: optionalString,
   BUNNY_STREAM_PULL_ZONE: optionalString,
@@ -82,7 +83,8 @@ const publicWebEnvSchema = z.object({
   NEXT_PUBLIC_FIREBASE_API_KEY: optionalString,
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
-  NEXT_PUBLIC_FIREBASE_APP_ID: optionalString
+  NEXT_PUBLIC_FIREBASE_APP_ID: optionalString,
+  NEXT_PUBLIC_BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net")
 });
 
 const publicMobileEnvSchema = z.object({
@@ -90,7 +92,8 @@ const publicMobileEnvSchema = z.object({
   EXPO_PUBLIC_FIREBASE_API_KEY: optionalString,
   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   EXPO_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
-  EXPO_PUBLIC_FIREBASE_APP_ID: optionalString
+  EXPO_PUBLIC_FIREBASE_APP_ID: optionalString,
+  EXPO_PUBLIC_BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net")
 });
 
 export type ApiEnv = ReturnType<typeof loadApiEnv>;
