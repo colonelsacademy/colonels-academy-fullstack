@@ -25,6 +25,15 @@ function booleanFlag(defaultValue: boolean) {
   );
 }
 
+function optionalUrl(defaultValue: string) {
+  return z.preprocess((value) => {
+    if (value === "") {
+      return undefined;
+    }
+    return value;
+  }, z.string().url().default(defaultValue));
+}
+
 const apiEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   API_HOST: z.string().default("0.0.0.0"),
@@ -66,7 +75,7 @@ const workerEnvSchema = z.object({
 });
 
 const publicWebEnvSchema = z.object({
-  NEXT_PUBLIC_API_BASE_URL: z.string().url().default("http://localhost:4000"),
+  NEXT_PUBLIC_API_BASE_URL: optionalUrl("http://localhost:4000"),
   NEXT_PUBLIC_FIREBASE_API_KEY: optionalString,
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
@@ -74,7 +83,7 @@ const publicWebEnvSchema = z.object({
 });
 
 const publicMobileEnvSchema = z.object({
-  EXPO_PUBLIC_API_BASE_URL: z.string().url().default("http://localhost:4000"),
+  EXPO_PUBLIC_API_BASE_URL: optionalUrl("http://localhost:4000"),
   EXPO_PUBLIC_FIREBASE_API_KEY: optionalString,
   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   EXPO_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
