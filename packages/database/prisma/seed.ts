@@ -144,7 +144,7 @@ async function main() {
         priceNpr: 4500,
         originalPriceNpr: 6000,
         accentColor: "#8F7A38",
-        heroImageUrl: "/images/courses/officer-cadet-elite.jpg",
+        heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/officer-cadet-elite.jpg",
         isFeatured: true
       }
     });
@@ -184,7 +184,7 @@ async function main() {
         priceNpr: 3500,
         originalPriceNpr: 5000,
         accentColor: "#224785",
-        heroImageUrl: "/images/courses/police-inspector-cadet.jpg",
+        heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/police-inspector-cadet.jpg",
         isFeatured: true
       }
     });

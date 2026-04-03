@@ -6,6 +6,7 @@ import {
   BookMarked,
   BookOpen,
   ChevronDown,
+  CreditCard,
   FileText,
   Lock,
   LogOut,
@@ -18,25 +19,6 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-
-// Inline brand mark — gold gradient icon + text, matches the official brand assets
-const AcademyLogo = () => (
-  <div className="flex items-center gap-4 select-none">
-    {/* Gold gradient rounded-square with shield — matches the icon variant */}
-    <div className="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-[#D4AF37] via-[#C9A227] to-[#B8860B] flex items-center justify-center shadow-lg border border-[#F4CA30]/50">
-      <Shield className="w-6 h-6 text-[#0F1C15]" />
-    </div>
-    {/* Text lockup */}
-    <div className="text-left hidden md:block whitespace-nowrap">
-      <div className="font-['Rajdhani'] font-bold text-fluid-sm uppercase tracking-wider leading-none text-white">
-        The Colonel&apos;s Academy
-      </div>
-      <div className="font-mono text-[9px] text-[#D4AF37] uppercase tracking-[0.3em] mt-1 font-bold">
-        Forging Future Leaders
-      </div>
-    </div>
-  </div>
-);
 
 type DropdownKey = "programs" | "resources" | null;
 
@@ -51,6 +33,22 @@ const defaultPrograms = [
   { name: "Nepal Police Programs", path: "/courses?category=police", icon: Shield },
   { name: "APF Programs", path: "/courses?category=apf", icon: Shield }
 ];
+
+const AcademyLogo = () => (
+  <div className="flex items-center gap-4 select-none">
+    <div className="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-[#D4AF37] via-[#C9A227] to-[#B8860B] flex items-center justify-center shadow-lg border border-[#F4CA30]/50">
+      <Shield className="w-6 h-6 text-[#0F1C15]" />
+    </div>
+    <div className="text-left hidden md:block whitespace-nowrap">
+      <div className="font-['Rajdhani'] font-bold text-fluid-sm uppercase tracking-wider leading-none text-white">
+        The Colonel&apos;s Academy
+      </div>
+      <div className="font-mono text-[9px] text-[#D4AF37] uppercase tracking-[0.3em] mt-1 font-bold">
+        Forging Future Leaders
+      </div>
+    </div>
+  </div>
+);
 
 const Dropdown = ({
   label,
@@ -79,15 +77,12 @@ const Dropdown = ({
         }}
         className={`group flex items-center gap-1.5 px-3 py-2 focus:outline-none rounded-lg transition-all ${isOpen ? "bg-white/10" : "hover:bg-white/5"}`}
         aria-expanded={isOpen}
+        aria-haspopup="true"
       >
-        <span
-          className={`font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}
-        >
+        <span className={`font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}>
           {label}
         </span>
-        <ChevronDown
-          className={`w-3 h-3 transition-all duration-300 ${isOpen ? "rotate-180 text-[#D4AF37]" : "text-white/50 group-hover:text-[#D4AF37]"}`}
-        />
+        <ChevronDown className={`w-3 h-3 transition-all duration-300 ${isOpen ? "rotate-180 text-[#D4AF37]" : "text-white/50 group-hover:text-[#D4AF37]"}`} />
       </button>
 
       <motion.div
@@ -131,9 +126,11 @@ const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, authenticated, logout } = useAuth();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   async function handleLogout() {
@@ -152,16 +149,23 @@ const Navbar = () => {
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: setState setters are stable and don't need to be listed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setState setters are stable
   useEffect(() => {
     setIsMenuOpen(false);
     setActiveDropdown(null);
+    setIsCartOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = isCartOpen || isMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isCartOpen, isMenuOpen]);
 
   return (
     <>
       <nav className="sticky top-0 w-full z-50 bg-[#0F1C15] border-b border-[#D4AF37]/30 shadow-xl">
-        <div className="container mx-auto px-5 flex justify-between items-center h-20">
+        <div className="container mx-auto px-6 flex justify-between items-center h-20">
+
           {/* Logo */}
           <Link href="/" aria-label="The Colonel's Academy — home">
             <AcademyLogo />
@@ -179,9 +183,15 @@ const Navbar = () => {
             />
             <Link
               href="/#mentors"
-              className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 cursor-pointer rounded-lg hover:bg-white/5"
+              className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
             >
               Directing Staff
+            </Link>
+            <Link
+              href="/courses"
+              className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
+            >
+              Courses
             </Link>
             <Dropdown
               id="resources"
@@ -195,8 +205,11 @@ const Navbar = () => {
 
           {/* Right actions */}
           <div className="flex items-center gap-3 md:gap-4">
+
+            {/* Cart button */}
             <button
               type="button"
+              onClick={() => setIsCartOpen(true)}
               className="hidden md:flex items-center justify-center relative p-2.5 text-white/80 hover:text-[#D4AF37] hover:bg-white/5 rounded-lg transition-all"
               aria-label="Cart"
             >
@@ -218,46 +231,58 @@ const Navbar = () => {
                   <span className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.15em] text-white/90 max-w-[120px] truncate">
                     {user.email?.split("@")[0]}
                   </span>
-                  <ChevronDown
-                    className={`w-3 h-3 text-white/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
-                  />
+                  <ChevronDown className={`w-3 h-3 text-white/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-[calc(100%+0.5rem)] w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-gray-400" />
-                      Dashboard
-                    </Link>
-                    <div className="border-t border-gray-100 my-1" />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        handleLogout();
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
+                  <div className="absolute right-0 top-[calc(100%+0.5rem)] w-56 bg-[#0F1C15] border border-[#D4AF37]/30 rounded-xl shadow-2xl overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+                      <p className="text-sm font-bold text-white">{user.displayName ?? user.email?.split("@")[0]}</p>
+                      <p className="text-xs text-gray-400">{user.email}</p>
+                    </div>
+                    <div className="py-2">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-400 hover:bg-white/5 transition-colors"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        My Courses
+                      </Link>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors"
+                      >
+                        <User className="w-4 h-4" />
+                        Dashboard
+                      </Link>
+                    </div>
+                    <div className="border-t border-white/10 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-white/5 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
-              <Link
-                href="/login"
+              <button
+                type="button"
+                onClick={() => router.push("/login")}
                 className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-['Rajdhani'] font-bold text-xs uppercase tracking-[0.2em] rounded hover:bg-white transition-all shadow-md"
               >
                 <Lock className="w-3.5 h-3.5" />
                 <span>HQ Login</span>
-              </Link>
+              </button>
             )}
 
+            {/* Hamburger */}
             <button
               type="button"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -280,18 +305,10 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-[#0F1C15] border-b border-white/10 px-6 py-4 flex flex-col gap-4 sticky top-20 z-40 overflow-hidden"
           >
-            <Link
-              href="/courses"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
-            >
+            <Link href="/courses" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
               Course Catalog
             </Link>
-            <Link
-              href="/#mentors"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
-            >
+            <Link href="/#mentors" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
               Directing Staff
             </Link>
             {authenticated && user ? (
@@ -306,10 +323,7 @@ const Navbar = () => {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    handleLogout();
-                  }}
+                  onClick={() => { setIsMenuOpen(false); handleLogout(); }}
                   className="w-full py-3 border border-red-500/30 text-red-400 font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
@@ -327,6 +341,61 @@ const Navbar = () => {
               </Link>
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cart drawer */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <div className="relative z-[70]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCartOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[70] shadow-2xl flex flex-col"
+              role="dialog"
+              aria-label="Shopping cart"
+              aria-modal="true"
+            >
+              <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-[#0F1C15] text-white">
+                <div className="flex items-center gap-3">
+                  <ShoppingCart className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="font-['Rajdhani'] font-bold text-lg uppercase tracking-wider">Your Cart</span>
+                </div>
+                <button type="button" aria-label="Close cart" onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-50">
+                <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
+                <p className="font-bold text-gray-400 text-lg">Your cart is empty</p>
+                <button type="button" onClick={() => setIsCartOpen(false)} className="text-[#0F1C15] underline font-bold text-sm mt-2">
+                  Continue Browsing
+                </button>
+              </div>
+              <div className="p-6 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => { setIsCartOpen(false); router.push("/checkout"); }}
+                  className="w-full py-4 bg-[#0F1C15] text-white font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded-xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Proceed to Checkout
+                </button>
+                <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
+                  <Lock className="w-3 h-3" /> Secure Encrypted Payment
+                </p>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </>

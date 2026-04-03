@@ -10,16 +10,17 @@
   },
   "dependencies": {
     "@colonels-academy/api-client": "workspace:*",
-    "@colonels-academy/database": "workspace:*",
     "@colonels-academy/config": "workspace:*",
     "@colonels-academy/contracts": "workspace:*",
+    "@colonels-academy/database": "workspace:*",
     "@colonels-academy/ui": "workspace:*",
     "firebase": "^11.4.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
     "next": "^15.2.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5",

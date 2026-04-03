@@ -12,7 +12,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Army",
     experience: "25+ years",
     specialization: "Strategy, command preparation, and selection-board drills",
-    avatarUrl: "/images/instructors/rajesh-thapa.jpg",
+    avatarUrl: "https://ca-assets.b-cdn.net/images/instructors/rajesh-thapa.jpg",
     bio: "Former directing staff with deep experience preparing officer-cadet and command-track candidates for high-stakes military assessments."
   },
   {
@@ -21,7 +21,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Police",
     experience: "30+ years",
     specialization: "Criminal law, investigation, and oral-board performance",
-    avatarUrl: "/images/instructors/kp-sharma.jpg",
+    avatarUrl: "https://ca-assets.b-cdn.net/images/instructors/kp-sharma.jpg",
     bio: "Law-enforcement mentor focused on analytical reasoning, legal frameworks, and interview readiness for inspector-track learners."
   },
   {
@@ -30,7 +30,7 @@ export const instructors: InstructorProfile[] = [
     branch: "APF Nepal",
     experience: "28+ years",
     specialization: "Border security, tactical ops, and field leadership",
-    avatarUrl: "/images/instructors/sb-basnet.jpg",
+    avatarUrl: "https://ca-assets.b-cdn.net/images/instructors/sb-basnet.jpg",
     bio: "Operations-focused instructor helping cadets translate theory into disciplined, scenario-based decision making."
   }
 ];
@@ -50,7 +50,7 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 8500,
     originalPriceNpr: 12000,
     accentColor: "#5E6B3C",
-    heroImageUrl: "/images/courses/staff-college-command.jpg",
+    heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/nepal-army-staff-college.png",
     featured: true,
     format: "hybrid",
     liveSupport: "Weekly faculty-led doctrine clinic and answer-writing review.",
@@ -81,7 +81,7 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7500,
     accentColor: "#224785",
-    heroImageUrl: "/images/courses/police-inspector-cadet.jpg",
+    heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/nepal-police-inspector-cadet.png",
     featured: true,
     format: "cohort",
     liveSupport: "Twice-weekly oral-board rehearsal and case debrief sessions.",
@@ -112,7 +112,7 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7000,
     accentColor: "#B6762C",
-    heroImageUrl: "/images/courses/apf-inspector-cadet.jpg",
+    heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/apf-inspector-cadet.png",
     featured: true,
     format: "hybrid",
     liveSupport: "Weekend live tactical scenario lab with faculty review.",
@@ -143,7 +143,7 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7000,
     accentColor: "#8F7A38",
-    heroImageUrl: "/images/courses/officer-cadet-elite.jpg",
+    heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/nepal-army-officer-cadet.png",
     featured: true,
     format: "cohort",
     liveSupport: "Structured faculty office hours and cohort checkpoints.",
@@ -174,7 +174,7 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 6000,
     originalPriceNpr: 9000,
     accentColor: "#8C4136",
-    heroImageUrl: "/images/courses/mission-english-ops.jpg",
+    heroImageUrl: "https://ca-assets.b-cdn.net/images/courses/nepal-army-officer-cadet.png",
     featured: false,
     format: "self-paced",
     liveSupport: "Monthly pronunciation and briefing workshop.",

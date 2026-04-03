@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Standard routes that require authentication
-const PROTECTED_ROUTES = ["/dashboard", "/admin", "/courses/enroll"];
+const PROTECTED_ROUTES = ["/dashboard", "/courses/enroll"];
 
 // Routes that are only for unauthenticated users
 const AUTH_ROUTES = ["/login"];
@@ -31,5 +31,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/courses/enroll/:path*", "/login"]
+  matcher: ["/dashboard/:path*", "/courses/enroll/:path*", "/login"]
 };

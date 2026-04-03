@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-const optionalString = z.string().min(1).optional();
+const optionalString = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.string().min(1).optional()
+);
 const logLevelSchema = z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]);
 
 function booleanFlag(defaultValue: boolean) {
