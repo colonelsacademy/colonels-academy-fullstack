@@ -44,6 +44,8 @@ export const quizQuestionSchema = z.object({
 
 // ─── Lesson ───────────────────────────────────────────────────────────────────
 
+export const progressStatusSchema = z.enum(["NOT_STARTED", "IN_PROGRESS", "COMPLETED"]);
+
 export const lessonDetailSchema = z.object({
   id: z.string(),
   courseId: z.string(),
@@ -57,7 +59,19 @@ export const lessonDetailSchema = z.object({
   bunnyVideoId: z.string().optional(),
   meetingUrl: z.string().url().optional(),
   pdfUrl: z.string().url().optional(),
-  quizQuestions: z.array(quizQuestionSchema).optional()
+  quizQuestions: z.array(quizQuestionSchema).optional(),
+  // ─── Iron Guard gating fields ───────────────────────────────────────────────
+  prerequisiteId: z.string().optional(),
+  isLocked: z.boolean(),
+  unlockRequirement: z.string().optional(),
+  progressStatus: progressStatusSchema
+});
+
+export const lessonAccessDeniedSchema = z.object({
+  statusCode: z.literal(403),
+  message: z.string(),
+  unlockRequirement: z.string(),
+  prerequisiteLessonId: z.string()
 });
 
 // ─── Module ───────────────────────────────────────────────────────────────────
@@ -134,7 +148,9 @@ export const authSessionResponseSchema = z.object({
 
 export type CourseTrackSchema = z.infer<typeof courseTrackSchema>;
 export type ContentTypeSchema = z.infer<typeof contentTypeSchema>;
+export type ProgressStatusSchema = z.infer<typeof progressStatusSchema>;
 export type LessonDetailSchema = z.infer<typeof lessonDetailSchema>;
+export type LessonAccessDeniedSchema = z.infer<typeof lessonAccessDeniedSchema>;
 export type ModuleDetailSchema = z.infer<typeof moduleDetailSchema>;
 export type CourseDetailSchema = z.infer<typeof courseDetailSchema>;
 export type InstructorProfileSchema = z.infer<typeof instructorProfileSchema>;

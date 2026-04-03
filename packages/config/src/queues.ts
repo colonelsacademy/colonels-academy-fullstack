@@ -1,6 +1,7 @@
 export const queueNames = {
   videoSync: "video-sync",
-  notifications: "notifications"
+  notifications: "notifications",
+  progressRecalc: "progress-recalc"
 } as const;
 
 export const defaultJobOptions = {

@@ -1,6 +1,12 @@
 import type { FastifyBaseLogger } from "fastify";
 
-import type { CourseDetail, InstructorProfile } from "@colonels-academy/contracts";
+import type {
+  CourseDetail,
+  CourseLessonsResponse,
+  InstructorProfile,
+  LessonDetail,
+  ModuleDetail
+} from "@colonels-academy/contracts";
 import { courseCatalog, instructors } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
 
@@ -142,5 +148,117 @@ export async function listInstructors(
       "catalog.listInstructors: database query failed, serving contract fallback"
     );
     return instructors;
+  }
+}
+
+export async function getCourseLessons(
+  prisma: DatabaseClient,
+  log: FastifyBaseLogger,
+  courseSlug: string,
+  userId?: string,
+  userRole?: string
+): Promise<CourseLessonsResponse | null> {
+  try {
+    const course = await prisma.course.findUnique({
+      where: { slug: courseSlug },
+      select: { id: true, slug: true }
+    });
+
+    if (!course) return null;
+
+    // Fetch modules and lessons
+    const modules = await prisma.module.findMany({
+      where: { courseId: course.id },
+      orderBy: { position: "asc" },
+      include: {
+        lessons: {
+          orderBy: { position: "asc" },
+          include: {
+            prerequisite: { select: { title: true } }
+          }
+        }
+      }
+    });
+
+    const unorganisedLessons = await prisma.lesson.findMany({
+      where: { courseId: course.id, moduleId: null },
+      orderBy: { position: "asc" },
+      include: {
+        prerequisite: { select: { title: true } }
+      }
+    });
+
+    // Fetch user context if provided
+    let userProgress: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
+    let isEnrolled = false;
+
+    if (userId) {
+      const [enrollment, progressRecords] = await Promise.all([
+        prisma.enrollment.findUnique({
+          where: { userId_courseId: { userId, courseId: course.id } }
+        }),
+        prisma.userProgress.findMany({
+          where: { userId, courseId: course.id }
+        })
+      ]);
+
+      isEnrolled = enrollment?.status === "ACTIVE";
+      progressRecords.forEach((pr) => {
+        userProgress[pr.lessonId] = pr.status as any;
+      });
+    }
+
+    const isAdminOrDs = userRole?.toLowerCase() === "admin" || userRole?.toLowerCase() === "ds";
+
+    const mapLesson = (l: any): LessonDetail => {
+      const status = userProgress[l.id] ?? "NOT_STARTED";
+      let isLocked = false;
+      let unlockRequirement: string | undefined;
+
+      if (!isAdminOrDs) {
+        if (!isEnrolled && l.accessKind !== "PREVIEW") {
+          isLocked = true;
+          unlockRequirement = "Enroll in this course to access this lesson.";
+        } else if (l.prerequisiteId && userProgress[l.prerequisiteId] !== "COMPLETED") {
+          isLocked = true;
+          const prereqTitle = l.prerequisite?.title ?? "the previous lesson";
+          unlockRequirement = `Complete '${prereqTitle}' first`;
+        }
+      }
+
+      return {
+        id: l.id,
+        courseId: l.courseId,
+        moduleId: l.moduleId ?? undefined,
+        title: l.title,
+        synopsis: l.synopsis,
+        position: l.position,
+        durationMinutes: l.durationMinutes ?? undefined,
+        contentType: l.contentType as any,
+        accessKind: l.accessKind as any,
+        bunnyVideoId: l.bunnyVideoId ?? undefined,
+        meetingUrl: l.meetingUrl ?? undefined,
+        pdfUrl: l.pdfUrl ?? undefined,
+        prerequisiteId: l.prerequisiteId ?? undefined,
+        isLocked,
+        unlockRequirement,
+        progressStatus: status
+      };
+    };
+
+    return {
+      courseSlug: course.slug,
+      modules: modules.map((m) => ({
+        id: m.id,
+        courseId: m.courseId,
+        title: m.title,
+        position: m.position,
+        lessons: m.lessons.map(mapLesson)
+      })),
+      unorganisedLessons: unorganisedLessons.map(mapLesson)
+    };
+  } catch (error) {
+    log.error({ err: error, courseSlug }, "catalog.getCourseLessons: failed");
+    return null;
   }
 }
