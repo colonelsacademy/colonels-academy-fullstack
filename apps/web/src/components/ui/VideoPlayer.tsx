@@ -5,16 +5,16 @@ import { Loader2, Maximize, Pause, Play, Settings, Volume2, VolumeX } from "luci
 import { memo, useEffect, useRef, useState } from "react";
 
 interface VideoPlayerProps {
-  videoId?: string;
-  poster?: string;
-  autoplay?: boolean;
+  videoId?: string | undefined;
+  poster?: string | undefined;
+  autoplay?: boolean | undefined;
 }
 
 const BUNNY_LIBRARY_ID = "596237";
 const _BUNNY_PULL_ZONE = process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE ?? "";
 
 // ─── Thumbnail Overlay ────────────────────────────────────────────────────────
-const ThumbnailOverlay = ({ poster, onPlay }: { poster?: string; onPlay: () => void }) => (
+const ThumbnailOverlay = ({ poster, onPlay }: { poster?: string | undefined; onPlay: () => void }) => (
   <button
     type="button"
     className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:scale-105 transition-transform duration-700 z-10 w-full h-full p-0 border-0 bg-transparent"
@@ -24,7 +24,7 @@ const ThumbnailOverlay = ({ poster, onPlay }: { poster?: string; onPlay: () => v
     <div className="w-full h-full relative">
       <img
         src={
-          poster ||
+          poster ??
           "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600"
         }
         alt="Video Poster"

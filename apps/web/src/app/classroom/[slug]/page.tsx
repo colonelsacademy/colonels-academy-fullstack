@@ -270,8 +270,8 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
           <div className="bg-black">
             <div className="max-w-6xl mx-auto">
               <VideoPlayer
-                videoId={activeLesson?.videoId || undefined}
-                poster={course.heroImageUrl ?? undefined}
+                {...(activeLesson?.videoId ? { videoId: activeLesson.videoId } : {})}
+                {...(course.heroImageUrl ? { poster: course.heroImageUrl } : {})}
                 autoplay={false}
               />
             </div>

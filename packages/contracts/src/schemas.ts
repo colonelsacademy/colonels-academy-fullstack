@@ -120,6 +120,7 @@ export const enrollmentGuardResponseSchema = z.object({
 export const authSessionUserSchema = z.object({
   uid: z.string(),
   email: z.string().email().optional(),
+  displayName: z.string().optional(),
   role: z.string().optional()
 });
 

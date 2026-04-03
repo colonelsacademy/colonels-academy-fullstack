@@ -254,7 +254,7 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
                           id: course.id,
                           title: course.title,
                           price: course.price,
-                          image: course.thumbnail,
+                          ...(course.thumbnail !== undefined && { image: course.thumbnail }),
                           category: course.category,
                           type: "course"
                         });

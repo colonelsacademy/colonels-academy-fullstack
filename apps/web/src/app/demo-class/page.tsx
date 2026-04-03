@@ -28,7 +28,7 @@ export default function DemoClassPage() {
         {/* Video Player - exact same as old app */}
         <div className="mb-12">
           <VideoPlayer
-            videoId={DEMO_VIDEO_ID || undefined}
+            videoId={DEMO_VIDEO_ID}
             poster="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600"
             autoplay={false}
           />
