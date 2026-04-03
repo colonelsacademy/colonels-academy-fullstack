@@ -21,18 +21,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type DropdownKey = "programs" | "resources" | null;
+type DropdownKey = "resources" | null;
 
 const academyResources = [
   { name: "Study Materials", path: "/study-materials", icon: BookOpen },
   { name: "Previous Papers", path: "/previous-papers", icon: FileText },
   { name: "Training Manuals", path: "/training-manuals", icon: BookMarked }
-];
-
-const defaultPrograms = [
-  { name: "Nepal Army Programs", path: "/courses?category=army", icon: Shield },
-  { name: "Nepal Police Programs", path: "/courses?category=police", icon: Shield },
-  { name: "APF Programs", path: "/courses?category=apf", icon: Shield }
 ];
 
 const AcademyLogo = () => (
@@ -180,14 +174,6 @@ const Navbar = () => {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8 h-full">
-            <Dropdown
-              id="programs"
-              label="Officer Programs"
-              items={defaultPrograms}
-              width="w-80"
-              activeId={activeDropdown}
-              setActiveId={setActiveDropdown}
-            />
             <Link
               href="/#mentors"
               className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
