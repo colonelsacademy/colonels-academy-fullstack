@@ -1,7 +1,7 @@
-import { Suspense } from "react";
-import { getCourses } from "@/lib/api";
 import { CourseFilter, CourseGrid, CourseGridSkeleton } from "@/app/gateway/components/Courses";
 import type { Category, Course } from "@/data/gateway";
+import { getCourses } from "@/lib/api";
+import { Suspense } from "react";
 
 type CoursesPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -33,19 +33,20 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
     tag: c.track.toUpperCase(),
     level: c.level,
     isBestseller: c.featured,
-    comingSoon: false,
+    comingSoon: false
   }));
 
-  const filtered = activeCategory === "all"
-    ? allCourses
-    : allCourses.filter((c) => c.category === activeCategory);
+  const filtered =
+    activeCategory === "all" ? allCourses : allCourses.filter((c) => c.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 py-12 px-4">
         <div className="max-w-[1400px] mx-auto">
-          <p className="text-[#D4AF37] font-black text-[11px] uppercase tracking-[0.25em] mb-2">Course Catalog</p>
+          <p className="text-[#D4AF37] font-black text-[11px] uppercase tracking-[0.25em] mb-2">
+            Course Catalog
+          </p>
           <h1 className="text-4xl font-bold text-[#0F1C15] font-['Rajdhani'] uppercase tracking-tight mb-2">
             Training Modules
           </h1>

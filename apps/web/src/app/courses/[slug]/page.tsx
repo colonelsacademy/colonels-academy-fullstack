@@ -1,11 +1,20 @@
 import { instructors as fallbackInstructors } from "@colonels-academy/contracts";
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import {
-  Award, BookOpen, CheckCircle, ChevronDown,
-  Clock, Globe, Lock, PlayCircle, Plus,
-  ShoppingBag, Star, Users
+  Award,
+  BookOpen,
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Globe,
+  Lock,
+  PlayCircle,
+  Plus,
+  ShoppingBag,
+  Star,
+  Users
 } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { getCourseBySlug, getInstructors } from "@/lib/api";
 import type { CourseDetail, InstructorProfile } from "@colonels-academy/contracts";
@@ -19,7 +28,7 @@ const TRACK_LABEL: Record<string, string> = {
   police: "Nepal Police",
   apf: "APF Nepal",
   staff: "Staff College",
-  mission: "Mission Prep",
+  mission: "Mission Prep"
 };
 
 const LEARNING_ITEMS = [
@@ -28,13 +37,34 @@ const LEARNING_ITEMS = [
   "Written Exam Writing Techniques",
   "Interview Handling & Personality Dev",
   "Physical Training Guidelines",
-  "Past Paper Solutions (10 Years)",
+  "Past Paper Solutions (10 Years)"
 ];
 
 const RELATED_COURSES = [
-  { id: "iq-mastery", title: "IQ & Numerical Reasoning Mastery", rating: 4.8, students: 12500, price: 4500, dura: "12h" },
-  { id: "interview-prep", title: "Officer Interview Success Guide", rating: 4.9, students: 8200, price: 3500, dura: "5h" },
-  { id: "physical-training", title: "Military Physical Training (Likhit Analysis)", rating: 4.7, students: 5400, price: 2000, dura: "8h" },
+  {
+    id: "iq-mastery",
+    title: "IQ & Numerical Reasoning Mastery",
+    rating: 4.8,
+    students: 12500,
+    price: 4500,
+    dura: "12h"
+  },
+  {
+    id: "interview-prep",
+    title: "Officer Interview Success Guide",
+    rating: 4.9,
+    students: 8200,
+    price: 3500,
+    dura: "5h"
+  },
+  {
+    id: "physical-training",
+    title: "Military Physical Training (Likhit Analysis)",
+    rating: 4.7,
+    students: 5400,
+    price: 2000,
+    dura: "8h"
+  }
 ];
 
 export default async function CourseDetailPage({ params }: CoursePageProps) {
@@ -58,10 +88,8 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
       <div className="max-w-[1400px] mx-auto px-4 py-10 relative z-10">
         <div className="grid lg:grid-cols-3 gap-12">
-
           {/* ── LEFT COLUMN ── */}
           <div className="lg:col-span-2 space-y-12">
-
             {/* Hero */}
             <div className="space-y-6">
               <div className="flex items-center gap-3">
@@ -69,7 +97,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                   {TRACK_LABEL[course.track] ?? course.track}
                 </span>
                 <span className="text-gray-400 text-sm">/</span>
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{course.track.toUpperCase()}</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  {course.track.toUpperCase()}
+                </span>
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-[#0F1C15] font-['Rajdhani'] leading-tight">
@@ -77,14 +107,18 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               </h1>
 
               <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
-                {course.description} Comprehensive preparation module designed by serving and retired officers to ensure your success in the {TRACK_LABEL[course.track]} selection process.
+                {course.description} Comprehensive preparation module designed by serving and
+                retired officers to ensure your success in the {TRACK_LABEL[course.track]} selection
+                process.
               </p>
 
               <div className="flex flex-wrap items-center gap-6 text-sm">
                 <div className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
                   <span className="font-bold text-yellow-700">4.8</span>
                   <div className="flex text-yellow-500">
-                    {[1,2,3,4,5].map((i) => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                    ))}
                   </div>
                   <span className="text-yellow-700/60 text-xs ml-1">(1,200 ratings)</span>
                 </div>
@@ -105,7 +139,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                       {mainInstructor.name.charAt(0)}
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-[#0F1C15]">Created by {mainInstructor.name}</div>
+                      <div className="text-sm font-bold text-[#0F1C15]">
+                        Created by {mainInstructor.name}
+                      </div>
                       <div className="text-xs text-gray-500">{mainInstructor.specialization}</div>
                     </div>
                   </div>
@@ -115,15 +151,20 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
             {/* Hybrid Commander Banner */}
             <div className="bg-[#0F1C15] rounded-2xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg border border-[#D4AF37]/20">
-              <div className="absolute top-0 right-0 p-4 opacity-5"><Award className="w-64 h-64" /></div>
+              <div className="absolute top-0 right-0 p-4 opacity-5">
+                <Award className="w-64 h-64" />
+              </div>
               <div className="relative z-10">
                 <h3 className="text-sm font-['Rajdhani'] font-bold text-[#D4AF37] mb-2 uppercase tracking-widest flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                   Live & Interactive
                 </h3>
-                <h2 className="text-3xl font-bold mb-4 font-['Rajdhani']">Hybrid Commander System</h2>
+                <h2 className="text-3xl font-bold mb-4 font-['Rajdhani']">
+                  Hybrid Commander System
+                </h2>
                 <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-                  We combine elite mentorship with cutting-edge technology. This isn&apos;t just a video course; it&apos;s a complete academy experience.
+                  We combine elite mentorship with cutting-edge technology. This isn&apos;t just a
+                  video course; it&apos;s a complete academy experience.
                 </p>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
@@ -132,7 +173,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     </div>
                     <div>
                       <h4 className="font-bold text-base text-white">Phase 1: Live Classes</h4>
-                      <p className="text-xs text-gray-400 mt-1">30+ Hours of live Zoom mentorship. Real-time Q&A & strategy.</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        30+ Hours of live Zoom mentorship. Real-time Q&A & strategy.
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
@@ -141,7 +184,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     </div>
                     <div>
                       <h4 className="font-bold text-base text-white">Phase 2: Digital Platform</h4>
-                      <p className="text-xs text-gray-400 mt-1">24/7 Access to LMS: Reading materials, AI Mock Tests, and Quizzes.</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        24/7 Access to LMS: Reading materials, AI Mock Tests, and Quizzes.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -155,26 +200,40 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                 What you&apos;ll learn
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
-                {(course.outcomeBullets.length > 0 ? course.outcomeBullets : LEARNING_ITEMS).map((item, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <CheckCircle className="w-4 h-4 text-emerald-500 mt-1 shrink-0" />
-                    <span className="text-sm text-gray-600 font-medium">{item}</span>
-                  </div>
-                ))}
+                {(course.outcomeBullets.length > 0 ? course.outcomeBullets : LEARNING_ITEMS).map(
+                  (item) => (
+                    <div key={item} className="flex items-start gap-3">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 mt-1 shrink-0" />
+                      <span className="text-sm text-gray-600 font-medium">{item}</span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
             {/* Course Content */}
             <div>
-              <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">Course Content</h3>
+              <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">
+                Course Content
+              </h3>
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                 <div className="flex items-center justify-between p-4 bg-gray-50 text-xs text-gray-500 font-medium">
-                  <span>{course.lessonCount} Lectures • {course.durationLabel} Total Length</span>
-                  <span className="text-blue-600 cursor-pointer hover:underline">Expand all sections</span>
+                  <span>
+                    {course.lessonCount} Lectures • {course.durationLabel} Total Length
+                  </span>
+                  <span className="text-blue-600 cursor-pointer hover:underline">
+                    Expand all sections
+                  </span>
                 </div>
-                {(course.syllabus.length > 0 ? course.syllabus : ["Section 1", "Section 2", "Section 3", "Section 4", "Section 5"]).map((section, i) => (
-                  <div key={i} className="group">
-                    <button className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors text-left">
+                {(course.syllabus.length > 0
+                  ? course.syllabus
+                  : ["Section 1", "Section 2", "Section 3", "Section 4", "Section 5"]
+                ).map((section) => (
+                  <div key={section} className="group">
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors text-left"
+                    >
                       <div className="flex items-center gap-4">
                         <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                         <span className="font-bold text-[#0F1C15] text-sm">{section}</span>
@@ -188,7 +247,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
             {/* Requirements */}
             <div>
-              <h3 className="text-2xl font-bold text-[#0F1C15] mb-4 font-['Rajdhani']">Requirements</h3>
+              <h3 className="text-2xl font-bold text-[#0F1C15] mb-4 font-['Rajdhani']">
+                Requirements
+              </h3>
               <ul className="list-disc list-inside space-y-2 text-gray-600 text-sm pl-2 marker:text-[#D4AF37]">
                 <li>Must be a Nepali Citizen.</li>
                 <li>Minimum height of 5&apos;3&quot; (Male) / 5&apos;0&quot; (Female).</li>
@@ -199,15 +260,22 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
             {/* Students Also Bought */}
             <div className="py-6 border-t border-gray-200">
-              <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">Students also bought</h3>
+              <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">
+                Students also bought
+              </h3>
               <div className="space-y-4">
                 {RELATED_COURSES.map((rc) => (
-                  <div key={rc.id} className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group cursor-pointer">
+                  <div
+                    key={rc.id}
+                    className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group cursor-pointer"
+                  >
                     <div className="w-full sm:w-32 h-20 bg-[#0F1C15] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                       <BookOpen className="w-8 h-8 text-[#D4AF37]" />
                     </div>
                     <div className="flex-1 w-full text-center sm:text-left">
-                      <h4 className="font-bold text-[#0F1C15] text-sm leading-tight mb-1 group-hover:text-blue-700 transition-colors">{rc.title}</h4>
+                      <h4 className="font-bold text-[#0F1C15] text-sm leading-tight mb-1 group-hover:text-blue-700 transition-colors">
+                        {rc.title}
+                      </h4>
                       <div className="flex items-center justify-center sm:justify-start gap-4 text-xs">
                         <span className="font-bold text-green-700">{rc.dura} total hours</span>
                         <span className="text-gray-400">Updated 2025</span>
@@ -217,11 +285,18 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                       <div className="flex items-center gap-1">
                         <span className="font-bold text-[#0F1C15] text-sm">{rc.rating}</span>
                         <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-gray-400 text-xs">({(rc.students / 10).toLocaleString()})</span>
+                        <span className="text-gray-400 text-xs">
+                          ({(rc.students / 10).toLocaleString()})
+                        </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="text-sm font-bold text-[#0F1C15]">NPR {rc.price.toLocaleString()}</div>
-                        <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#0F1C15] group/btn transition-colors">
+                        <div className="text-sm font-bold text-[#0F1C15]">
+                          NPR {rc.price.toLocaleString()}
+                        </div>
+                        <button
+                          type="button"
+                          className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#0F1C15] group/btn transition-colors"
+                        >
                           <Plus className="w-4 h-4 text-gray-400 group-hover/btn:text-white" />
                         </button>
                       </div>
@@ -233,13 +308,20 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
             {/* Description */}
             <div>
-              <h3 className="text-2xl font-bold text-[#0F1C15] mb-4 font-['Rajdhani']">Description</h3>
+              <h3 className="text-2xl font-bold text-[#0F1C15] mb-4 font-['Rajdhani']">
+                Description
+              </h3>
               <div className="bg-white p-8 rounded-2xl border border-gray-200 text-sm text-gray-600 leading-relaxed font-medium space-y-4">
                 <p>
-                  This is the most comprehensive online preparation course for the <strong>{course.title}</strong> examination. Built in strict accordance with the latest Public Service Commission (Lok Sewa Aayog) syllabus, this course covers every single aspect of the selection process.
+                  This is the most comprehensive online preparation course for the{" "}
+                  <strong>{course.title}</strong> examination. Built in strict accordance with the
+                  latest Public Service Commission (Lok Sewa Aayog) syllabus, this course covers
+                  every single aspect of the selection process.
                 </p>
                 <p>
-                  From the initial written examination to the final interview Board Conference, our expert instructors (former Selection Board members) guide you through the nuances of what the force is looking for in a future leader.
+                  From the initial written examination to the final interview Board Conference, our
+                  expert instructors (former Selection Board members) guide you through the nuances
+                  of what the force is looking for in a future leader.
                 </p>
                 <div className="p-4 bg-blue-50 text-blue-800 rounded-xl border border-blue-100 font-bold text-center">
                   &quot;More than just a course, it&apos;s a transformation into an Officer.&quot;
@@ -250,20 +332,33 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             {/* Instructor */}
             {courseFaculty.length > 0 && (
               <div>
-                <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">Your Instructor</h3>
+                <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">
+                  Your Instructor
+                </h3>
                 {courseFaculty.map((instructor) => (
-                  <div key={instructor.slug} className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                  <div
+                    key={instructor.slug}
+                    className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm"
+                  >
                     <div className="flex items-start gap-6">
                       <div className="w-20 h-20 rounded-full bg-[#0F1C15] flex items-center justify-center text-[#D4AF37] font-bold text-2xl shrink-0">
                         {instructor.name.charAt(0)}
                       </div>
                       <div>
-                        <h4 className="text-xl font-bold text-[#0F1C15] font-['Rajdhani']">{instructor.name}</h4>
+                        <h4 className="text-xl font-bold text-[#0F1C15] font-['Rajdhani']">
+                          {instructor.name}
+                        </h4>
                         <p className="text-sm text-gray-500 mb-3">{instructor.specialization}</p>
                         <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-                          <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> 4.9 Rating</span>
-                          <span className="flex items-center gap-1"><Users className="w-3 h-3" /> 1,200+ Students</span>
-                          <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" /> {instructor.experience}</span>
+                          <span className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> 4.9 Rating
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" /> 1,200+ Students
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <BookOpen className="w-3 h-3" /> {instructor.experience}
+                          </span>
                         </div>
                         <p className="text-sm text-gray-600 leading-relaxed">{instructor.bio}</p>
                       </div>
@@ -299,7 +394,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     </div>
                   </div>
                   <div className="absolute bottom-4 left-0 right-0 text-center z-20">
-                    <span className="text-white font-bold text-sm drop-shadow-md">Preview this course</span>
+                    <span className="text-white font-bold text-sm drop-shadow-md">
+                      Preview this course
+                    </span>
                   </div>
                 </div>
 
@@ -335,7 +432,10 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
 
                   {/* CTA Buttons */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
-                    <button className="py-3.5 border border-[#0F1C15] text-[#0F1C15] font-bold uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      className="py-3.5 border border-[#0F1C15] text-[#0F1C15] font-bold uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-xs"
+                    >
                       <ShoppingBag className="w-4 h-4" />
                       Add
                     </button>
@@ -347,7 +447,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     </Link>
                   </div>
 
-                  <div className="text-center text-[10px] text-gray-500 mb-6 font-medium">30-Day Money-Back Guarantee</div>
+                  <div className="text-center text-[10px] text-gray-500 mb-6 font-medium">
+                    30-Day Money-Back Guarantee
+                  </div>
 
                   {/* Includes */}
                   <div className="pt-6 border-t border-gray-100 space-y-3">
@@ -359,7 +461,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                       </li>
                       <li className="flex items-center gap-2">
                         <BookOpen className="w-3.5 h-3.5 text-[#0F1C15]" />
-                        <span className="font-bold text-[#0F1C15]">Platform Access (Tests/Notes)</span>
+                        <span className="font-bold text-[#0F1C15]">
+                          Platform Access (Tests/Notes)
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <PlayCircle className="w-3.5 h-3.5 text-gray-400" />
@@ -375,7 +479,6 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

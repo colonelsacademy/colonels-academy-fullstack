@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 export interface CartItem {
   id: string;
@@ -83,9 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
         if (isCourse) return prev;
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
-        );
+        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i));
       }
       return [...prev, { ...item, quantity }];
     });
@@ -126,10 +132,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [items]
   );
-  const itemCount = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items]
-  );
+  const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
   return (
     <CartContext.Provider

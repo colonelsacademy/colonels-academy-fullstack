@@ -1,6 +1,6 @@
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import { CartProvider } from "@/contexts/CartContext";
 import { SiteShell } from "@/components/site-shell";
+import { CartProvider } from "@/contexts/CartContext";
 import type { Metadata } from "next";
 import { Inter, Rajdhani } from "next/font/google";
 

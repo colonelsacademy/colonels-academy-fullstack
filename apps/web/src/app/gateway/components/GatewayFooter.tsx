@@ -5,17 +5,16 @@ export const GatewayCTA = () => {
   return (
     <section className="py-24 px-4 overflow-hidden">
       <div className="max-w-5xl mx-auto relative group">
-
         {/* Abstract Glow Background */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-[3rem] blur-3xl opacity-50 transition-opacity group-hover:opacity-75" />
 
         <div className="relative bg-[#0F1C15] rounded-[3rem] p-fluid-section border border-white/10 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left shadow-2xl">
-
           {/* Background Pattern */}
           <div
             className="absolute inset-0 opacity-10 pointer-events-none"
             style={{
-              backgroundImage: "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)",
+              backgroundImage:
+                "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)",
               backgroundSize: "32px 32px"
             }}
           />
@@ -33,7 +32,8 @@ export const GatewayCTA = () => {
                 </span>
               </h4>
               <p className="text-gray-400 text-lg font-medium">
-                Get a personalized roadmap from retired officers who have been in the selection board.
+                Get a personalized roadmap from retired officers who have been in the selection
+                board.
               </p>
             </div>
           </div>
@@ -47,7 +47,6 @@ export const GatewayCTA = () => {
               <ArrowRight className="w-4 h-4" />
             </div>
           </Link>
-
         </div>
       </div>
     </section>

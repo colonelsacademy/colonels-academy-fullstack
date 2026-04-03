@@ -11,7 +11,6 @@ export default function DemoClassPage() {
   return (
     <div className="min-h-screen bg-[#0B1120] text-white pt-24 pb-12 font-sans">
       <div className="max-w-4xl mx-auto px-6">
-
         {/* Header */}
         <div className="text-center mb-12">
           <span className="text-[#D4AF37] font-bold tracking-[0.2em] text-sm uppercase mb-3 block">
@@ -21,8 +20,8 @@ export default function DemoClassPage() {
             Command Wing: <span className="text-gray-400">Classroom 01</span>
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Experience the intensive training methodology used by Colonel&apos;s Academy.
-            This session covers &quot;Tactical Leadership & Decision Making&quot;.
+            Experience the intensive training methodology used by Colonel&apos;s Academy. This
+            session covers &quot;Tactical Leadership & Decision Making&quot;.
           </p>
         </div>
 
@@ -45,7 +44,7 @@ export default function DemoClassPage() {
               {[
                 "Situational Reaction Tests (SRT) Solved",
                 "Interview Psychology Breakdown",
-                "Body Language Hacks for TO/GTO",
+                "Body Language Hacks for TO/GTO"
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-[#D4AF37] shrink-0" />
@@ -78,7 +77,6 @@ export default function DemoClassPage() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

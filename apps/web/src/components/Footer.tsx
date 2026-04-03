@@ -21,16 +21,10 @@ export const Footer = () => {
 
           {/* Navigation & Legal */}
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-2 text-xs font-bold uppercase tracking-widest">
-            <Link
-              href="/privacy-policy"
-              className="hover:text-[#0F1C15] transition-colors py-2"
-            >
+            <Link href="/privacy-policy" className="hover:text-[#0F1C15] transition-colors py-2">
               Privacy Policy
             </Link>
-            <Link
-              href="/terms-of-service"
-              className="hover:text-[#0F1C15] transition-colors py-2"
-            >
+            <Link href="/terms-of-service" className="hover:text-[#0F1C15] transition-colors py-2">
               Terms of Service
             </Link>
             <Link href="/contact" className="hover:text-[#0F1C15] transition-colors py-2">
@@ -56,6 +50,7 @@ export const Footer = () => {
                 className="group w-11 h-11 shrink-0 flex items-center justify-center bg-[#F3F4F6] rounded-full shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05),_1px_1px_2px_rgba(255,255,255,0.9)] hover:shadow-none transition-all duration-300 border border-gray-100/50"
                 aria-label="Facebook"
               >
+                <span className="sr-only">Facebook</span>
                 <svg
                   className="w-4 h-4 text-gray-400 group-hover:text-[#0F1C15] fill-current transition-colors"
                   viewBox="0 0 24 24"
@@ -71,6 +66,7 @@ export const Footer = () => {
                 className="group w-11 h-11 shrink-0 flex items-center justify-center bg-[#F3F4F6] rounded-full shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05),_1px_1px_2px_rgba(255,255,255,0.9)] hover:shadow-none transition-all duration-300 border border-gray-100/50"
                 aria-label="Instagram"
               >
+                <span className="sr-only">Instagram</span>
                 <svg
                   className="w-4 h-4 text-gray-400 group-hover:text-[#0F1C15] fill-none stroke-current stroke-2 transition-colors"
                   viewBox="0 0 24 24"
@@ -90,6 +86,7 @@ export const Footer = () => {
                 className="group w-11 h-11 shrink-0 flex items-center justify-center bg-[#F3F4F6] rounded-full shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05),_1px_1px_2px_rgba(255,255,255,0.9)] hover:shadow-none transition-all duration-300 border border-gray-100/50"
                 aria-label="TikTok"
               >
+                <span className="sr-only">TikTok</span>
                 <svg
                   className="w-4 h-4 text-gray-400 group-hover:text-[#0F1C15] fill-current transition-colors"
                   viewBox="0 0 24 24"

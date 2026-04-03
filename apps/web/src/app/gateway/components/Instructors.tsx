@@ -11,9 +11,7 @@ export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
   const instructors = await getInstructors();
 
   const filtered =
-    activeTab === "all"
-      ? instructors
-      : instructors.filter((i) => i.branch === activeTab);
+    activeTab === "all" ? instructors : instructors.filter((i) => i.branch === activeTab);
 
   const tabs = [
     { id: "all", label: "All Instructors" },
@@ -24,7 +22,6 @@ export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
 
   return (
     <div id="mentors" className="py-12 mt-20">
-
       {/* Header & Tabs */}
       <div className="flex flex-col items-center justify-center gap-6 mb-12 text-center">
         <div>
@@ -99,11 +96,15 @@ export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
                     <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/10">
                       <div className="flex flex-col">
                         <span className="text-white font-bold text-sm">1,200+</span>
-                        <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">Students</span>
+                        <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">
+                          Students
+                        </span>
                       </div>
                       <div className="flex flex-col">
                         <span className="text-white font-bold text-sm">1+</span>
-                        <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">Courses</span>
+                        <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">
+                          Courses
+                        </span>
                       </div>
                     </div>
                   </div>

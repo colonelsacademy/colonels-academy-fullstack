@@ -80,10 +80,14 @@ const Dropdown = ({
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <span className={`font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}>
+        <span
+          className={`font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}
+        >
           {label}
         </span>
-        <ChevronDown className={`w-3 h-3 transition-all duration-300 ${isOpen ? "rotate-180 text-[#D4AF37]" : "text-white/50 group-hover:text-[#D4AF37]"}`} />
+        <ChevronDown
+          className={`w-3 h-3 transition-all duration-300 ${isOpen ? "rotate-180 text-[#D4AF37]" : "text-white/50 group-hover:text-[#D4AF37]"}`}
+        />
       </button>
 
       <motion.div
@@ -160,14 +164,15 @@ const Navbar = () => {
 
   useEffect(() => {
     document.body.style.overflow = isCartOpen || isMenuOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isCartOpen, isMenuOpen]);
 
   return (
     <>
       <nav className="sticky top-0 w-full z-50 bg-[#0F1C15] border-b border-[#D4AF37]/30 shadow-xl">
         <div className="container mx-auto px-6 flex justify-between items-center h-20">
-
           {/* Logo */}
           <Link href="/" aria-label="The Colonel's Academy — home">
             <AcademyLogo />
@@ -207,7 +212,6 @@ const Navbar = () => {
 
           {/* Right actions */}
           <div className="flex items-center gap-3 md:gap-4">
-
             {/* Cart button */}
             <button
               type="button"
@@ -238,13 +242,17 @@ const Navbar = () => {
                   <span className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.15em] text-white/90 max-w-[120px] truncate">
                     {user.email?.split("@")[0]}
                   </span>
-                  <ChevronDown className={`w-3 h-3 text-white/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    className={`w-3 h-3 text-white/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {userMenuOpen && (
                   <div className="absolute right-0 top-[calc(100%+0.5rem)] w-56 bg-[#0F1C15] border border-[#D4AF37]/30 rounded-xl shadow-2xl overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-white/10 bg-white/5">
-                      <p className="text-sm font-bold text-white">{user.displayName ?? user.email?.split("@")[0]}</p>
+                      <p className="text-sm font-bold text-white">
+                        {user.displayName ?? user.email?.split("@")[0]}
+                      </p>
                       <p className="text-xs text-gray-400">{user.email}</p>
                     </div>
                     <div className="py-2">
@@ -268,7 +276,10 @@ const Navbar = () => {
                     <div className="border-t border-white/10 pt-2">
                       <button
                         type="button"
-                        onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          handleLogout();
+                        }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-white/5 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
@@ -312,10 +323,18 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-[#0F1C15] border-b border-white/10 px-6 py-4 flex flex-col gap-4 sticky top-20 z-40 overflow-hidden"
           >
-            <Link href="/courses" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
+            <Link
+              href="/courses"
+              onClick={() => setIsMenuOpen(false)}
+              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
+            >
               Course Catalog
             </Link>
-            <Link href="/#mentors" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
+            <Link
+              href="/#mentors"
+              onClick={() => setIsMenuOpen(false)}
+              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
+            >
               Directing Staff
             </Link>
             {authenticated && user ? (
@@ -330,7 +349,10 @@ const Navbar = () => {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => { setIsMenuOpen(false); handleLogout(); }}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleLogout();
+                  }}
                   className="w-full py-3 border border-red-500/30 text-red-400 font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
@@ -362,22 +384,28 @@ const Navbar = () => {
               onClick={() => setIsCartOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
             />
-            <motion.div
+            <motion.dialog
+              open
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[70] shadow-2xl flex flex-col"
-              role="dialog"
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[70] shadow-2xl flex flex-col m-0 p-0 border-0"
               aria-label="Shopping cart"
-              aria-modal="true"
             >
               <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-[#0F1C15] text-white">
                 <div className="flex items-center gap-3">
                   <ShoppingCart className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="font-['Rajdhani'] font-bold text-lg uppercase tracking-wider">Your Cart ({itemCount})</span>
+                  <span className="font-['Rajdhani'] font-bold text-lg uppercase tracking-wider">
+                    Your Cart ({itemCount})
+                  </span>
                 </div>
-                <button type="button" aria-label="Close cart" onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <button
+                  type="button"
+                  aria-label="Close cart"
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -385,7 +413,11 @@ const Navbar = () => {
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-50">
                   <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
                   <p className="font-bold text-gray-400 text-lg">Your cart is empty</p>
-                  <button type="button" onClick={() => setIsCartOpen(false)} className="text-[#0F1C15] underline font-bold text-sm mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCartOpen(false)}
+                    className="text-[#0F1C15] underline font-bold text-sm mt-2"
+                  >
                     Continue Browsing
                   </button>
                 </div>
@@ -396,17 +428,29 @@ const Navbar = () => {
                       <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
                         {item.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <ShoppingCart className="w-6 h-6 text-gray-400" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm text-gray-900 line-clamp-2">{item.title}</p>
-                        <p className="text-xs text-gray-500 mt-1 capitalize">{item.type ?? "course"}</p>
-                        <p className="font-bold text-[#0F1C15] mt-1">NPR {item.price.toLocaleString()}</p>
+                        <p className="text-xs text-gray-500 mt-1 capitalize">
+                          {item.type ?? "course"}
+                        </p>
+                        <p className="font-bold text-[#0F1C15] mt-1">
+                          NPR {item.price.toLocaleString()}
+                        </p>
                       </div>
-                      <button type="button" onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500 transition-colors shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                      >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -417,12 +461,17 @@ const Navbar = () => {
                 {itemCount > 0 && (
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-gray-500 font-bold text-sm">Subtotal</span>
-                    <span className="text-xl font-bold text-[#0F1C15]">NPR {total.toLocaleString()}</span>
+                    <span className="text-xl font-bold text-[#0F1C15]">
+                      NPR {total.toLocaleString()}
+                    </span>
                   </div>
                 )}
                 <button
                   type="button"
-                  onClick={() => { setIsCartOpen(false); router.push("/checkout"); }}
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    router.push("/checkout");
+                  }}
                   className="w-full py-4 bg-[#0F1C15] text-white font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded-xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   <CreditCard className="w-4 h-4" />
@@ -432,7 +481,7 @@ const Navbar = () => {
                   <Lock className="w-3 h-3" /> Secure Encrypted Payment
                 </p>
               </div>
-            </motion.div>
+            </motion.dialog>
           </div>
         )}
       </AnimatePresence>

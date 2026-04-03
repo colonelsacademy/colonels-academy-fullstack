@@ -25,7 +25,12 @@ const MagneticButton = ({
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (shouldReduceMotion) return;
     const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current?.getBoundingClientRect() ?? { left: 0, top: 0, width: 0, height: 0 };
+    const { left, top, width, height } = ref.current?.getBoundingClientRect() ?? {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0
+    };
     x.set((clientX - (left + width / 2)) * 0.3);
     y.set((clientY - (top + height / 2)) * 0.3);
   };
@@ -35,7 +40,10 @@ const MagneticButton = ({
       ref={ref}
       style={{ x: mouseX, y: mouseY }}
       onMouseMove={handleMouseMove}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
+      onMouseLeave={() => {
+        x.set(0);
+        y.set(0);
+      }}
       onClick={onClick}
       className={className}
     >
@@ -49,7 +57,6 @@ const GatewayHero = () => {
 
   return (
     <div className="w-full pt-2 pb-6">
-
       <div className="w-[99%] mx-auto bg-white rounded-none min-h-[85vh] md:min-h-[72vh] flex flex-col justify-center p-fluid-section relative overflow-hidden shadow-sm border border-white">
         {/* Hero image */}
         <div className="absolute inset-0 z-0">
@@ -71,7 +78,6 @@ const GatewayHero = () => {
         {/* Content */}
         <div className="relative z-10 w-full flex flex-col justify-center min-h-[85vh] md:min-h-[72vh] fade-in-up">
           <div className="max-w-3xl mr-auto flex flex-col items-start text-left">
-
             {/* Brand pill */}
             <div className="mb-8 fade-in-up [animation-delay:100ms]">
               <span className="bg-[#0B1120] text-white text-[11px] sm:text-[12px] font-black tracking-[0.25em] uppercase px-5 py-3 rounded-xl font-rajdhani shadow-2xl border border-gray-800 flex items-center">

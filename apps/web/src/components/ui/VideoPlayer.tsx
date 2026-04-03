@@ -11,17 +11,22 @@ interface VideoPlayerProps {
 }
 
 const BUNNY_LIBRARY_ID = "596237";
-const BUNNY_PULL_ZONE = process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE ?? "";
+const _BUNNY_PULL_ZONE = process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE ?? "";
 
 // ─── Thumbnail Overlay ────────────────────────────────────────────────────────
 const ThumbnailOverlay = ({ poster, onPlay }: { poster?: string; onPlay: () => void }) => (
-  <div
-    className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:scale-105 transition-transform duration-700 z-10"
+  <button
+    type="button"
+    className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:scale-105 transition-transform duration-700 z-10 w-full h-full p-0 border-0 bg-transparent"
     onClick={onPlay}
+    aria-label="Play video"
   >
     <div className="w-full h-full relative">
       <img
-        src={poster || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600"}
+        src={
+          poster ||
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600"
+        }
         alt="Video Poster"
         className="w-full h-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
         loading="eager"
@@ -33,11 +38,11 @@ const ThumbnailOverlay = ({ poster, onPlay }: { poster?: string; onPlay: () => v
         </div>
       </div>
     </div>
-  </div>
+  </button>
 );
 
 // ─── Loading Spinner ──────────────────────────────────────────────────────────
-const LoadingSpinner = () => (
+const _LoadingSpinner = () => (
   <div className="absolute inset-0 flex items-center justify-center bg-transparent z-20 pointer-events-none backdrop-blur-sm">
     <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin" />
   </div>
@@ -96,7 +101,8 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProp
     setIsCountingDown(true);
   };
 
-  const isBunny = videoId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(videoId);
+  const isBunny =
+    videoId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(videoId);
   const isYouTube = videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId);
   const isDirectUrl = videoId && (/^https?:\/\//.test(videoId) || videoId.startsWith("/"));
 
@@ -150,7 +156,9 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProp
   if (isDirectUrl && videoId) {
     return (
       <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
-        <video src={videoId} poster={poster} className="w-full h-full" controls autoPlay={autoplay} />
+        <video src={videoId} poster={poster} className="w-full h-full" controls autoPlay={autoplay}>
+          <track kind="captions" />
+        </video>
       </div>
     );
   }

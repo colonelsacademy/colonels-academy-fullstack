@@ -5,7 +5,12 @@ import type { Category, Course } from "@/data/gateway";
 import { getCourses, getInstructors } from "@/lib/api";
 
 import { Footer } from "@/components/Footer";
-import { CourseFilter, CourseGrid, CourseGridSkeleton, CourseSection } from "./gateway/components/Courses";
+import {
+  CourseFilter,
+  CourseGrid,
+  CourseGridSkeleton,
+  CourseSection
+} from "./gateway/components/Courses";
 import { FeaturedCourse } from "./gateway/components/FeaturedCourse";
 import { GatewayCTA } from "./gateway/components/GatewayFooter";
 import GatewayHero from "./gateway/components/GatewayHero";
@@ -21,7 +26,6 @@ const SectionFallback = ({ className = "" }: { className?: string }) => (
     className={`w-full rounded-[2.5rem] border border-gray-200/70 bg-white/70 animate-pulse ${className}`}
   />
 );
-
 
 interface HomePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

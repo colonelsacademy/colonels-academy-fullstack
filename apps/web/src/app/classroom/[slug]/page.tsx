@@ -337,7 +337,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
                             "Physical and written exam strategies",
                             "Leadership and decision-making skills"
                           ]
-                      ).map((item, i) => (
+                      ).map((item, _i) => (
                         <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
                           <span className="mt-1 w-1.5 h-1.5 bg-gray-400 rounded-full shrink-0" />
                           {item}

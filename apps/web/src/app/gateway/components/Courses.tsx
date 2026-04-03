@@ -10,16 +10,7 @@ import {
   useSpring,
   useTransform
 } from "framer-motion";
-import {
-  BadgeCheck,
-  BookOpen,
-  Clock,
-  Layers,
-  Lock,
-  Play,
-  ShoppingCart,
-  Star
-} from "lucide-react";
+import { BadgeCheck, BookOpen, Clock, Layers, Lock, Play, ShoppingCart, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
 
@@ -132,7 +123,6 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
     >
       <TiltCard onClick={() => router.push(`/courses/${course.id}`)}>
         <div className="group h-full cursor-pointer flex flex-col bg-white border border-gray-200/80 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-xl hover:border-gray-300 transition-all duration-300">
-
           {/* Thumbnail */}
           <div className="relative aspect-video w-full overflow-hidden bg-gray-900 flex-shrink-0">
             {course.thumbnail ? (
@@ -151,7 +141,9 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
 
             {/* Wing badge */}
-            <div className={`absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-white shadow-md ${wing.badge}`}>
+            <div
+              className={`absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-white shadow-md ${wing.badge}`}
+            >
               {wingLabel}
             </div>
 
@@ -264,7 +256,7 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
                           price: course.price,
                           image: course.thumbnail,
                           category: course.category,
-                          type: "course",
+                          type: "course"
                         });
                       } else {
                         router.push("/checkout");
@@ -307,8 +299,8 @@ function SkeletonCard() {
         <div className="h-3 w-1/2 bg-gray-100 rounded" />
         <div className="flex gap-1 items-center">
           <div className="h-3 w-8 bg-gray-100 rounded" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="w-3 h-3 bg-gray-100 rounded" />
+          {["s1", "s2", "s3", "s4", "s5"].map((s) => (
+            <div key={s} className="w-3 h-3 bg-gray-100 rounded" />
           ))}
           <div className="h-3 w-10 bg-gray-100 rounded" />
         </div>
@@ -374,7 +366,8 @@ export const CourseFilter = ({ activeCategory }: CourseFilterProps) => {
           let activeClass = "bg-gray-900 text-white";
           if (isActive) {
             if (cat.id === "army") activeClass = "bg-[#00693E] text-white shadow-[#00693E]/20";
-            else if (cat.id === "police") activeClass = "bg-[#1E3A8A] text-white shadow-[#1E3A8A]/20";
+            else if (cat.id === "police")
+              activeClass = "bg-[#1E3A8A] text-white shadow-[#1E3A8A]/20";
             else if (cat.id === "apf") activeClass = "bg-[#D97706] text-white shadow-[#D97706]/20";
           }
           return (
@@ -422,7 +415,9 @@ export const CourseGrid = ({ courses }: CourseGridProps) => {
               <BookOpen className="w-6 h-6 text-gray-400" />
             </div>
             <h3 className="text-lg font-bold text-gray-900">No courses found</h3>
-            <p className="text-gray-500 text-sm mt-1">No courses available for this category yet.</p>
+            <p className="text-gray-500 text-sm mt-1">
+              No courses available for this category yet.
+            </p>
           </motion.div>
         ) : (
           courses.map((course, index) => (
