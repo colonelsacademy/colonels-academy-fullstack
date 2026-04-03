@@ -12,5 +12,6 @@ export default defineConfig({
   target: "node20",
   sourcemap: true,
   clean: true,
+  external: ["@prisma/client", /^@prisma\//],
   noExternal: [/^@colonels-academy\//]
 });
