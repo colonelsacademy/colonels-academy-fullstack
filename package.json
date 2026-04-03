@@ -19,7 +19,10 @@
     "db:deploy": "corepack pnpm --filter @colonels-academy/database run db:deploy",
     "db:status": "corepack pnpm --filter @colonels-academy/database run db:status",
     "db:push": "corepack pnpm --filter @colonels-academy/database run db:push",
-    "db:seed": "corepack pnpm --filter @colonels-academy/database run db:seed"
+    "db:seed": "corepack pnpm --filter @colonels-academy/database run db:seed",
+    "biome:check": "biome check .",
+    "biome:format": "biome format --write .",
+    "prepare": "sh scripts/setup-hooks.sh"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -34,6 +37,7 @@
     ]
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "turbo": "^2.5.3"
   }
 }

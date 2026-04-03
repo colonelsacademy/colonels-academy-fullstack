@@ -157,7 +157,10 @@ export default fp(async (fastify) => {
       return null;
     }
 
-    const decoded = await adminAuth.verifySessionCookie(sessionCookie, env.FIREBASE_CHECK_REVOKED_SESSIONS);
+    const decoded = await adminAuth.verifySessionCookie(
+      sessionCookie,
+      env.FIREBASE_CHECK_REVOKED_SESSIONS
+    );
 
     return mapAuthUser(decoded);
   }
@@ -250,7 +253,9 @@ export default fp(async (fastify) => {
   });
   fastify.decorate("createSession", async (reply, idToken) => {
     if (!adminAuth) {
-      throw fastify.httpErrors.serviceUnavailable("Firebase Auth admin credentials are not configured.");
+      throw fastify.httpErrors.serviceUnavailable(
+        "Firebase Auth admin credentials are not configured."
+      );
     }
 
     const decoded = await adminAuth.verifyIdToken(idToken);

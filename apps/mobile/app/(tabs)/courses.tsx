@@ -9,13 +9,9 @@ import { useAsyncResource } from "../../src/hooks/use-async-resource";
 import { mobileApiClient } from "../../src/lib/api";
 
 export default function CoursesScreen() {
-  const { data, error, loading } = useAsyncResource(
-    () => mobileApiClient.getCourses(),
-    [],
-    {
-      items: courseCatalog
-    }
-  );
+  const { data, error, loading } = useAsyncResource(() => mobileApiClient.getCourses(), [], {
+    items: courseCatalog
+  });
 
   return (
     <ScreenShell

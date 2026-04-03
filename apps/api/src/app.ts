@@ -76,7 +76,10 @@ export function buildApp() {
     app.log.error(error);
 
     const statusCode =
-      typeof error === "object" && error && "statusCode" in error && typeof error.statusCode === "number"
+      typeof error === "object" &&
+      error &&
+      "statusCode" in error &&
+      typeof error.statusCode === "number"
         ? error.statusCode
         : 500;
     const message = error instanceof Error ? error.message : "Unexpected server error.";

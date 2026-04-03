@@ -7,7 +7,13 @@ import {
   type PropsWithChildren
 } from "react";
 
-import { getFirebaseMobileAuth, onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from "../lib/firebase";
+import {
+  getFirebaseMobileAuth,
+  onIdTokenChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  type User
+} from "../lib/firebase";
 
 interface AuthContextValue {
   accessToken: string | null;

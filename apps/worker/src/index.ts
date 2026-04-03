@@ -84,10 +84,7 @@ async function start() {
     void close("SIGTERM");
   });
 
-  await Promise.all([
-    videoSyncWorker.waitUntilReady(),
-    notificationWorker.waitUntilReady()
-  ]);
+  await Promise.all([videoSyncWorker.waitUntilReady(), notificationWorker.waitUntilReady()]);
 
   videoSyncWorker.on("completed", (job) => {
     logWorker("info", "video-sync.completed", {

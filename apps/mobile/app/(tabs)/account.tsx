@@ -9,7 +9,8 @@ import { mobileApiClient } from "../../src/lib/api";
 import { useAuth } from "../../src/providers/auth-provider";
 
 export default function AccountScreen() {
-  const { accessToken, error, isConfigured, isReady, signInWithEmail, signOutUser, user } = useAuth();
+  const { accessToken, error, isConfigured, isReady, signInWithEmail, signOutUser, user } =
+    useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { data: session, loading } = useAsyncResource(
@@ -38,8 +39,12 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Runtime status</Text>
         {!isReady ? <ActivityIndicator color={mobileTheme.colors.accentStrong} /> : null}
-        <Text style={styles.body}>{isConfigured ? "Firebase mobile auth is configured." : "Firebase mobile env is missing."}</Text>
-        <Text style={styles.caption}>{user?.email ? `Signed in as ${user.email}` : "No learner is signed in yet."}</Text>
+        <Text style={styles.body}>
+          {isConfigured ? "Firebase mobile auth is configured." : "Firebase mobile env is missing."}
+        </Text>
+        <Text style={styles.caption}>
+          {user?.email ? `Signed in as ${user.email}` : "No learner is signed in yet."}
+        </Text>
         <Text style={styles.caption}>{session.note}</Text>
       </View>
 

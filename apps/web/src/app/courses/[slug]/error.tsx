@@ -2,7 +2,7 @@
 
 export default function CourseDetailError({
   error,
-  reset,
+  reset
 }: {
   error: Error & { digest?: string };
   reset: () => void;

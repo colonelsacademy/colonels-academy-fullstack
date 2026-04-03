@@ -4,7 +4,7 @@ import {
   type CatalogInstructorsResponse,
   type DashboardOverviewResponse,
   type CourseDetail,
-  type InstructorProfile,
+  type InstructorProfile
 } from "@colonels-academy/contracts";
 import { readPublicWebEnv } from "@colonels-academy/config";
 
@@ -19,9 +19,9 @@ const apiClient = createApiClient({
     fetch(input, {
       ...init,
       next: {
-        revalidate: init?.next?.revalidate ?? 60,
-      },
-    }),
+        revalidate: init?.next?.revalidate ?? 60
+      }
+    })
 });
 
 export async function getCourses(): Promise<CourseDetail[]> {

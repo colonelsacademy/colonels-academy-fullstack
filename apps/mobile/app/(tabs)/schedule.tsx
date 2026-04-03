@@ -15,14 +15,11 @@ function formatDateRange(startsAt: string, endsAt: string) {
 }
 
 export default function ScheduleScreen() {
-  const { data, error, loading } = useAsyncResource(
-    () => mobileApiClient.getLiveSessions(),
-    [],
-    {
-      items: upcomingSessions,
-      transport: "HTTP with revalidation first; native realtime only when classroom behavior truly needs it."
-    }
-  );
+  const { data, error, loading } = useAsyncResource(() => mobileApiClient.getLiveSessions(), [], {
+    items: upcomingSessions,
+    transport:
+      "HTTP with revalidation first; native realtime only when classroom behavior truly needs it."
+  });
 
   return (
     <ScreenShell

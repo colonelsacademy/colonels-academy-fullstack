@@ -11,12 +11,8 @@ export function middleware(request: NextRequest) {
   const { nextUrl, cookies } = request;
   const sessionToken = cookies.get("ca_session")?.value;
 
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-    nextUrl.pathname.startsWith(route)
-  );
-  const isAuthRoute = AUTH_ROUTES.some((route) =>
-    nextUrl.pathname.startsWith(route)
-  );
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => nextUrl.pathname.startsWith(route));
+  const isAuthRoute = AUTH_ROUTES.some((route) => nextUrl.pathname.startsWith(route));
 
   // 1. If trying to access a protected route without a session
   if (isProtectedRoute && !sessionToken) {
@@ -35,5 +31,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/courses/enroll/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/courses/enroll/:path*", "/login"]
 };

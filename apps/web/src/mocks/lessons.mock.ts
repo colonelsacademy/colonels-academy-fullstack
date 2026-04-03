@@ -10,7 +10,7 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 12,
     contentType: "VIDEO",
     accessKind: "PREVIEW",
-    bunnyVideoId: "mock-bunny-id-01",
+    bunnyVideoId: "mock-bunny-id-01"
   },
   {
     id: "lesson-mock-02",
@@ -21,7 +21,7 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 30,
     contentType: "VIDEO",
     accessKind: "STANDARD",
-    bunnyVideoId: "mock-bunny-id-02",
+    bunnyVideoId: "mock-bunny-id-02"
   },
   {
     id: "lesson-mock-03",
@@ -39,9 +39,9 @@ export const mockLessons: LessonDetail[] = [
         options: [{ text: "5 km" }, { text: "6 km" }, { text: "7 km" }, { text: "8 km" }],
         correctOptionIndex: 1,
         explanation: "4 km/h × 1.5 h = 6 km.",
-        position: 0,
-      },
-    ],
+        position: 0
+      }
+    ]
   },
   {
     id: "lesson-mock-04",
@@ -52,8 +52,8 @@ export const mockLessons: LessonDetail[] = [
     durationMinutes: 60,
     contentType: "LIVE",
     accessKind: "LIVE_REPLAY",
-    meetingUrl: "https://zoom.us/j/mock-session",
-  },
+    meetingUrl: "https://zoom.us/j/mock-session"
+  }
 ];
 
 export const mockModules: ModuleDetail[] = [
@@ -62,20 +62,20 @@ export const mockModules: ModuleDetail[] = [
     courseId: "officer-cadet-elite",
     title: "Module 1: Selection Process Overview",
     position: 0,
-    lessons: [mockLessons[0]],
+    lessons: [mockLessons[0]]
   },
   {
     id: "module-mock-02",
     courseId: "officer-cadet-elite",
     title: "Module 2: Aptitude & Assessment",
     position: 1,
-    lessons: [mockLessons[1], mockLessons[2]],
+    lessons: [mockLessons[1], mockLessons[2]]
   },
   {
     id: "module-mock-03",
     courseId: "officer-cadet-elite",
     title: "Module 3: Interview Readiness",
     position: 2,
-    lessons: [mockLessons[3]],
-  },
+    lessons: [mockLessons[3]]
+  }
 ];

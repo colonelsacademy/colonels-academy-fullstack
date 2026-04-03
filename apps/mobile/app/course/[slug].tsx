@@ -12,7 +12,11 @@ export default function CourseDetailScreen() {
   const params = useLocalSearchParams<{ slug?: string }>();
   const slug = typeof params.slug === "string" ? params.slug : "";
   const fallbackCourse = courseCatalog.find((course) => course.slug === slug) ?? null;
-  const { data: course, error, loading } = useAsyncResource<CourseDetail | null>(
+  const {
+    data: course,
+    error,
+    loading
+  } = useAsyncResource<CourseDetail | null>(
     () => mobileApiClient.getCourseBySlug(slug),
     [slug],
     fallbackCourse
@@ -24,7 +28,9 @@ export default function CourseDetailScreen() {
       <ScreenShell
         eyebrow="Course Detail"
         title={course?.title ?? "Course not found"}
-        subtitle={course?.summary ?? "This course could not be loaded from the API or starter catalog."}
+        subtitle={
+          course?.summary ?? "This course could not be loaded from the API or starter catalog."
+        }
       >
         {loading ? <ActivityIndicator color={mobileTheme.colors.accentStrong} /> : null}
         {error ? <Text style={styles.warning}>{error}</Text> : null}

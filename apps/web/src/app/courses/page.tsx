@@ -13,11 +13,13 @@ export default async function CoursesPage() {
             <p className="eyebrow" style={{ color: "var(--olive)" }}>
               Catalog
             </p>
-            <h1 className="section-title">Training tracks across army, police, APF, staff, and mission prep.</h1>
+            <h1 className="section-title">
+              Training tracks across army, police, APF, staff, and mission prep.
+            </h1>
           </div>
           <p>
-            These are starter records shared between the web experience, the API fallback layer, and the
-            Prisma seed path.
+            These are starter records shared between the web experience, the API fallback layer, and
+            the Prisma seed path.
           </p>
         </div>
 

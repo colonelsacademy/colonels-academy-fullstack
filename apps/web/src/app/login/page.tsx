@@ -2,11 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Shield, Lock } from "lucide-react";
 import { getFirebaseClientAuth } from "@/lib/firebase";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -120,7 +116,9 @@ function LoginForm() {
             <div className="w-full border-t border-white/10" />
           </div>
           <div className="relative flex justify-center">
-            <span className="px-3 bg-transparent text-white/30 text-xs uppercase tracking-widest">or</span>
+            <span className="px-3 bg-transparent text-white/30 text-xs uppercase tracking-widest">
+              or
+            </span>
           </div>
         </div>
 
@@ -139,12 +137,14 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#0F1C15] flex items-center justify-center px-4">
-      <Suspense fallback={
-        <div className="w-full max-w-md animate-pulse">
-          <div className="h-10 w-32 bg-white/10 rounded-lg mx-auto mb-8" />
-          <div className="h-[400px] bg-white/5 rounded-2xl border border-white/10" />
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="w-full max-w-md animate-pulse">
+            <div className="h-10 w-32 bg-white/10 rounded-lg mx-auto mb-8" />
+            <div className="h-[400px] bg-white/5 rounded-2xl border border-white/10" />
+          </div>
+        }
+      >
         <LoginForm />
       </Suspense>
     </div>

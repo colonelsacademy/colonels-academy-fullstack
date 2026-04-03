@@ -10,9 +10,9 @@ export async function POST(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body)
     });
 
     if (!apiResponse.ok) {

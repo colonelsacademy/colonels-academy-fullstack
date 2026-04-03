@@ -79,7 +79,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             <p className="eyebrow" style={{ color: "var(--brass)" }}>
               Syllabus
             </p>
-            <h2 className="section-title">A clean starter outline that can grow into lesson-level CMS data.</h2>
+            <h2 className="section-title">
+              A clean starter outline that can grow into lesson-level CMS data.
+            </h2>
           </div>
         </div>
 
@@ -99,7 +101,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             <p className="eyebrow" style={{ color: "var(--navy)" }}>
               Faculty match
             </p>
-            <h2 className="section-title">This course is still anchored in instructor credibility.</h2>
+            <h2 className="section-title">
+              This course is still anchored in instructor credibility.
+            </h2>
           </div>
         </div>
 

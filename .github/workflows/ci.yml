@@ -100,6 +100,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run db:generate
+      - run: pnpm run biome:check
       - run: pnpm run check:boundaries
       - run: pnpm run typecheck
 

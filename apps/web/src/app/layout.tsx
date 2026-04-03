@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
-import { Inter, Rajdhani } from 'next/font/google';
+import { Inter, Rajdhani } from "next/font/google";
 import { SiteShell } from "@/components/site-shell";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 
 import "./globals.css";
 
 const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter"
 });
 
 const rajdhani = Rajdhani({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-rajdhani',
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-rajdhani"
 });
 
 export const metadata: Metadata = {

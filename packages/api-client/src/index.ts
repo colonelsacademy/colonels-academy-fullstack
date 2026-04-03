@@ -92,7 +92,10 @@ export function createApiClient(options: CreateApiClientOptions) {
       return requestJson<CatalogInstructorsResponse>("/v1/catalog/instructors", requestOptions);
     },
     getDashboardOverview(requestOptions?: ApiRequestOptions) {
-      return requestJson<DashboardOverviewResponse>("/v1/learning/dashboard/overview", requestOptions);
+      return requestJson<DashboardOverviewResponse>(
+        "/v1/learning/dashboard/overview",
+        requestOptions
+      );
     },
     getLiveSessions(requestOptions?: ApiRequestOptions) {
       return requestJson<LiveSessionsResponse>("/v1/learning/live-sessions", requestOptions);

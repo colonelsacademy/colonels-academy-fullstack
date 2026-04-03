@@ -3,7 +3,11 @@ import type { FastifyBaseLogger } from "fastify";
 import { type DatabaseClient } from "@colonels-academy/database";
 import { type AuthUser } from "../../plugins/auth";
 
-export async function syncUserWithPostgres(prisma: DatabaseClient, authUser: AuthUser, log: FastifyBaseLogger) {
+export async function syncUserWithPostgres(
+  prisma: DatabaseClient,
+  authUser: AuthUser,
+  log: FastifyBaseLogger
+) {
   const { uid, email, claims } = authUser;
 
   // UPSERT: Create user if not exists, otherwise update
@@ -15,14 +19,14 @@ export async function syncUserWithPostgres(prisma: DatabaseClient, authUser: Aut
         // email || undefined: If email is missing in the token, Prisma will ignore this field
         // in the update, preserving any existing email in the database.
         email: email || undefined,
-        displayName: (claims.name as string) || undefined,
+        displayName: (claims.name as string) || undefined
       },
       create: {
         firebaseUid: uid,
         email: email || undefined,
         displayName: (claims.name as string) || undefined,
-        role: "STUDENT", // Default role
-      },
+        role: "STUDENT" // Default role
+      }
     });
     return user;
   } catch (error) {

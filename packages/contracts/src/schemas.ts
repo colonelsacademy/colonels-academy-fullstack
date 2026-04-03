@@ -10,15 +10,10 @@ export const lessonAccessKindSchema = z.enum([
   "PREVIEW",
   "STANDARD",
   "LIVE_REPLAY",
-  "DOWNLOADABLE",
+  "DOWNLOADABLE"
 ]);
 
-export const enrollmentStatusSchema = z.enum([
-  "ACTIVE",
-  "PENDING",
-  "EXPIRED",
-  "REFUNDED",
-]);
+export const enrollmentStatusSchema = z.enum(["ACTIVE", "PENDING", "EXPIRED", "REFUNDED"]);
 
 // ─── Instructor ───────────────────────────────────────────────────────────────
 
@@ -29,13 +24,13 @@ export const instructorProfileSchema = z.object({
   experience: z.string(),
   specialization: z.string(),
   bio: z.string(),
-  avatarUrl: z.string().url().optional(),
+  avatarUrl: z.string().url().optional()
 });
 
 // ─── Quiz ─────────────────────────────────────────────────────────────────────
 
 export const quizOptionSchema = z.object({
-  text: z.string().min(1),
+  text: z.string().min(1)
 });
 
 export const quizQuestionSchema = z.object({
@@ -44,7 +39,7 @@ export const quizQuestionSchema = z.object({
   options: z.array(quizOptionSchema).min(2).max(6),
   correctOptionIndex: z.number().int().min(0),
   explanation: z.string().optional(),
-  position: z.number().int().min(0),
+  position: z.number().int().min(0)
 });
 
 // ─── Lesson ───────────────────────────────────────────────────────────────────
@@ -62,7 +57,7 @@ export const lessonDetailSchema = z.object({
   bunnyVideoId: z.string().optional(),
   meetingUrl: z.string().url().optional(),
   pdfUrl: z.string().url().optional(),
-  quizQuestions: z.array(quizQuestionSchema).optional(),
+  quizQuestions: z.array(quizQuestionSchema).optional()
 });
 
 // ─── Module ───────────────────────────────────────────────────────────────────
@@ -72,7 +67,7 @@ export const moduleDetailSchema = z.object({
   courseId: z.string(),
   title: z.string().min(1),
   position: z.number().int().min(0),
-  lessons: z.array(lessonDetailSchema),
+  lessons: z.array(lessonDetailSchema)
 });
 
 // ─── Course ───────────────────────────────────────────────────────────────────
@@ -95,43 +90,43 @@ export const courseDetailSchema = z.object({
   liveSupport: z.string(),
   instructorSlugs: z.array(z.string()),
   outcomeBullets: z.array(z.string()),
-  syllabus: z.array(z.string()),
+  syllabus: z.array(z.string())
 });
 
 // ─── API Responses ────────────────────────────────────────────────────────────
 
 export const catalogCoursesResponseSchema = z.object({
-  items: z.array(courseDetailSchema),
+  items: z.array(courseDetailSchema)
 });
 
 export const catalogInstructorsResponseSchema = z.object({
-  items: z.array(instructorProfileSchema),
+  items: z.array(instructorProfileSchema)
 });
 
 export const courseLessonsResponseSchema = z.object({
   courseSlug: z.string(),
   modules: z.array(moduleDetailSchema),
   /** Flat list for courses that have not been organised into modules yet */
-  unorganisedLessons: z.array(lessonDetailSchema),
+  unorganisedLessons: z.array(lessonDetailSchema)
 });
 
 export const enrollmentGuardResponseSchema = z.object({
   enrolled: z.boolean(),
   status: enrollmentStatusSchema.nullable(),
   courseSlug: z.string(),
-  meetingUrl: z.string().url().optional(),
+  meetingUrl: z.string().url().optional()
 });
 
 export const authSessionUserSchema = z.object({
   uid: z.string(),
   email: z.string().email().optional(),
-  role: z.string().optional(),
+  role: z.string().optional()
 });
 
 export const authSessionResponseSchema = z.object({
   authenticated: z.boolean(),
   user: authSessionUserSchema.nullable(),
-  authMethod: z.enum(["session", "bearer", "none"]),
+  authMethod: z.enum(["session", "bearer", "none"])
 });
 
 // ─── Inferred Types (use these instead of hand-written interfaces) ────────────

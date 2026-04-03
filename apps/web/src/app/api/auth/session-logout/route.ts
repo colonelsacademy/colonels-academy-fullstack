@@ -10,8 +10,8 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         Cookie: `ca_session=${sessionCookie?.value}`,
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
-      },
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      }
     });
 
     if (!apiResponse.ok) {

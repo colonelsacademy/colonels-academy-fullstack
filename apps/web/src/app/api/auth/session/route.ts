@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
       method: "GET",
       cache: "no-store",
       headers: {
-        Cookie: `ca_session=${sessionCookie?.value}`,
-      },
+        Cookie: `ca_session=${sessionCookie?.value}`
+      }
     });
 
     if (!apiResponse.ok) {

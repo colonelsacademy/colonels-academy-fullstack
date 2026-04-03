@@ -1,4 +1,9 @@
-import type { CourseDetail, DashboardSnapshot, InstructorProfile, LiveSessionPreview } from "./types";
+import type {
+  CourseDetail,
+  DashboardSnapshot,
+  InstructorProfile,
+  LiveSessionPreview
+} from "./types";
 
 export const instructors: InstructorProfile[] = [
   {
@@ -35,8 +40,10 @@ export const courseCatalog: CourseDetail[] = [
     slug: "staff-college-command",
     title: "Nepal Army Staff College Command Track [2026]",
     track: "staff",
-    summary: "Strategic exam prep for command-level candidates balancing military history, staff writing, and operational analysis.",
-    description: "A flagship command-preparation program for experienced candidates targeting the Staff College pathway. It combines doctrine review, case-study breakdowns, command writing, and structured coaching.",
+    summary:
+      "Strategic exam prep for command-level candidates balancing military history, staff writing, and operational analysis.",
+    description:
+      "A flagship command-preparation program for experienced candidates targeting the Staff College pathway. It combines doctrine review, case-study breakdowns, command writing, and structured coaching.",
     level: "Advanced",
     durationLabel: "60 hours",
     lessonCount: 75,
@@ -64,8 +71,10 @@ export const courseCatalog: CourseDetail[] = [
     slug: "police-inspector-cadet",
     title: "Nepal Police Inspector Cadet [2026]",
     track: "police",
-    summary: "A complete inspector-cadet preparation path covering law, investigation, interview drills, and exam stamina.",
-    description: "This track is built for aspirants preparing for Nepal Police Inspector selection with guided study plans, mock assessments, and legal-procedure breakdowns.",
+    summary:
+      "A complete inspector-cadet preparation path covering law, investigation, interview drills, and exam stamina.",
+    description:
+      "This track is built for aspirants preparing for Nepal Police Inspector selection with guided study plans, mock assessments, and legal-procedure breakdowns.",
     level: "Intermediate",
     durationLabel: "50 hours",
     lessonCount: 65,
@@ -93,8 +102,10 @@ export const courseCatalog: CourseDetail[] = [
     slug: "apf-inspector-cadet",
     title: "APF Inspector Cadet [2026]",
     track: "apf",
-    summary: "Focused preparation for APF candidates emphasizing tactical judgement, border-security operations, and leadership readiness.",
-    description: "Designed for Armed Police Force aspirants who need structured tactical revision, leadership coaching, and assessment-focused operational scenarios.",
+    summary:
+      "Focused preparation for APF candidates emphasizing tactical judgement, border-security operations, and leadership readiness.",
+    description:
+      "Designed for Armed Police Force aspirants who need structured tactical revision, leadership coaching, and assessment-focused operational scenarios.",
     level: "Intermediate",
     durationLabel: "45 hours",
     lessonCount: 55,
@@ -122,8 +133,10 @@ export const courseCatalog: CourseDetail[] = [
     slug: "officer-cadet-elite",
     title: "Nepal Army Officer Cadet Elite [2026]",
     track: "army",
-    summary: "The broadest officer-cadet prep path, designed for disciplined daily study and measurable performance gains.",
-    description: "An end-to-end officer-cadet course that blends aptitude, military fundamentals, interview confidence, and guided weekly planning.",
+    summary:
+      "The broadest officer-cadet prep path, designed for disciplined daily study and measurable performance gains.",
+    description:
+      "An end-to-end officer-cadet course that blends aptitude, military fundamentals, interview confidence, and guided weekly planning.",
     level: "Beginner",
     durationLabel: "45 hours",
     lessonCount: 50,
@@ -151,8 +164,10 @@ export const courseCatalog: CourseDetail[] = [
     slug: "mission-english-ops",
     title: "Mission English and Deployment Readiness",
     track: "mission",
-    summary: "Language and communication preparation for UN deployment, pre-deployment testing, and international exercises.",
-    description: "A targeted language program for officers and personnel who need structured mission-facing English, listening, and speaking practice.",
+    summary:
+      "Language and communication preparation for UN deployment, pre-deployment testing, and international exercises.",
+    description:
+      "A targeted language program for officers and personnel who need structured mission-facing English, listening, and speaking practice.",
     level: "Intermediate",
     durationLabel: "20 hours",
     lessonCount: 15,

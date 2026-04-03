@@ -32,7 +32,8 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/live-sessions", async () => {
     const response: LiveSessionsResponse = {
       items: upcomingSessions,
-      transport: "Use HTTP plus scheduled revalidation first. Add WebSockets only if class presence or chat demands it."
+      transport:
+        "Use HTTP plus scheduled revalidation first. Add WebSockets only if class presence or chat demands it."
     };
 
     return response;

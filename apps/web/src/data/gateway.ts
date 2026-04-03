@@ -1,13 +1,13 @@
-import { Shield, BookOpen, Users, Target, BookMarked } from 'lucide-react';
+import { Shield, BookOpen, Users, Target, BookMarked } from "lucide-react";
 
-export type Category = 'all' | 'army' | 'police' | 'apf' | 'staff';
+export type Category = "all" | "army" | "police" | "apf" | "staff";
 
 export const ICON_MAP = {
-  'BookOpen': BookOpen,
-  'Shield': Shield,
-  'Users': Users,
-  'Target': Target,
-  'BookMarked': BookMarked,
+  BookOpen: BookOpen,
+  Shield: Shield,
+  Users: Users,
+  Target: Target,
+  BookMarked: BookMarked
 };
 
 export type IconKey = keyof typeof ICON_MAP;
@@ -40,8 +40,8 @@ export interface Course {
 }
 
 export const CATEGORIES = [
-  { id: 'all', label: 'All Forces', iconId: 'BookOpen' as IconKey },
-  { id: 'army', label: 'Nepal Army', iconId: 'Shield' as IconKey },
-  { id: 'police', label: 'Nepal Police', iconId: 'Users' as IconKey },
-  { id: 'apf', label: 'APF', iconId: 'Target' as IconKey },
+  { id: "all", label: "All Forces", iconId: "BookOpen" as IconKey },
+  { id: "army", label: "Nepal Army", iconId: "Shield" as IconKey },
+  { id: "police", label: "Nepal Police", iconId: "Users" as IconKey },
+  { id: "apf", label: "APF", iconId: "Target" as IconKey }
 ];

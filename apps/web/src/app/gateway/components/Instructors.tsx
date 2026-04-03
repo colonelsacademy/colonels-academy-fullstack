@@ -1,8 +1,8 @@
-import Link from 'next/link';
-import { Star, ChevronRight } from 'lucide-react';
-import { type Category } from '@/data/gateway';
-import ImageWithSkeleton from '@/components/ui/ImageWithSkeleton';
-import { getInstructors } from '@/lib/api';
+import Link from "next/link";
+import { Star, ChevronRight } from "lucide-react";
+import { type Category } from "@/data/gateway";
+import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
+import { getInstructors } from "@/lib/api";
 
 interface InstructorsProps {
   activeTab: Category;
@@ -10,37 +10,37 @@ interface InstructorsProps {
 
 // Maps UI category filter to instructor branch name stored in the API
 const BRANCH_MAP: Record<string, string> = {
-  army: 'Nepal Army',
-  police: 'Nepal Police',
-  apf: 'APF Nepal',
+  army: "Nepal Army",
+  police: "Nepal Police",
+  apf: "APF Nepal"
 };
 
-export const Instructors = async ({ activeTab = 'all' }: InstructorsProps) => {
+export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
   const allInstructors = await getInstructors();
 
-  const branchName = activeTab !== 'all' ? BRANCH_MAP[activeTab] : undefined;
+  const branchName = activeTab !== "all" ? BRANCH_MAP[activeTab] : undefined;
   const filtered = branchName
-    ? allInstructors.filter(i => i.branch === branchName)
+    ? allInstructors.filter((i) => i.branch === branchName)
     : allInstructors;
 
-  const mentors = filtered.map(i => ({
+  const mentors = filtered.map((i) => ({
     name: i.name,
     rank: i.branch,
     experience: i.experience,
     specialization: i.specialization,
-    image: i.avatarUrl ?? '/images/placeholder-avatar.jpg',
+    image: i.avatarUrl ?? "/images/placeholder-avatar.jpg",
     rating: 4.8,
     reviews: 1200,
     students: 500,
     courses: 4,
-    bio: i.bio,
+    bio: i.bio
   }));
 
   const tabs = [
-    { id: 'all', label: 'All Instructors' },
-    { id: 'army', label: 'Nepal Army' },
-    { id: 'police', label: 'Nepal Police' },
-    { id: 'apf', label: 'APF Nepal' },
+    { id: "all", label: "All Instructors" },
+    { id: "army", label: "Nepal Army" },
+    { id: "police", label: "Nepal Police" },
+    { id: "apf", label: "APF Nepal" }
   ];
 
   if (mentors.length === 0) {
@@ -56,8 +56,12 @@ export const Instructors = async ({ activeTab = 'all' }: InstructorsProps) => {
       {/* Header & tabs */}
       <div className="flex flex-col items-center justify-center gap-6 mb-12 text-center">
         <div>
-          <h3 className="text-4xl font-bold text-[#0F1C15] font-rajdhani mb-2">Meet Your Instructors</h3>
-          <p className="text-gray-500 font-medium tracking-wide font-sans">Learn from the officers who have been in the selection board.</p>
+          <h3 className="text-4xl font-bold text-[#0F1C15] font-rajdhani mb-2">
+            Meet Your Instructors
+          </h3>
+          <p className="text-gray-500 font-medium tracking-wide font-sans">
+            Learn from the officers who have been in the selection board.
+          </p>
         </div>
         <div className="flex items-center gap-2 p-1.5 bg-white rounded-full border border-gray-200 shadow-sm overflow-x-auto max-w-full scrollbar-hide">
           {tabs.map((tab) => {
@@ -68,7 +72,9 @@ export const Instructors = async ({ activeTab = 'all' }: InstructorsProps) => {
                 href={`/?mentorCategory=${tab.id}`}
                 scroll={false}
                 className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-                  isActive ? 'bg-[#0F1C15] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  isActive
+                    ? "bg-[#0F1C15] text-white shadow-md"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
                 {tab.label}
@@ -115,20 +121,32 @@ export const Instructors = async ({ activeTab = 'all' }: InstructorsProps) => {
                 </div>
 
                 <div>
-                  <h4 className="text-3xl font-bold text-white font-rajdhani leading-none mb-2">{m.name}</h4>
-                  <p className="text-white/70 text-sm font-medium tracking-wide font-sans">{m.specialization}</p>
+                  <h4 className="text-3xl font-bold text-white font-rajdhani leading-none mb-2">
+                    {m.name}
+                  </h4>
+                  <p className="text-white/70 text-sm font-medium tracking-wide font-sans">
+                    {m.specialization}
+                  </p>
                 </div>
 
                 <div className="max-h-0 opacity-0 group-hover:max-h-32 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
-                  <p className="text-white/60 text-xs leading-relaxed line-clamp-3 italic font-sans">{m.bio}</p>
+                  <p className="text-white/60 text-xs leading-relaxed line-clamp-3 italic font-sans">
+                    {m.bio}
+                  </p>
                   <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/10 font-rajdhani">
                     <div className="flex flex-col">
-                      <span className="text-white font-bold text-sm">{(m.students ?? 0).toLocaleString()}</span>
-                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">Students</span>
+                      <span className="text-white font-bold text-sm">
+                        {(m.students ?? 0).toLocaleString()}
+                      </span>
+                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">
+                        Students
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-white font-bold text-sm">{m.courses}</span>
-                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">Courses</span>
+                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">
+                        Courses
+                      </span>
                     </div>
                   </div>
                 </div>

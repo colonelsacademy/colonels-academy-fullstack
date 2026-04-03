@@ -14,7 +14,9 @@ export default async function DashboardPage() {
             <p className="eyebrow" style={{ color: "var(--navy)" }}>
               Learner dashboard
             </p>
-            <h1 className="section-title">A course command center, not a separate learning service.</h1>
+            <h1 className="section-title">
+              A course command center, not a separate learning service.
+            </h1>
           </div>
           <span className="banner-note">{dashboard.note}</span>
         </div>
@@ -60,7 +62,9 @@ export default async function DashboardPage() {
               layer={session.deliveryMode}
               title={session.title}
               note={`${new Date(session.startsAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} | ${
-                session.replayAvailable ? "Replay expected after class." : "Live-only until replay is uploaded."
+                session.replayAvailable
+                  ? "Replay expected after class."
+                  : "Live-only until replay is uploaded."
               }`}
             />
           ))}

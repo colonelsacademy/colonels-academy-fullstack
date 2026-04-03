@@ -5,7 +5,7 @@ import type {
   InstructorProfile,
   LiveSessionPreview,
   ModuleDetail,
-  LessonDetail,
+  LessonDetail
 } from "./types";
 
 export interface AuthSessionUser {

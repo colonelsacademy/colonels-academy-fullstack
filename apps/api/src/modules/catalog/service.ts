@@ -49,7 +49,9 @@ function mapCourseRecord(record: CourseRecord): CourseDetail {
     featured: record.isFeatured,
     format: fallback?.format ?? "cohort",
     liveSupport: fallback?.liveSupport ?? "Scheduled instructor support.",
-    instructorSlugs: record.instructorLinks.map((link: { instructor: { slug: string } }) => link.instructor.slug),
+    instructorSlugs: record.instructorLinks.map(
+      (link: { instructor: { slug: string } }) => link.instructor.slug
+    ),
     outcomeBullets: fallback?.outcomeBullets ?? [],
     syllabus: fallback?.syllabus ?? [],
     ...(record.originalPriceNpr !== null ? { originalPriceNpr: record.originalPriceNpr } : {}),
@@ -69,7 +71,10 @@ function mapInstructorRecord(record: InstructorRecord): InstructorProfile {
   };
 }
 
-export async function listCourses(prisma: DatabaseClient, log: FastifyBaseLogger): Promise<CourseDetail[]> {
+export async function listCourses(
+  prisma: DatabaseClient,
+  log: FastifyBaseLogger
+): Promise<CourseDetail[]> {
   try {
     const records = await loadCourseRecords(prisma);
 
@@ -79,12 +84,19 @@ export async function listCourses(prisma: DatabaseClient, log: FastifyBaseLogger
 
     return records.map(mapCourseRecord);
   } catch (error) {
-    log.error({ err: error }, "catalog.listCourses: database query failed, serving contract fallback");
+    log.error(
+      { err: error },
+      "catalog.listCourses: database query failed, serving contract fallback"
+    );
     return courseCatalog;
   }
 }
 
-export async function getCourseBySlug(prisma: DatabaseClient, log: FastifyBaseLogger, slug: string): Promise<CourseDetail | null> {
+export async function getCourseBySlug(
+  prisma: DatabaseClient,
+  log: FastifyBaseLogger,
+  slug: string
+): Promise<CourseDetail | null> {
   const fallback = courseCatalog.find((course) => course.slug === slug) ?? null;
 
   try {
@@ -104,12 +116,18 @@ export async function getCourseBySlug(prisma: DatabaseClient, log: FastifyBaseLo
 
     return record ? mapCourseRecord(record) : fallback;
   } catch (error) {
-    log.error({ err: error, slug }, "catalog.getCourseBySlug: database query failed, serving contract fallback");
+    log.error(
+      { err: error, slug },
+      "catalog.getCourseBySlug: database query failed, serving contract fallback"
+    );
     return fallback;
   }
 }
 
-export async function listInstructors(prisma: DatabaseClient, log: FastifyBaseLogger): Promise<InstructorProfile[]> {
+export async function listInstructors(
+  prisma: DatabaseClient,
+  log: FastifyBaseLogger
+): Promise<InstructorProfile[]> {
   try {
     const records = await loadInstructorRecords(prisma);
 
@@ -119,7 +137,10 @@ export async function listInstructors(prisma: DatabaseClient, log: FastifyBaseLo
 
     return records.map(mapInstructorRecord);
   } catch (error) {
-    log.error({ err: error }, "catalog.listInstructors: database query failed, serving contract fallback");
+    log.error(
+      { err: error },
+      "catalog.listInstructors: database query failed, serving contract fallback"
+    );
     return instructors;
   }
 }

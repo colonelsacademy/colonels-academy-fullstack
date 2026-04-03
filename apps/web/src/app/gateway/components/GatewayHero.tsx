@@ -1,20 +1,15 @@
-'use client';
+"use client";
 
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-} from 'framer-motion';
-import { ChevronDown, PlayCircle, Target } from 'lucide-react';
-import { useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
+import { ChevronDown, PlayCircle, Target } from "lucide-react";
+import { useRef } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const MagneticButton = ({
   children,
   onClick,
-  className,
+  className
 }: {
   children: React.ReactNode;
   onClick?: () => void;
@@ -30,12 +25,20 @@ const MagneticButton = ({
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (shouldReduceMotion) return;
     const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current?.getBoundingClientRect() ?? { left: 0, top: 0, width: 0, height: 0 };
+    const { left, top, width, height } = ref.current?.getBoundingClientRect() ?? {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0
+    };
     x.set((clientX - (left + width / 2)) * 0.3);
     y.set((clientY - (top + height / 2)) * 0.3);
   };
 
-  const handleMouseLeave = () => { x.set(0); y.set(0); };
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
 
   return (
     <motion.button
@@ -57,7 +60,6 @@ const GatewayHero = () => {
   return (
     <div className="w-full pt-2 pb-6">
       <div className="w-[99%] mx-auto bg-white rounded-none min-h-[85vh] md:min-h-[72vh] flex flex-col justify-center p-fluid-section relative overflow-hidden shadow-sm border border-white">
-
         {/* Hero image layer */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -78,7 +80,6 @@ const GatewayHero = () => {
         {/* Animated content - Now using CSS fade-in-up */}
         <div className="relative z-10 w-full flex flex-col justify-center min-h-[85vh] md:min-h-[72vh] fade-in-up">
           <div className="max-w-3xl mr-auto flex flex-col items-start text-left">
-
             {/* Brand pill */}
             <div className="mb-8 fade-in-up [animation-delay:100ms]">
               <span className="bg-[#0B1120] text-white text-[11px] sm:text-[12px] font-black tracking-[0.25em] uppercase px-5 py-3 rounded-xl font-rajdhani shadow-2xl border border-gray-800 flex items-center">
@@ -101,16 +102,16 @@ const GatewayHero = () => {
 
             {/* Subtitle */}
             <p className="text-fluid-lg text-gray-600 max-w-xl leading-relaxed mb-8 font-medium fade-in-up [animation-delay:400ms]">
-              Join the premier preparation platform for{' '}
-              <span className="text-gray-900 font-bold">Officer Cadet</span>,{' '}
-              <span className="text-gray-900 font-bold">Inspector</span>, and{' '}
+              Join the premier preparation platform for{" "}
+              <span className="text-gray-900 font-bold">Officer Cadet</span>,{" "}
+              <span className="text-gray-900 font-bold">Inspector</span>, and{" "}
               <span className="text-gray-900 font-bold">ASI</span> aspirants. Your uniform awaits.
             </p>
 
             {/* CTA buttons */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full sm:w-auto fade-in-up [animation-delay:600ms]">
               <MagneticButton
-                onClick={() => router.push('/iq-test')}
+                onClick={() => router.push("/iq-test")}
                 className="group w-full sm:w-auto px-8 py-5 bg-[#0B1120] text-white rounded-xl font-bold text-base tracking-wider uppercase shadow-xl hover:shadow-2xl hover:shadow-blue-900/20 flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
                 <Target className="w-5 h-5 text-blue-400 group-hover:rotate-180 transition-transform duration-700" />
@@ -118,7 +119,7 @@ const GatewayHero = () => {
               </MagneticButton>
 
               <MagneticButton
-                onClick={() => router.push('/classroom/military-history')}
+                onClick={() => router.push("/classroom/military-history")}
                 className="group w-full sm:w-auto px-8 py-5 bg-white/50 backdrop-blur-sm text-gray-900 border border-gray-200 rounded-xl font-bold text-base tracking-wider uppercase shadow-sm hover:shadow-md hover:bg-white flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
                 <PlayCircle className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />

@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/csrf`, {
       method: "GET",
-      cache: "no-store",
+      cache: "no-store"
     });
 
     if (!apiResponse.ok) {

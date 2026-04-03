@@ -13,8 +13,8 @@ export default function AdminPage() {
             <h1 className="section-title">Admin stays in the same web app for now.</h1>
           </div>
           <p>
-            That keeps auth, deployment, shared UI, and feature ownership straightforward while the product
-            is still one tightly connected platform.
+            That keeps auth, deployment, shared UI, and feature ownership straightforward while the
+            product is still one tightly connected platform.
           </p>
         </div>
 
@@ -29,11 +29,17 @@ export default function AdminPage() {
           </article>
           <article className="admin-card">
             <h3>Media pipeline</h3>
-            <p>Queue Bunny Stream sync tasks and status checks with BullMQ instead of blocking web requests.</p>
+            <p>
+              Queue Bunny Stream sync tasks and status checks with BullMQ instead of blocking web
+              requests.
+            </p>
           </article>
           <article className="admin-card">
             <h3>Learner support</h3>
-            <p>Handle enrollments, reminders, and exceptions before splitting operational tooling further.</p>
+            <p>
+              Handle enrollments, reminders, and exceptions before splitting operational tooling
+              further.
+            </p>
           </article>
         </div>
       </section>
@@ -44,13 +50,20 @@ export default function AdminPage() {
             <p className="eyebrow" style={{ color: "var(--navy)" }}>
               Decision recap
             </p>
-            <h2 className="section-title">The platform is modular, but still intentionally one backend.</h2>
+            <h2 className="section-title">
+              The platform is modular, but still intentionally one backend.
+            </h2>
           </div>
         </div>
 
         <div className="grid-3">
           {architectureDecisions.map((decision) => (
-            <DecisionCard key={decision.layer} layer={decision.layer} title={decision.choice} note={decision.note} />
+            <DecisionCard
+              key={decision.layer}
+              layer={decision.layer}
+              title={decision.choice}
+              note={decision.note}
+            />
           ))}
         </div>
       </section>
