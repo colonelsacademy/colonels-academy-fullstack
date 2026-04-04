@@ -1,6 +1,5 @@
 import { getInstructors } from "@/lib/api";
 import { ChevronRight, Star } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 interface InstructorsProps {
@@ -52,12 +51,11 @@ export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
                 {/* Full Image Background */}
                 <div className="absolute inset-0">
                   {instructor.avatarUrl ? (
-                    <Image
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       src={instructor.avatarUrl}
                       alt={instructor.name}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#0F1C15] to-[#1a2e20]" />

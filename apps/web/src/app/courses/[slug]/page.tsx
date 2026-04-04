@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CourseAddToCart from "@/components/CourseAddToCart";
 import { getCourseBySlug, getInstructors } from "@/lib/api";
 import type { CourseDetail, InstructorProfile } from "@colonels-academy/contracts";
 
@@ -47,7 +48,8 @@ const RELATED_COURSES = [
     rating: 4.8,
     students: 12500,
     price: 4500,
-    dura: "12h"
+    dura: "12h",
+    img: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=200&q=80"
   },
   {
     id: "interview-prep",
@@ -55,7 +57,8 @@ const RELATED_COURSES = [
     rating: 4.9,
     students: 8200,
     price: 3500,
-    dura: "5h"
+    dura: "5h",
+    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80"
   },
   {
     id: "physical-training",
@@ -63,7 +66,8 @@ const RELATED_COURSES = [
     rating: 4.7,
     students: 5400,
     price: 2000,
-    dura: "8h"
+    dura: "8h",
+    img: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=80"
   }
 ];
 
@@ -270,7 +274,17 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group cursor-pointer"
                   >
                     <div className="w-full sm:w-32 h-20 bg-[#0F1C15] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
-                      <BookOpen className="w-8 h-8 text-[#D4AF37]" />
+                      {rc.img ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={rc.img}
+                          alt={rc.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <BookOpen className="w-8 h-8 text-[#D4AF37]" />
+                      )}
                     </div>
                     <div className="flex-1 w-full text-center sm:text-left">
                       <h4 className="font-bold text-[#0F1C15] text-sm leading-tight mb-1 group-hover:text-blue-700 transition-colors">
@@ -341,8 +355,13 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm"
                   >
                     <div className="flex items-start gap-6">
-                      <div className="w-20 h-20 rounded-full bg-[#0F1C15] flex items-center justify-center text-[#D4AF37] font-bold text-2xl shrink-0">
-                        {instructor.name.charAt(0)}
+                      <div className="w-20 h-20 rounded-full bg-[#0F1C15] overflow-hidden flex items-center justify-center text-[#D4AF37] font-bold text-2xl shrink-0">
+                        {instructor.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={instructor.avatarUrl} alt={instructor.name} className="w-full h-full object-cover" />
+                        ) : (
+                          instructor.name.charAt(0)
+                        )}
                       </div>
                       <div>
                         <h4 className="text-xl font-bold text-[#0F1C15] font-['Rajdhani']">
@@ -431,21 +450,13 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <button
-                      type="button"
-                      className="py-3.5 border border-[#0F1C15] text-[#0F1C15] font-bold uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-xs"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      Add
-                    </button>
-                    <Link
-                      href="/checkout"
-                      className="py-3.5 bg-[#D4AF37] text-[#0F1C15] font-bold uppercase tracking-widest rounded-xl hover:bg-[#F4CA30] transition-colors shadow-lg flex items-center justify-center text-xs"
-                    >
-                      Buy now
-                    </Link>
-                  </div>
+                  <CourseAddToCart
+                    courseId={course.slug}
+                    courseTitle={course.title}
+                    coursePrice={course.priceNpr}
+                    courseThumbnail={course.heroImageUrl}
+                    courseCategory={course.track}
+                  />
 
                   <div className="text-center text-[10px] text-gray-500 mb-6 font-medium">
                     30-Day Money-Back Guarantee

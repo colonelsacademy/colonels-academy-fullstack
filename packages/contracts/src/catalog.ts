@@ -12,7 +12,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Army",
     experience: "25+ years",
     specialization: "Strategy, command preparation, and selection-board drills",
-    avatarUrl: "/images/instructors/Rajesh-Thapa.jpg",
+avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/Rajesh%20Thapa.png",
     bio: "Former directing staff with deep experience preparing officer-cadet and command-track candidates for high-stakes military assessments."
   },
   {
@@ -21,7 +21,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Police",
     experience: "30+ years",
     specialization: "Criminal law, investigation, and oral-board performance",
-    avatarUrl: "/images/instructors/KP-Sharma.jpg",
+avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/KP%20Sharma.png",
     bio: "Law-enforcement mentor focused on analytical reasoning, legal frameworks, and interview readiness for inspector-track learners."
   },
   {
@@ -30,7 +30,7 @@ export const instructors: InstructorProfile[] = [
     branch: "APF Nepal",
     experience: "28+ years",
     specialization: "Border security, tactical ops, and field leadership",
-    avatarUrl: "/images/instructors/SB-Basnet.jpg",
+avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/SB%20Basnet.png",
     bio: "Operations-focused instructor helping cadets translate theory into disciplined, scenario-based decision making."
   }
 ];
@@ -230,3 +230,4 @@ export const dashboardSnapshot: DashboardSnapshot = {
   pendingTasks: 4,
   completionTarget: "Officer Cadet board window"
 };
+

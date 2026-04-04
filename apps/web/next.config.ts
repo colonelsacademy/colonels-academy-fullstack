@@ -19,7 +19,15 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "uat.thecolonelsacademy.com"
+      },
+      {
+        protocol: "https",
         hostname: "colonels-alpha.b-cdn.net"
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com"
       }
     ]
   }

@@ -1,4 +1,3 @@
-import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
 import type { Course } from "@/data/gateway";
 import { ArrowRight, Clock, ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
@@ -23,17 +22,16 @@ export const FeaturedCourse = ({ course, isEnrolled = false }: FeaturedCoursePro
 
         <div className="group relative bg-white rounded-[2.5rem] border border-gray-200 overflow-hidden shadow-sm transition-all duration-500 flex flex-col lg:flex-row fade-in-up">
           {/* Image Column */}
-          <div className="lg:w-1/2 relative aspect-video lg:aspect-auto overflow-hidden">
-            <ImageWithSkeleton
-              src={course.thumbnail || ""}
-              alt={course.title}
-              quality={82}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              widths={[640, 828, 1024, 1280]}
-              loading="lazy"
-              className={`w-full h-full object-cover transition-transform duration-1000 ${course.comingSoon ? "" : "group-hover:scale-105"}`}
-              skeletonClassName="rounded-none"
-            />
+          <div className="lg:w-1/2 relative aspect-video lg:aspect-auto overflow-hidden bg-gray-100">
+            {course.thumbnail && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={course.thumbnail}
+                alt={course.title}
+                loading="lazy"
+                className={`w-full h-full object-cover transition-transform duration-1000 ${course.comingSoon ? "" : "group-hover:scale-105"}`}
+              />
+            )}
             <div className="absolute top-6 left-6 flex flex-col gap-2">
               <span className="bg-[#1c1d1f] text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded shadow-xl border border-white/10 flex items-center gap-2">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
