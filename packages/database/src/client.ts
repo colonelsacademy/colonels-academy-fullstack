@@ -1,15 +1,7 @@
-import { createRequire } from "node:module";
-import type { PrismaClient as PrismaClientType } from "@prisma/client";
-
-const runtimeRequire: NodeRequire =
-  typeof require === "function" ? require : createRequire(__filename);
-
-const { PrismaClient } = runtimeRequire("@prisma/client") as {
-  PrismaClient: new () => PrismaClientType;
-};
+import { PrismaClient } from "@prisma/client";
 
 const globalForDatabase = globalThis as typeof globalThis & {
-  __colonelsAcademyPrisma?: PrismaClientType;
+  __colonelsAcademyPrisma?: PrismaClient;
 };
 
 export function createDatabaseClient() {
@@ -22,4 +14,4 @@ if (process.env.NODE_ENV !== "production") {
   globalForDatabase.__colonelsAcademyPrisma = db;
 }
 
-export type DatabaseClient = PrismaClientType;
+export type DatabaseClient = PrismaClient;

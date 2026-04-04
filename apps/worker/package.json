@@ -13,6 +13,7 @@
     "@colonels-academy/config": "workspace:*",
     "@colonels-academy/contracts": "workspace:*",
     "@colonels-academy/database": "workspace:*",
+    "@prisma/client": "^6.19.3",
     "bullmq": "^5.46.1",
     "ioredis": "^5.4.2"
   },

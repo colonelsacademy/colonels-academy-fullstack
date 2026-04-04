@@ -1,5 +1,0 @@
-[build]
-cmd = "npm install -g corepack@0.31.0 && corepack enable && corepack prepare pnpm@10.0.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @colonels-academy/api run build"
-
-[deploy]
-startCommand = "node apps/api/dist/index.js"
