@@ -12,7 +12,9 @@ import {
   Lock,
   LogOut,
   Menu,
+  Settings,
   Shield,
+  ShieldAlert,
   ShoppingCart,
   User,
   X
@@ -21,7 +23,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type DropdownKey = "resources" | null;
+type DropdownKey = "programs" | "resources" | null;
+
+const defaultPrograms = [
+  { name: "Nepal Army Programs", path: "/courses?category=army", icon: Shield },
+  { name: "Nepal Police Programs", path: "/courses?category=police", icon: Shield },
+  { name: "APF Programs", path: "/courses?category=apf", icon: Shield }
+];
 
 const academyResources = [
   { name: "Study Materials", path: "/study-materials", icon: BookOpen },
@@ -133,10 +141,16 @@ const Navbar = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  const [mounted, setMounted] = useState(false);
+
   async function handleLogout() {
     await logout();
     router.push("/");
   }
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -174,6 +188,14 @@ const Navbar = () => {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8 h-full">
+            <Dropdown
+              id="programs"
+              label="Officer Programs"
+              items={defaultPrograms}
+              width="w-80"
+              activeId={activeDropdown}
+              setActiveId={setActiveDropdown}
+            />
             <Link
               href="/#mentors"
               className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
@@ -206,7 +228,7 @@ const Navbar = () => {
               aria-label="Cart"
             >
               <ShoppingCart className="w-5 h-5" />
-              {itemCount > 0 && (
+              {mounted && itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
                   {itemCount}
                 </span>
@@ -242,21 +264,21 @@ const Navbar = () => {
                       <p className="text-xs text-gray-400">{user.email}</p>
                     </div>
                     <div className="py-2">
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-400 hover:bg-white/5 transition-colors"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        My Courses
+                      {user.role === "admin" && (
+                        <Link href="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 transition-colors">
+                          <ShieldAlert className="w-4 h-4" /> HQ Command
+                        </Link>
+                      )}
+                      <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-400 hover:bg-white/5 transition-colors">
+                        <BookOpen className="w-4 h-4" /> My Courses
                       </Link>
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors"
-                      >
-                        <User className="w-4 h-4" />
-                        Dashboard
+                      {user.role === "admin" && (
+                        <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors">
+                          <User className="w-4 h-4" /> Dashboard
+                        </Link>
+                      )}
+                      <Link href="/settings" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors">
+                        <Settings className="w-4 h-4" /> Account Settings
                       </Link>
                     </div>
                     <div className="border-t border-white/10 pt-2">
@@ -309,19 +331,17 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-[#0F1C15] border-b border-white/10 px-6 py-4 flex flex-col gap-4 sticky top-20 z-40 overflow-hidden"
           >
-            <Link
-              href="/courses"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
-            >
+            <Link href="/courses" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
               Course Catalog
             </Link>
-            <Link
-              href="/#mentors"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
-            >
+            <Link href="/#mentors" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
               Directing Staff
+            </Link>
+            <Link href="/study-materials" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
+              Study Materials
+            </Link>
+            <Link href="/previous-papers" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5">
+              Previous Papers
             </Link>
             {authenticated && user ? (
               <div className="flex flex-col gap-2 mt-2">
@@ -360,6 +380,7 @@ const Navbar = () => {
       </AnimatePresence>
 
       {/* Cart drawer */}
+      {mounted && (
       <AnimatePresence>
         {isCartOpen && (
           <div className="relative z-[70]">
@@ -471,6 +492,7 @@ const Navbar = () => {
           </div>
         )}
       </AnimatePresence>
+      )}
     </>
   );
 };
