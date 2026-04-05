@@ -1,7 +1,7 @@
-import { useState } from "react";
-import type { MockTestSavedResult } from "@/services/mockTestService";
-import { questions, FULL_MARKS, optionLetters } from "@/data/mockQuestions";
+import { FULL_MARKS, optionLetters, questions } from "@/data/mockQuestions";
 import { mockTestBaseCSS } from "@/data/mockTestTheme";
+import type { MockTestSavedResult } from "@/services/mockTestService";
+import { useState } from "react";
 
 interface Props {
   savedResult: MockTestSavedResult;
@@ -37,9 +37,9 @@ export default function MockTestSavedView({
 
   const answerMap: Record<number, string> = {};
   if (answers)
-    Object.entries(answers).forEach(([k, v]) => {
+    for (const [k, v] of Object.entries(answers)) {
       answerMap[Number(k)] = v as string;
-    });
+    }
 
   const correct = questions.filter((q) => answerMap[q.id] === q.answer).length;
   const wrong = Object.keys(answerMap).length - correct;
@@ -197,8 +197,18 @@ export default function MockTestSavedView({
       `}</style>
 
       {showConfirm && (
-        <div className="sv-confirm-overlay" onClick={() => !clearLoading && setShowConfirm(false)}>
-          <div className="sv-confirm-card" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="sv-confirm-overlay"
+          onClick={() => !clearLoading && setShowConfirm(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && !clearLoading) setShowConfirm(false);
+          }}
+        >
+          <div
+            className="sv-confirm-card"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <div className="sv-confirm-icon">🗑️</div>
             <h3 className="sv-confirm-title">Clear Score?</h3>
             <p className="sv-confirm-sub">
@@ -211,6 +221,7 @@ export default function MockTestSavedView({
                 height="13"
                 viewBox="0 0 14 14"
                 fill="none"
+                aria-hidden="true"
                 style={{ flexShrink: 0, marginTop: 1 }}
               >
                 <path
@@ -228,6 +239,7 @@ export default function MockTestSavedView({
             </div>
             <div className="sv-confirm-btns">
               <button
+                type="button"
                 className="sv-confirm-cancel"
                 onClick={() => setShowConfirm(false)}
                 disabled={clearLoading}
@@ -235,6 +247,7 @@ export default function MockTestSavedView({
                 Cancel
               </button>
               <button
+                type="button"
                 className="sv-confirm-delete"
                 onClick={onClearAndRetake}
                 disabled={clearLoading}
@@ -245,7 +258,7 @@ export default function MockTestSavedView({
                   </>
                 ) : (
                   <>
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                       <path
                         d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4"
                         stroke="#fff"
@@ -301,7 +314,7 @@ export default function MockTestSavedView({
             </div>
 
             <div className="sv-ring-wrap">
-              <svg className="sv-ring-svg" viewBox="0 0 140 140">
+              <svg className="sv-ring-svg" viewBox="0 0 140 140" aria-hidden="true">
                 <circle cx="70" cy="70" r="60" className="sv-ring-track" />
                 <circle cx="70" cy="70" r="60" className="sv-ring-fill" />
               </svg>
@@ -316,7 +329,7 @@ export default function MockTestSavedView({
             </h2>
 
             <div className="sv-date-tag">
-              <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+              <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <rect
                   x="2"
                   y="3"
@@ -363,11 +376,12 @@ export default function MockTestSavedView({
 
             <div className="sv-actions">
               <button
+                type="button"
                 className="sv-retake-btn"
                 onClick={() => setShowConfirm(true)}
                 disabled={clearLoading}
               >
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M1 7a6 6 0 1 0 1.5-4M1 3v4h4"
                     stroke="currentColor"
@@ -378,9 +392,9 @@ export default function MockTestSavedView({
                 </svg>
                 Retake Assessment
               </button>
-              <button className="sv-report-btn" onClick={onGoHome}>
+              <button type="button" className="sv-report-btn" onClick={onGoHome}>
                 Return to Home
-                <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M6 2L1 7l5 5M2 7h11"
                     stroke="currentColor"
@@ -391,11 +405,12 @@ export default function MockTestSavedView({
                 </svg>
               </button>
               <button
+                type="button"
                 className="sv-clear-btn"
                 onClick={() => setShowConfirm(true)}
                 disabled={clearLoading}
               >
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4"
                     stroke="currentColor"
@@ -415,9 +430,13 @@ export default function MockTestSavedView({
                 Clear Score from Database
               </button>
               {iqReportEnabled && (
-                <button className="sv-report-btn" onClick={() => setShowReport((v) => !v)}>
+                <button
+                  type="button"
+                  className="sv-report-btn"
+                  onClick={() => setShowReport((v) => !v)}
+                >
                   {showReport ? "Hide" : "View"} Full Intel Report
-                  <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                  <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
                       d={showReport ? "M2 9l5-5 5 5" : "M2 5l5 5 5-5"}
                       stroke="currentColor"
@@ -458,7 +477,13 @@ export default function MockTestSavedView({
                     <div className="sv-row-qtext">{q.text}</div>
                     <div className="sv-pills">
                       <span className="sv-pill correct">
-                        <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                        <svg
+                          width="9"
+                          height="9"
+                          viewBox="0 0 14 14"
+                          fill="none"
+                          aria-hidden="true"
+                        >
                           <path
                             d="M2 7l4 4 6-7"
                             stroke="currentColor"
@@ -470,7 +495,13 @@ export default function MockTestSavedView({
                       </span>
                       {userAns && !isCorrect && (
                         <span className="sv-pill wrong">
-                          <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                          <svg
+                            width="9"
+                            height="9"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                            aria-hidden="true"
+                          >
                             <path
                               d="M3 3l8 8M11 3l-8 8"
                               stroke="currentColor"

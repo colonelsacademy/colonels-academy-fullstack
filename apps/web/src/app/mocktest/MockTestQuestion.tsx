@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { type Question, optionLetters } from "@/data/mockQuestions";
 import { mockTestBaseCSS } from "@/data/mockTestTheme";
+import { useEffect, useState } from "react";
 import mq1 from "../../assets/mq1.png";
 import mq2 from "../../assets/mq2.png";
 import mq3 from "../../assets/mq3.png";
@@ -274,8 +274,8 @@ export default function MockTestQuestion({
 
       {/* Sticky top bar */}
       <div className="mqt-bar">
-        <button className="mqt-exit-btn" onClick={onExit}>
-          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+        <button type="button" className="mqt-exit-btn" onClick={onExit}>
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path
               d="M6 2L1 7l5 5M2 7h11"
               stroke="currentColor"
@@ -329,6 +329,7 @@ export default function MockTestQuestion({
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
+            aria-hidden="true"
           >
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
@@ -389,7 +390,7 @@ export default function MockTestQuestion({
                 const isSel = selectedAnswer === letter;
                 return (
                   <button
-                    key={i}
+                    key={letter}
                     type="button"
                     className={`mqt-option ${isSel ? "sel" : ""}`}
                     onClick={() => onAnswer(letter)}
@@ -431,8 +432,8 @@ export default function MockTestQuestion({
           </div>
 
           <div className="mqt-nav">
-            <button className="mqt-nav-btn prev" onClick={onPrev} disabled={isFirst}>
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+            <button type="button" className="mqt-nav-btn prev" onClick={onPrev} disabled={isFirst}>
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path
                   d="M9 2L5 7l4 5"
                   stroke="currentColor"
@@ -444,9 +445,9 @@ export default function MockTestQuestion({
               Back
             </button>
             {isLast ? (
-              <button className="mqt-nav-btn submit" onClick={onSubmit}>
+              <button type="button" className="mqt-nav-btn submit" onClick={onSubmit}>
                 Finalize Assessment
-                <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M2 7h10M8 3l4 4-4 4"
                     stroke="currentColor"
@@ -457,9 +458,9 @@ export default function MockTestQuestion({
                 </svg>
               </button>
             ) : (
-              <button className="mqt-nav-btn next" onClick={onNext}>
+              <button type="button" className="mqt-nav-btn next" onClick={onNext}>
                 {selectedAnswer ? "Next Question" : "Skip & Next"}
-                <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M2 7h10M8 3l4 4-4 4"
                     stroke="currentColor"
@@ -486,7 +487,8 @@ export default function MockTestQuestion({
                 const isCurrent = i === questionIndex;
                 return (
                   <button
-                    key={i}
+                    key={qId}
+                    type="button"
                     className={`mqt-dot ${isCurrent ? "current" : ""} ${isAnswered ? "answered" : ""}`}
                     onClick={() => onJump(i)}
                     title={`Q${qId}${isAnswered ? " ✓" : ""}`}

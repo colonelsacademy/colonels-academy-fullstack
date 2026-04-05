@@ -1,5 +1,5 @@
-import { FULL_MARKS, PASS_MARK_SCORE, TOTAL_QUESTIONS } from "../../data/mockQuestions";
 import { mockTestBaseCSS } from "@/data/mockTestTheme";
+import { FULL_MARKS, PASS_MARK_SCORE, TOTAL_QUESTIONS } from "../../data/mockQuestions";
 
 interface Props {
   isLoggedIn: boolean;
@@ -131,7 +131,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
         <div className="mt-hud-decal">
           <div>SYS: ONLINE</div>
           <div>MODE: ASSESSMENT</div>
-          <div className="mt-hud-gold">READY // v3.0</div>
+          <div className="mt-hud-gold">READY {/* v3.0 */}</div>
         </div>
 
         <div className="intro-outer">
@@ -153,7 +153,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
             <div className="intro-grid">
               <div className="intro-cell">
                 <div className="intro-cell-icon">
-                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
+                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <rect
                       x="1"
                       y="1"
@@ -177,7 +177,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               </div>
               <div className="intro-cell">
                 <div className="intro-cell-icon">
-                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
+                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <circle cx="7" cy="7" r="5.5" stroke="#D4AF37" strokeWidth="1.3" />
                     <path d="M7 4v3l2 2" stroke="#D4AF37" strokeWidth="1.3" strokeLinecap="round" />
                   </svg>
@@ -188,7 +188,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               </div>
               <div className="intro-cell">
                 <div className="intro-cell-icon">
-                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
+                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
                       d="M7 1l1.8 3.6L13 5.3l-3 2.9.7 4.1L7 10.2l-3.7 2.1.7-4.1-3-2.9 4.2-.7z"
                       stroke="#D4AF37"
@@ -202,7 +202,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               </div>
               <div className="intro-cell">
                 <div className="intro-cell-icon">
-                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none">
+                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
                       d="M2 7l4 4 6-6"
                       stroke="#D4AF37"
@@ -255,6 +255,8 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
                   height="16"
                   viewBox="0 0 14 14"
                   fill="none"
+                  role="img"
+                  aria-label="Information"
                   style={{ flexShrink: 0, marginTop: 1 }}
                 >
                   <circle cx="7" cy="7" r="6" stroke="#D4AF37" strokeWidth="1.5" />
@@ -272,9 +274,9 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               </div>
             )}
 
-            <button className="mt-btn-primary" onClick={onStart}>
+            <button type="button" className="mt-btn-primary" onClick={onStart}>
               Begin Assessment
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path
                   d="M2 7h10M8 3l4 4-4 4"
                   stroke="currentColor"
@@ -285,7 +287,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               </svg>
             </button>
 
-            <button className="intro-print-btn" onClick={onPrint}>
+            <button type="button" className="intro-print-btn" onClick={onPrint}>
               <svg
                 width="13"
                 height="13"
@@ -295,6 +297,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
                 strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <polyline points="6 9 6 2 18 2 18 9" />
                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
@@ -303,8 +306,8 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               Print Paper Version
             </button>
 
-            <button className="intro-print-btn intro-home-btn" onClick={onGoHome}>
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <button type="button" className="intro-print-btn intro-home-btn" onClick={onGoHome}>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path
                   d="M2 6.5L7 2l5 4.5V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6.5Z"
                   stroke="currentColor"

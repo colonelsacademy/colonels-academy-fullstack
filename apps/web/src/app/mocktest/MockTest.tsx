@@ -1,21 +1,21 @@
 "use client";
 
 import { useAuth } from "@/components/auth/AuthProvider";
-import { questions, TOTAL_QUESTIONS, TOTAL_TIME_SECONDS, FULL_MARKS } from "@/data/mockQuestions";
+import { FULL_MARKS, TOTAL_QUESTIONS, TOTAL_TIME_SECONDS, questions } from "@/data/mockQuestions";
 import {
-  submitMockResult,
-  getMyLatestMockResult,
+  type MockTestSavedResult,
   clearMyMockScore,
-  type MockTestSavedResult
+  getMyLatestMockResult,
+  submitMockResult
 } from "@/services/mockTestService";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import MockTestIntro from "./MockTestIntro";
+import MockTestPrint from "./MockTestPrint";
 import MockTestQuestion from "./MockTestQuestion";
 import MockTestResult from "./MockTestResult";
 import MockTestSavedView from "./MockTestSavedView";
-import MockTestPrint from "./MockTestPrint";
 
 type Phase = "loading" | "intro" | "test" | "submitting" | "result" | "saved-result" | "print";
 
@@ -330,7 +330,7 @@ export default function MockTest() {
     };
 
     init();
-  }, [user, authLoading, phase]);
+  }, [user, authLoading, phase, persistResult]);
 
   // ── Hide navbar & warn before leaving during active test ─────────────────
   useEffect(() => {
@@ -509,7 +509,7 @@ export default function MockTest() {
         gap: 16
       }}
     >
-      <style>{`@keyframes sp { to { transform: rotate(360deg); } }`}</style>
+      <style>{"@keyframes sp { to { transform: rotate(360deg); } }"}</style>
       <div
         style={{
           width: 36,

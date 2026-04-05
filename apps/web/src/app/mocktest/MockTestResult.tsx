@@ -1,4 +1,4 @@
-import { questions, FULL_MARKS, PASS_MARK_SCORE, optionLetters } from "@/data/mockQuestions";
+import { FULL_MARKS, PASS_MARK_SCORE, optionLetters, questions } from "@/data/mockQuestions";
 import { mockTestBaseCSS } from "@/data/mockTestTheme";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -244,7 +244,7 @@ export default function MockTestResult({
 
             {/* Animated score ring */}
             <div className="res-ring-wrap">
-              <svg className="res-ring-svg" viewBox="0 0 160 160">
+              <svg className="res-ring-svg" viewBox="0 0 160 160" aria-hidden="true">
                 <circle cx="80" cy="80" r="70" className="res-ring-track" />
                 <circle cx="80" cy="80" r="70" className="res-ring-fill" />
               </svg>
@@ -302,6 +302,7 @@ export default function MockTestResult({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
+                    aria-hidden="true"
                   >
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
@@ -325,6 +326,7 @@ export default function MockTestResult({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
+                    aria-hidden="true"
                   >
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
@@ -340,6 +342,7 @@ export default function MockTestResult({
 
             {/* Enroll CTA */}
             <button
+              type="button"
               className="res-enroll"
               onClick={() => router.push("/courses/officer-cadet-elite")}
               style={{ marginBottom: 16 }}
@@ -353,6 +356,7 @@ export default function MockTestResult({
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                 <path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" />
@@ -372,8 +376,14 @@ export default function MockTestResult({
                       progress.
                     </div>
                     <div className="res-save-btns">
-                      <button className="res-save-login" onClick={onSaveAndLogin}>
-                        <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                      <button type="button" className="res-save-login" onClick={onSaveAndLogin}>
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 14 14"
+                          fill="none"
+                          aria-hidden="true"
+                        >
                           <path
                             d="M7 1v6M4 4l3-3 3 3"
                             stroke="currentColor"
@@ -411,7 +421,7 @@ export default function MockTestResult({
                 </div>
                 {saveStatus === "failed" && (
                   <div className="res-save-btns">
-                    <button className="res-save-login" onClick={onRetrySave}>
+                    <button type="button" className="res-save-login" onClick={onRetrySave}>
                       Retry Save
                     </button>
                   </div>
@@ -423,9 +433,9 @@ export default function MockTestResult({
               className="res-actions"
               style={{ display: "flex", flexDirection: "column", gap: 10 }}
             >
-              <button className="res-retake" onClick={onRetake}>
+              <button type="button" className="res-retake" onClick={onRetake}>
                 Retake Assessment
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M1 7a6 6 0 1 0 1.5-4M1 3v4h4"
                     stroke="currentColor"
@@ -435,9 +445,9 @@ export default function MockTestResult({
                   />
                 </svg>
               </button>
-              <button className="res-report-toggle" onClick={onGoHome}>
+              <button type="button" className="res-report-toggle" onClick={onGoHome}>
                 Return to Home
-                <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                   <path
                     d="M6 2L1 7l5 5M2 7h11"
                     stroke="currentColor"
@@ -448,9 +458,13 @@ export default function MockTestResult({
                 </svg>
               </button>
               {iqReportEnabled && (
-                <button className="res-report-toggle" onClick={() => setShowReport((v) => !v)}>
+                <button
+                  type="button"
+                  className="res-report-toggle"
+                  onClick={() => setShowReport((v) => !v)}
+                >
                   {showReport ? "Hide" : "View"} Answer Report
-                  <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                  <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
                       d={showReport ? "M2 9l5-5 5 5" : "M2 5l5 5 5-5"}
                       stroke="currentColor"
@@ -481,6 +495,7 @@ export default function MockTestResult({
                     answers and explanations.
                   </div>
                   <button
+                    type="button"
                     className="res-save-login"
                     style={{ margin: "0 auto" }}
                     onClick={onSaveAndLogin}
@@ -508,7 +523,13 @@ export default function MockTestResult({
                       <div className="res-row-qtext">{q.text}</div>
                       <div className="res-row-pills">
                         <span className="res-pill correct">
-                          <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                          <svg
+                            width="9"
+                            height="9"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                            aria-hidden="true"
+                          >
                             <path
                               d="M2 7l4 4 6-7"
                               stroke="currentColor"
@@ -520,7 +541,13 @@ export default function MockTestResult({
                         </span>
                         {userAns && !isCorrect && (
                           <span className="res-pill wrong">
-                            <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                            <svg
+                              width="9"
+                              height="9"
+                              viewBox="0 0 14 14"
+                              fill="none"
+                              aria-hidden="true"
+                            >
                               <path
                                 d="M3 3l8 8M11 3l-8 8"
                                 stroke="currentColor"

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import ssacademybranding from "@/assets/branding.svg";
 import mq1 from "@/assets/mq1.png";
 import mq2 from "@/assets/mq2.png";
@@ -12,6 +11,7 @@ import mq9 from "@/assets/mq9.png";
 import mq10 from "@/assets/mq10.png";
 import mq11 from "@/assets/mq11.png";
 import { optionLetters, questions } from "@/data/mockQuestions";
+import { useEffect } from "react";
 
 interface Props {
   onClose: () => void;
@@ -246,7 +246,7 @@ export default function MockTestPrint({ onClose }: Props) {
             </div>
           </div>
           <div className="prt-topbar-btns">
-            <button className="prt-print-btn" onClick={handlePrint}>
+            <button type="button" className="prt-print-btn" onClick={handlePrint}>
               <svg
                 width="13"
                 height="13"
@@ -255,6 +255,7 @@ export default function MockTestPrint({ onClose }: Props) {
                 stroke="#fff"
                 strokeWidth="1.8"
                 strokeLinecap="round"
+                aria-hidden="true"
               >
                 <polyline points="6 9 6 2 18 2 18 9" />
                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
@@ -262,7 +263,7 @@ export default function MockTestPrint({ onClose }: Props) {
               </svg>
               Print / Save PDF
             </button>
-            <button className="prt-close-btn" onClick={onClose}>
+            <button type="button" className="prt-close-btn" onClick={onClose}>
               <svg
                 width="11"
                 height="11"
@@ -271,6 +272,7 @@ export default function MockTestPrint({ onClose }: Props) {
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
+                aria-hidden="true"
               >
                 <path d="M2 2l10 10M12 2L2 12" />
               </svg>
@@ -286,7 +288,12 @@ export default function MockTestPrint({ onClose }: Props) {
           <div className="prt-content">
             {/* TOP WHATSAPP NOTE */}
             <div className="prt-wa-note">
-              <svg style={{ flexShrink: 0, width: 18, height: 18 }} viewBox="0 0 24 24" fill="none">
+              <svg
+                style={{ flexShrink: 0, width: 18, height: 18 }}
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
                 <path
                   d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"
                   fill="#25D366"
@@ -379,7 +386,7 @@ export default function MockTestPrint({ onClose }: Props) {
                 )}
                 <div className="prt-options-grid">
                   {q.options.map((opt, i) => (
-                    <div key={i} className="prt-opt">
+                    <div key={opt} className="prt-opt">
                       <strong>{optionLetters[i]})</strong>&ensp;{opt}
                     </div>
                   ))}
@@ -401,7 +408,12 @@ export default function MockTestPrint({ onClose }: Props) {
 
             {/* BOTTOM WHATSAPP NOTE */}
             <div className="prt-wa-bottom">
-              <svg style={{ flexShrink: 0, width: 18, height: 18 }} viewBox="0 0 24 24" fill="none">
+              <svg
+                style={{ flexShrink: 0, width: 18, height: 18 }}
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
                 <path
                   d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"
                   fill="#25D366"

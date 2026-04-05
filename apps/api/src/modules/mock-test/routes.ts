@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { type CadetIqMockResult, Prisma } from "@prisma/client";
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 
 import type { AuthUser } from "../../plugins/auth";
@@ -83,7 +83,7 @@ const mockTestRoutes: FastifyPluginAsync = async (fastify) => {
       return body;
     }
 
-    let row;
+    let row: CadetIqMockResult | null;
     try {
       row = await fastify.prisma.cadetIqMockResult.findFirst({
         where: {
@@ -150,7 +150,7 @@ const mockTestRoutes: FastifyPluginAsync = async (fastify) => {
 
     const answersObj = normalizeAnswers(answers);
 
-    let row;
+    let row: CadetIqMockResult;
     try {
       row = await fastify.prisma.cadetIqMockResult.create({
         data: {
