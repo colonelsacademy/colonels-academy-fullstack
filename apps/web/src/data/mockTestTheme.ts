@@ -173,4 +173,4 @@ export const mockTestBaseCSS = `
     .mt-corner-tl,
     .mt-corner-br { display: none !important; }
   }
-`
+`;

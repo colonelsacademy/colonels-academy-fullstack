@@ -1,37 +1,49 @@
-import { useState } from "react"
-import type { MockTestSavedResult } from "@/services/mockTestService"
-import { questions, FULL_MARKS, optionLetters } from "@/data/mockQuestions"
-import { mockTestBaseCSS } from "@/data/mockTestTheme"
+import { useState } from "react";
+import type { MockTestSavedResult } from "@/services/mockTestService";
+import { questions, FULL_MARKS, optionLetters } from "@/data/mockQuestions";
+import { mockTestBaseCSS } from "@/data/mockTestTheme";
 
 interface Props {
-  savedResult: MockTestSavedResult
-  clearLoading: boolean
-  onGoHome: () => void
-  onClearAndRetake: () => void
+  savedResult: MockTestSavedResult;
+  clearLoading: boolean;
+  onGoHome: () => void;
+  onClearAndRetake: () => void;
 }
 
-export default function MockTestSavedView({ savedResult, clearLoading, onGoHome, onClearAndRetake }: Props) {
-  const iqReportEnabled = process.env.NEXT_PUBLIC_IQ_REPORT_ENABLED !== "false"
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [showReport, setShowReport] = useState(false)
+export default function MockTestSavedView({
+  savedResult,
+  clearLoading,
+  onGoHome,
+  onClearAndRetake
+}: Props) {
+  const iqReportEnabled = process.env.NEXT_PUBLIC_IQ_REPORT_ENABLED !== "false";
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
-  const { score, totalMarks, timeTaken, passed, createdAt, answers } = savedResult
+  const { score, totalMarks, timeTaken, passed, createdAt, answers } = savedResult;
 
-  const safeScore = score ?? 0
-  const safeTimeTaken = timeTaken ?? 0
-  const safeTotalMarks = totalMarks ?? FULL_MARKS
+  const safeScore = score ?? 0;
+  const safeTimeTaken = timeTaken ?? 0;
+  const safeTotalMarks = totalMarks ?? FULL_MARKS;
 
-  const pct = Math.round((safeScore / safeTotalMarks) * 100)
-  const mins = Math.floor(safeTimeTaken / 60)
-  const secs = safeTimeTaken % 60
-  const date = new Date(createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+  const pct = Math.round((safeScore / safeTotalMarks) * 100);
+  const mins = Math.floor(safeTimeTaken / 60);
+  const secs = safeTimeTaken % 60;
+  const date = new Date(createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  });
 
-  const answerMap: Record<number, string> = {}
-  if (answers) Object.entries(answers).forEach(([k, v]) => { answerMap[Number(k)] = v as string })
+  const answerMap: Record<number, string> = {};
+  if (answers)
+    Object.entries(answers).forEach(([k, v]) => {
+      answerMap[Number(k)] = v as string;
+    });
 
-  const correct = questions.filter(q => answerMap[q.id] === q.answer).length
-  const wrong = Object.keys(answerMap).length - correct
-  const unanswered = questions.length - Object.keys(answerMap).length
+  const correct = questions.filter((q) => answerMap[q.id] === q.answer).length;
+  const wrong = Object.keys(answerMap).length - correct;
+  const unanswered = questions.length - Object.keys(answerMap).length;
 
   return (
     <>
@@ -186,33 +198,73 @@ export default function MockTestSavedView({ savedResult, clearLoading, onGoHome,
 
       {showConfirm && (
         <div className="sv-confirm-overlay" onClick={() => !clearLoading && setShowConfirm(false)}>
-          <div className="sv-confirm-card" onClick={e => e.stopPropagation()}>
+          <div className="sv-confirm-card" onClick={(e) => e.stopPropagation()}>
             <div className="sv-confirm-icon">🗑️</div>
             <h3 className="sv-confirm-title">Clear Score?</h3>
             <p className="sv-confirm-sub">
-              Your score and answers will be permanently deleted so you can retake the assessment with a clean slate.
+              Your score and answers will be permanently deleted so you can retake the assessment
+              with a clean slate.
             </p>
             <div className="sv-confirm-note">
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                <path d="M2 7l4 4 6-7" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 14 14"
+                fill="none"
+                style={{ flexShrink: 0, marginTop: 1 }}
+              >
+                <path
+                  d="M2 7l4 4 6-7"
+                  stroke="#D4AF37"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               <span>
-                Your <strong>phone number</strong> and account info will be kept — only your test score and answers will be removed.
+                Your <strong>phone number</strong> and account info will be kept — only your test
+                score and answers will be removed.
               </span>
             </div>
             <div className="sv-confirm-btns">
-              <button className="sv-confirm-cancel" onClick={() => setShowConfirm(false)} disabled={clearLoading}>Cancel</button>
-              <button className="sv-confirm-delete" onClick={onClearAndRetake} disabled={clearLoading}>
-                {clearLoading
-                  ? <><span className="sv-spinner" /> Removing…</>
-                  : <>
-                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                        <path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
-                        <rect x="3" y="4" width="8" height="8" rx="1" stroke="#fff" strokeWidth="1.5"/>
-                      </svg>
-                      Confirm Clear
-                    </>
-                }
+              <button
+                className="sv-confirm-cancel"
+                onClick={() => setShowConfirm(false)}
+                disabled={clearLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="sv-confirm-delete"
+                onClick={onClearAndRetake}
+                disabled={clearLoading}
+              >
+                {clearLoading ? (
+                  <>
+                    <span className="sv-spinner" /> Removing…
+                  </>
+                ) : (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4"
+                        stroke="#fff"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <rect
+                        x="3"
+                        y="4"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        stroke="#fff"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                    Confirm Clear
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -224,19 +276,25 @@ export default function MockTestSavedView({ savedResult, clearLoading, onGoHome,
         <div className="mt-corner-br" />
 
         <div className="mt-hud-decal">
-          <div>PREV SCORE: {safeScore}/{safeTotalMarks}</div>
+          <div>
+            PREV SCORE: {safeScore}/{safeTotalMarks}
+          </div>
           <div>STATUS: {passed ? "PASS" : "FAIL"}</div>
           <div className="mt-hud-gold">{passed ? "QUALIFIED" : "RETRY"}</div>
         </div>
 
         <div className="sv-outer">
-       
-
           <div className="mt-card sv-hero">
             <div className="sv-glow" />
 
             <div className="mt-eyebrow" style={{ justifyContent: "center" }}>
-              <span className="mt-eyebrow-dot" style={{ background: passed ? "#D4AF37" : "#ef4444", animationPlayState: "running" }} />
+              <span
+                className="mt-eyebrow-dot"
+                style={{
+                  background: passed ? "#D4AF37" : "#ef4444",
+                  animationPlayState: "running"
+                }}
+              />
               <span className="mt-eyebrow-text" style={{ color: passed ? "#B8860B" : "#dc2626" }}>
                 {passed ? "Previous Result — Qualified" : "Previous Result — Not Passed"}
               </span>
@@ -259,45 +317,114 @@ export default function MockTestSavedView({ savedResult, clearLoading, onGoHome,
 
             <div className="sv-date-tag">
               <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                <rect x="2" y="3" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.3"/>
-                <path d="M5 2v2M9 2v2M2 7h10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                <rect
+                  x="2"
+                  y="3"
+                  width="10"
+                  height="10"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                />
+                <path
+                  d="M5 2v2M9 2v2M2 7h10"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                />
               </svg>
               Logged: {date}
             </div>
 
             <div className="sv-stats">
-              <div className="sv-stat"><div className="sv-stat-val g">{correct}</div><div className="sv-stat-lbl">Correct</div></div>
-              <div className="sv-stat"><div className="sv-stat-val r">{wrong}</div><div className="sv-stat-lbl">Wrong</div></div>
-              <div className="sv-stat"><div className="sv-stat-val a">{unanswered}</div><div className="sv-stat-lbl">Skipped</div></div>
-              <div className="sv-stat"><div className="sv-stat-val">{mins}m {secs}s</div><div className="sv-stat-lbl">Time</div></div>
-              <div className="sv-stat"><div className="sv-stat-val p">{pct}%</div><div className="sv-stat-lbl">Score %</div></div>
+              <div className="sv-stat">
+                <div className="sv-stat-val g">{correct}</div>
+                <div className="sv-stat-lbl">Correct</div>
+              </div>
+              <div className="sv-stat">
+                <div className="sv-stat-val r">{wrong}</div>
+                <div className="sv-stat-lbl">Wrong</div>
+              </div>
+              <div className="sv-stat">
+                <div className="sv-stat-val a">{unanswered}</div>
+                <div className="sv-stat-lbl">Skipped</div>
+              </div>
+              <div className="sv-stat">
+                <div className="sv-stat-val">
+                  {mins}m {secs}s
+                </div>
+                <div className="sv-stat-lbl">Time</div>
+              </div>
+              <div className="sv-stat">
+                <div className="sv-stat-val p">{pct}%</div>
+                <div className="sv-stat-lbl">Score %</div>
+              </div>
             </div>
 
             <div className="sv-actions">
-              <button className="sv-retake-btn" onClick={() => setShowConfirm(true)} disabled={clearLoading}>
+              <button
+                className="sv-retake-btn"
+                onClick={() => setShowConfirm(true)}
+                disabled={clearLoading}
+              >
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 7a6 6 0 1 0 1.5-4M1 3v4h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M1 7a6 6 0 1 0 1.5-4M1 3v4h4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 Retake Assessment
               </button>
               <button className="sv-report-btn" onClick={onGoHome}>
                 Return to Home
                 <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                  <path d="M6 2L1 7l5 5M2 7h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M6 2L1 7l5 5M2 7h11"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
-              <button className="sv-clear-btn" onClick={() => setShowConfirm(true)} disabled={clearLoading}>
+              <button
+                className="sv-clear-btn"
+                onClick={() => setShowConfirm(true)}
+                disabled={clearLoading}
+              >
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <rect x="3" y="4" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                  <path
+                    d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <rect
+                    x="3"
+                    y="4"
+                    width="8"
+                    height="8"
+                    rx="1"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
                 </svg>
                 Clear Score from Database
               </button>
               {iqReportEnabled && (
-                <button className="sv-report-btn" onClick={() => setShowReport(v => !v)}>
+                <button className="sv-report-btn" onClick={() => setShowReport((v) => !v)}>
                   {showReport ? "Hide" : "View"} Full Intel Report
                   <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                    <path d={showReport ? "M2 9l5-5 5 5" : "M2 5l5 5 5-5"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path
+                      d={showReport ? "M2 9l5-5 5 5" : "M2 5l5 5 5-5"}
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               )}
@@ -308,29 +435,49 @@ export default function MockTestSavedView({ savedResult, clearLoading, onGoHome,
             <div className="sv-report">
               <div className="sv-report-hdr">
                 <span className="sv-report-hdr-title">Intel Report — All 60 Modules</span>
-                <span style={{ fontSize: 10, color: "#9ca3af", fontFamily: "monospace" }}>{correct} ✓ · {wrong} ✗ · {unanswered} —</span>
+                <span style={{ fontSize: 10, color: "#9ca3af", fontFamily: "monospace" }}>
+                  {correct} ✓ · {wrong} ✗ · {unanswered} —
+                </span>
               </div>
-              {questions.map(q => {
-                const userAns = answerMap[q.id]
-                const isCorrect = userAns === q.answer
-                const correctText = q.options[optionLetters.indexOf(q.answer)]
-                const userText = userAns ? q.options[optionLetters.indexOf(userAns)] : null
+              {questions.map((q) => {
+                const userAns = answerMap[q.id];
+                const isCorrect = userAns === q.answer;
+                const correctText = q.options[optionLetters.indexOf(q.answer)];
+                const userText = userAns ? q.options[optionLetters.indexOf(userAns)] : null;
                 return (
                   <div className="sv-report-row" key={q.id}>
                     <div className="sv-row-num">
-                      <div className={`sv-row-icon ${isCorrect ? "c" : userAns ? "w" : "u"}`}>{isCorrect ? "✓" : userAns ? "✗" : "–"}</div>
+                      <div className={`sv-row-icon ${isCorrect ? "c" : userAns ? "w" : "u"}`}>
+                        {isCorrect ? "✓" : userAns ? "✗" : "–"}
+                      </div>
                       Module {q.id}
-                      <span className={`sv-row-pts ${isCorrect ? "c" : "w"}`}>{isCorrect ? "+1 pt" : "0 pts"}</span>
+                      <span className={`sv-row-pts ${isCorrect ? "c" : "w"}`}>
+                        {isCorrect ? "+1 pt" : "0 pts"}
+                      </span>
                     </div>
                     <div className="sv-row-qtext">{q.text}</div>
                     <div className="sv-pills">
                       <span className="sv-pill correct">
-                        <svg width="9" height="9" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                        <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                          <path
+                            d="M2 7l4 4 6-7"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
                         Correct: {q.answer}) {correctText}
                       </span>
                       {userAns && !isCorrect && (
                         <span className="sv-pill wrong">
-                          <svg width="9" height="9" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                          <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                            <path
+                              d="M3 3l8 8M11 3l-8 8"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                          </svg>
                           Your answer: {userAns}) {userText}
                         </span>
                       )}
@@ -338,7 +485,7 @@ export default function MockTestSavedView({ savedResult, clearLoading, onGoHome,
                     </div>
                     <div className="sv-explain">{q.explanation}</div>
                   </div>
-                )
+                );
               })}
             </div>
           )}
@@ -353,5 +500,5 @@ export default function MockTestSavedView({ savedResult, clearLoading, onGoHome,
         </div>
       </div>
     </>
-  )
+  );
 }

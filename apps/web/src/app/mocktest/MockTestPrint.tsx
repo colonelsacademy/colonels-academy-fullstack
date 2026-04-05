@@ -28,27 +28,29 @@ const imageMap: Record<number, string> = {
   7: mq8.src,
   8: mq9.src,
   9: mq10.src,
-  10: mq11.src,
+  10: mq11.src
 };
 
-const WHATSAPP_NOTE = "To receive your results or check your answers, WhatsApp a photo of your answer sheet to:";
+const WHATSAPP_NOTE =
+  "To receive your results or check your answers, WhatsApp a photo of your answer sheet to:";
 
 export default function MockTestPrint({ onClose }: Props) {
   const handlePrint = () => window.print();
   const today = new Date().toLocaleDateString("en-US", {
-    year: "numeric", month: "long", day: "numeric",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
   });
 
-
   useEffect(() => {
-    document.body.classList.add("mocktest-print-open")
+    document.body.classList.add("mocktest-print-open");
     // Scroll to top
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
 
     return () => {
-      document.body.classList.remove("mocktest-print-open")
-    }
-  }, [])
+      document.body.classList.remove("mocktest-print-open");
+    };
+  }, []);
 
   return (
     <>
@@ -232,7 +234,6 @@ export default function MockTestPrint({ onClose }: Props) {
       `}</style>
 
       <div className="prt-page">
-
         {/* ── SCREEN TOP BAR ── */}
         <div className="prt-topbar">
           <div className="prt-topbar-left">
@@ -246,16 +247,32 @@ export default function MockTestPrint({ onClose }: Props) {
           </div>
           <div className="prt-topbar-btns">
             <button className="prt-print-btn" onClick={handlePrint}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round">
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              >
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
               </svg>
               Print / Save PDF
             </button>
             <button className="prt-close-btn" onClick={onClose}>
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M2 2l10 10M12 2L2 12"/>
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <path d="M2 2l10 10M12 2L2 12" />
               </svg>
               Close
             </button>
@@ -267,12 +284,17 @@ export default function MockTestPrint({ onClose }: Props) {
           <div className="prt-watermark">SS Academy</div>
 
           <div className="prt-content">
-
             {/* TOP WHATSAPP NOTE */}
             <div className="prt-wa-note">
               <svg style={{ flexShrink: 0, width: 18, height: 18 }} viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#25D366"/>
-                <path d="M8.5 8.5c.2-.4.7-.7 1.1-.7.3 0 .5.1.7.3l1 2c.1.3 0 .6-.2.8l-.5.5c.4.8 1 1.5 1.8 1.8l.5-.5c.2-.2.5-.3.8-.2l2 1c.2.1.3.4.3.7 0 .4-.3.9-.7 1.1-.8.4-2.1.3-3.5-1.1C9.8 12.5 8.1 10.1 8.5 8.5z" fill="#fff"/>
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"
+                  fill="#25D366"
+                />
+                <path
+                  d="M8.5 8.5c.2-.4.7-.7 1.1-.7.3 0 .5.1.7.3l1 2c.1.3 0 .6-.2.8l-.5.5c.4.8 1 1.5 1.8 1.8l.5-.5c.2-.2.5-.3.8-.2l2 1c.2.1.3.4.3.7 0 .4-.3.9-.7 1.1-.8.4-2.1.3-3.5-1.1C9.8 12.5 8.1 10.1 8.5 8.5z"
+                  fill="#fff"
+                />
               </svg>
               <span>
                 📌 {WHATSAPP_NOTE} &nbsp;
@@ -298,14 +320,28 @@ export default function MockTestPrint({ onClose }: Props) {
 
             {/* CANDIDATE FIELDS */}
             <div className="prt-candidate-box">
-              <div className="prt-field"><span className="prt-field-label">Name:</span><div className="prt-field-line" /></div>
-              <div className="prt-field"><span className="prt-field-label">Phone:</span><div className="prt-field-line" /></div>
-              <div className="prt-field"><span className="prt-field-label">Date:</span><div className="prt-field-line" style={{ maxWidth: 130 }} /></div>
-              <div className="prt-field"><span className="prt-field-label">Roll No:</span><div className="prt-field-line" style={{ maxWidth: 130 }} /></div>
+              <div className="prt-field">
+                <span className="prt-field-label">Name:</span>
+                <div className="prt-field-line" />
+              </div>
+              <div className="prt-field">
+                <span className="prt-field-label">Phone:</span>
+                <div className="prt-field-line" />
+              </div>
+              <div className="prt-field">
+                <span className="prt-field-label">Date:</span>
+                <div className="prt-field-line" style={{ maxWidth: 130 }} />
+              </div>
+              <div className="prt-field">
+                <span className="prt-field-label">Roll No:</span>
+                <div className="prt-field-line" style={{ maxWidth: 130 }} />
+              </div>
               <div className="prt-field" style={{ gridColumn: "1 / -1" }}>
                 <span className="prt-field-label">Score:</span>
                 <div className="prt-field-line" style={{ maxWidth: 70 }} />
-                <span style={{ marginLeft: 28, fontWeight: 700, whiteSpace: "nowrap" }}>Examiner's Signature:</span>
+                <span style={{ marginLeft: 28, fontWeight: 700, whiteSpace: "nowrap" }}>
+                  Examiner's Signature:
+                </span>
                 <div className="prt-field-line" />
               </div>
             </div>
@@ -313,9 +349,9 @@ export default function MockTestPrint({ onClose }: Props) {
             {/* INSTRUCTIONS */}
             <div className="prt-instr">
               <p>
-                <strong>Instructions:</strong>&ensp;
-                Attempt <em>all questions</em>. Each correct answer carries <strong>1 mark</strong>.
-                There is <strong>no negative marking</strong>. Time allowed: <strong>30 minutes</strong>.
+                <strong>Instructions:</strong>&ensp; Attempt <em>all questions</em>. Each correct
+                answer carries <strong>1 mark</strong>. There is{" "}
+                <strong>no negative marking</strong>. Time allowed: <strong>30 minutes</strong>.
                 Write your chosen letter (A / B / C / D / E) in the blank beside each question.
                 Calculators and electronic devices are strictly prohibited.
               </p>
@@ -335,11 +371,17 @@ export default function MockTestPrint({ onClose }: Props) {
                   <div className="prt-q-blank" />
                 </div>
                 {q.isImage && (
-                  <img src={imageMap[q.imageIndex!]} alt={`Q${q.id} diagram`} className="prt-q-img" />
+                  <img
+                    src={imageMap[q.imageIndex!]}
+                    alt={`Q${q.id} diagram`}
+                    className="prt-q-img"
+                  />
                 )}
                 <div className="prt-options-grid">
                   {q.options.map((opt, i) => (
-                    <div key={i} className="prt-opt"><strong>{optionLetters[i]})</strong>&ensp;{opt}</div>
+                    <div key={i} className="prt-opt">
+                      <strong>{optionLetters[i]})</strong>&ensp;{opt}
+                    </div>
                   ))}
                 </div>
                 {idx < questions.length - 1 && <hr className="prt-q-divider" />}
@@ -349,7 +391,10 @@ export default function MockTestPrint({ onClose }: Props) {
             {/* FOOTER */}
             <div className="prt-footer">
               <span>SS Academy · The Colonel's Academy</span>
-              <span className="prt-footer-center">This paper is the intellectual property of SS Academy. Not for resale or redistribution.</span>
+              <span className="prt-footer-center">
+                This paper is the intellectual property of SS Academy. Not for resale or
+                redistribution.
+              </span>
               <span className="prt-footer-right">Printed: {today}</span>
             </div>
             <div className="prt-page-note">— End of Examination Paper —</div>
@@ -357,15 +402,20 @@ export default function MockTestPrint({ onClose }: Props) {
             {/* BOTTOM WHATSAPP NOTE */}
             <div className="prt-wa-bottom">
               <svg style={{ flexShrink: 0, width: 18, height: 18 }} viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#25D366"/>
-                <path d="M8.5 8.5c.2-.4.7-.7 1.1-.7.3 0 .5.1.7.3l1 2c.1.3 0 .6-.2.8l-.5.5c.4.8 1 1.5 1.8 1.8l.5-.5c.2-.2.5-.3.8-.2l2 1c.2.1.3.4.3.7 0 .4-.3.9-.7 1.1-.8.4-2.1.3-3.5-1.1C9.8 12.5 8.1 10.1 8.5 8.5z" fill="#fff"/>
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"
+                  fill="#25D366"
+                />
+                <path
+                  d="M8.5 8.5c.2-.4.7-.7 1.1-.7.3 0 .5.1.7.3l1 2c.1.3 0 .6-.2.8l-.5.5c.4.8 1 1.5 1.8 1.8l.5-.5c.2-.2.5-.3.8-.2l2 1c.2.1.3.4.3.7 0 .4-.3.9-.7 1.1-.8.4-2.1.3-3.5-1.1C9.8 12.5 8.1 10.1 8.5 8.5z"
+                  fill="#fff"
+                />
               </svg>
               <span>
                 📌 {WHATSAPP_NOTE} &nbsp;
                 <span style={{ color: "#1a7f37", fontWeight: 800 }}>📱 9813056161</span>
               </span>
             </div>
-
           </div>
         </div>
       </div>

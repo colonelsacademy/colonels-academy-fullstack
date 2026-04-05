@@ -2,7 +2,7 @@ import { Queue } from "bullmq";
 import type { FastifyPluginAsync } from "fastify";
 
 import { defaultJobOptions, queueNames } from "@colonels-academy/config";
-import type { ProgressRecalcJob } from "@colonels-academy/contracts";
+import type { ProgressRecalcJob, QuizAttemptJob } from "@colonels-academy/contracts";
 
 import { assertLessonAccess } from "../../lib/access-guard";
 
@@ -11,31 +11,49 @@ import { assertLessonAccess } from "../../lib/access-guard";
 type LessonProgressParams = { Params: { lessonId: string } };
 type LessonProgressBody = { Body: { status: "IN_PROGRESS" | "COMPLETED" } };
 
+type QuizAttemptBody = {
+  Body: {
+    questionId: string;
+    selectedOptionIndex: number;
+    timeTakenMs: number;
+    sessionId?: string;
+  };
+};
+
 const learningRoutes: FastifyPluginAsync = async (fastify) => {
-  // Lazy-init queue — only created on first request that needs it
+  // Lazy-init queues — only created on first request that needs them
   let progressRecalcQueue: Queue<ProgressRecalcJob> | null = null;
+  let quizMasteryQueue: Queue<QuizAttemptJob> | null = null;
+
+  function getRedisConnection() {
+    if (fastify.redis) return fastify.redis;
+    try {
+      const { loadApiEnv } = require("@colonels-academy/config");
+      const env = loadApiEnv();
+      return { url: env?.REDIS_URL ?? "redis://localhost:6379" };
+    } catch {
+      return { url: "redis://localhost:6379" };
+    }
+  }
 
   function getProgressQueue() {
     if (!progressRecalcQueue) {
-      const env = fastify.redis
-        ? undefined
-        : (() => {
-            try {
-              const { loadApiEnv } = require("@colonels-academy/config");
-              return loadApiEnv();
-            } catch {
-              return null;
-            }
-          })();
-
-      // Use the infrastructure Redis connection if available
-      const connection = fastify.redis ?? { url: env?.REDIS_URL ?? "redis://localhost:6379" };
       progressRecalcQueue = new Queue<ProgressRecalcJob>(queueNames.progressRecalc, {
-        connection,
+        connection: getRedisConnection(),
         defaultJobOptions
       });
     }
     return progressRecalcQueue;
+  }
+
+  function getQuizMasteryQueue() {
+    if (!quizMasteryQueue) {
+      quizMasteryQueue = new Queue<QuizAttemptJob>(queueNames.quizMastery, {
+        connection: getRedisConnection(),
+        defaultJobOptions
+      });
+    }
+    return quizMasteryQueue;
   }
 
   // ── GET /v1/learning/dashboard/overview ────────────────────────────────────
@@ -184,6 +202,82 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
       return { ok: true, lessonId: lesson.id, status };
     }
   );
+
+  // ── POST /v1/learning/quiz/attempt ────────────────────────────────────────
+  fastify.post<QuizAttemptBody>("/quiz/attempt", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
+
+    const dbUser = await fastify.prisma.user.findUnique({
+      where: { firebaseUid: authUser.uid },
+      select: { id: true }
+    });
+
+    if (!dbUser) {
+      return reply.notFound("User not found in database.");
+    }
+
+    const { questionId, selectedOptionIndex, timeTakenMs, sessionId } = request.body;
+
+    const question = await fastify.prisma.quizQuestion.findUnique({
+      where: { id: questionId },
+      select: {
+        id: true,
+        lessonId: true,
+        lesson: { select: { courseId: true } },
+        correctOptionIndex: true,
+        explanation: true,
+        difficulty: true
+      }
+    });
+
+    if (!question) {
+      return reply.notFound("Quiz question not found.");
+    }
+
+    const { lessonId } = question;
+    const courseId = question.lesson.courseId;
+
+    // Enforce enrollment before recording attempts (prerequisiteId: null → enrollment-only check)
+    await assertLessonAccess({
+      fastify,
+      userId: dbUser.id,
+      userRole: authUser.role,
+      courseId,
+      lesson: { id: lessonId, prerequisiteId: null, title: "" }
+    });
+
+    const isCorrect = selectedOptionIndex === question.correctOptionIndex;
+
+    await fastify.prisma.quizAttempt.create({
+      data: {
+        userId: dbUser.id,
+        questionId,
+        lessonId,
+        courseId,
+        sessionId: sessionId ?? null,
+        selectedOptionIndex,
+        isCorrect,
+        timeTakenMs,
+        difficultySnapshot: question.difficulty
+      }
+    });
+
+    try {
+      await getQuizMasteryQueue().add(
+        "quiz-mastery",
+        { userId: dbUser.id, courseId, questionId, lessonId },
+        defaultJobOptions
+      );
+    } catch (queueErr) {
+      request.log.warn({ err: queueErr }, "learning.quiz.attempt: failed to enqueue mastery job");
+    }
+
+    return {
+      ok: true,
+      isCorrect,
+      explanation: isCorrect ? null : (question.explanation ?? null)
+    };
+  });
 
   // ── GET /v1/learning/live-sessions ─────────────────────────────────────────
   fastify.get("/live-sessions", async () => {

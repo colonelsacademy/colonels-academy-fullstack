@@ -15,7 +15,8 @@ export function createDatabaseClient(): DatabaseClient {
   return new PrismaClient() as DatabaseClient;
 }
 
-export const db: DatabaseClient = globalForDatabase.__colonelsAcademyPrisma ?? createDatabaseClient();
+export const db: DatabaseClient =
+  globalForDatabase.__colonelsAcademyPrisma ?? createDatabaseClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForDatabase.__colonelsAcademyPrisma = db;

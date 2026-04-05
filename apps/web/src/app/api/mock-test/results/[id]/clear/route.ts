@@ -16,13 +16,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const apiResponse = await fetch(`${API_BASE_URL}/v1/mock-test/results/${encodeURIComponent(id)}/clear`, {
-      method: "PATCH",
-      cache: "no-store",
-      headers: {
-        Cookie: `ca_session=${sessionCookie.value}`
+    const apiResponse = await fetch(
+      `${API_BASE_URL}/v1/mock-test/results/${encodeURIComponent(id)}/clear`,
+      {
+        method: "PATCH",
+        cache: "no-store",
+        headers: {
+          Cookie: `ca_session=${sessionCookie.value}`
+        }
       }
-    });
+    );
 
     if (!apiResponse.ok && apiResponse.status !== 204) {
       const error = await apiResponse.json().catch(() => ({ message: "Request failed" }));

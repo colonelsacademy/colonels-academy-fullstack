@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react"
-import { type Question, optionLetters } from "@/data/mockQuestions"
-import { mockTestBaseCSS } from "@/data/mockTestTheme"
-import mq1 from "../../assets/mq1.png"
-import mq2 from "../../assets/mq2.png"
-import mq3 from "../../assets/mq3.png"
-import mq4 from "../../assets/mq4.png"
-import mq5 from "../../assets/mq5.png"
-import mq6 from "../../assets/mq6.png"
-import mq7 from "../../assets/mq7.png"
-import mq8 from "../../assets/mq8.png"
-import mq9 from "../../assets/mq9.png"
-import mq10 from "../../assets/mq10.png"
-import mq11 from "../../assets/mq11.png"
+import { useEffect, useState } from "react";
+import { type Question, optionLetters } from "@/data/mockQuestions";
+import { mockTestBaseCSS } from "@/data/mockTestTheme";
+import mq1 from "../../assets/mq1.png";
+import mq2 from "../../assets/mq2.png";
+import mq3 from "../../assets/mq3.png";
+import mq4 from "../../assets/mq4.png";
+import mq5 from "../../assets/mq5.png";
+import mq6 from "../../assets/mq6.png";
+import mq7 from "../../assets/mq7.png";
+import mq8 from "../../assets/mq8.png";
+import mq9 from "../../assets/mq9.png";
+import mq10 from "../../assets/mq10.png";
+import mq11 from "../../assets/mq11.png";
 
 const imageMap: Record<number, string> = {
   0: mq1.src,
@@ -24,71 +24,84 @@ const imageMap: Record<number, string> = {
   7: mq8.src,
   8: mq9.src,
   9: mq10.src,
-  10: mq11.src,
-}
+  10: mq11.src
+};
 
 interface Props {
-  question: Question
-  questionIndex: number
-  totalQuestions: number
-  selectedAnswer: string | undefined
-  answeredCount: number
-  timeLeft: number
-  timerUrgent: boolean
-  onAnswer: (letter: string) => void
-  onNext: () => void
-  onPrev: () => void
-  onJump: (index: number) => void
-  onSubmit: () => void
-  onExit: () => void
-  answers: Record<number, string>
+  question: Question;
+  questionIndex: number;
+  totalQuestions: number;
+  selectedAnswer: string | undefined;
+  answeredCount: number;
+  timeLeft: number;
+  timerUrgent: boolean;
+  onAnswer: (letter: string) => void;
+  onNext: () => void;
+  onPrev: () => void;
+  onJump: (index: number) => void;
+  onSubmit: () => void;
+  onExit: () => void;
+  answers: Record<number, string>;
 }
 
 function formatTime(secs: number) {
-  const m = Math.floor(secs / 60).toString().padStart(2, "0")
-  const s = (secs % 60).toString().padStart(2, "0")
-  return `${m}:${s}`
+  const m = Math.floor(secs / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (secs % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
 }
 
 export default function MockTestQuestion({
-  question, questionIndex, totalQuestions,
-  selectedAnswer, answeredCount, timeLeft, timerUrgent,
-  onAnswer, onNext, onPrev, onJump, onSubmit, onExit, answers,
+  question,
+  questionIndex,
+  totalQuestions,
+  selectedAnswer,
+  answeredCount,
+  timeLeft,
+  timerUrgent,
+  onAnswer,
+  onNext,
+  onPrev,
+  onJump,
+  onSubmit,
+  onExit,
+  answers
 }: Props) {
-  const [imgError, setImgError] = useState(false)
-  const isFirst = questionIndex === 0
-  const isLast = questionIndex === totalQuestions - 1
-  const progress = Math.round(((questionIndex + 1) / totalQuestions) * 100)
+  const [imgError, setImgError] = useState(false);
+  const isFirst = questionIndex === 0;
+  const isLast = questionIndex === totalQuestions - 1;
+  const progress = Math.round(((questionIndex + 1) / totalQuestions) * 100);
 
   // Keyboard shortcuts: A-E select option, Arrow keys / Enter navigate
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null
-      const tag = target?.tagName
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
       const isInteractive = target?.closest(
         "button, a, input, textarea, select, summary, [role='button'], [contenteditable='true']"
-      )
+      );
 
       // Don't intercept while typing or when a native/focusable control already owns the keypress.
-      if (tag === "INPUT" || tag === "TEXTAREA" || isInteractive) return
-      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (tag === "INPUT" || tag === "TEXTAREA" || isInteractive) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-      const key = e.key.toUpperCase()
+      const key = e.key.toUpperCase();
       if (optionLetters.includes(key) && question.options[optionLetters.indexOf(key)]) {
-        e.preventDefault()
-        onAnswer(key)
+        e.preventDefault();
+        onAnswer(key);
       } else if (e.key === "ArrowRight" || e.key === "Enter") {
-        e.preventDefault()
-        if (isLast) onSubmit()
-        else onNext()
+        e.preventDefault();
+        if (isLast) onSubmit();
+        else onNext();
       } else if (e.key === "ArrowLeft") {
-        e.preventDefault()
-        if (!isFirst) onPrev()
+        e.preventDefault();
+        if (!isFirst) onPrev();
       }
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [question, isFirst, isLast, onAnswer, onNext, onPrev, onSubmit])
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [question, isFirst, isLast, onAnswer, onNext, onPrev, onSubmit]);
 
   return (
     <>
@@ -263,27 +276,62 @@ export default function MockTestQuestion({
       <div className="mqt-bar">
         <button className="mqt-exit-btn" onClick={onExit}>
           <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-            <path d="M6 2L1 7l5 5M2 7h11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M6 2L1 7l5 5M2 7h11"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           Exit
         </button>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-          <div className="mqt-progress-label">Processing — {questionIndex + 1}/{totalQuestions}</div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 3
+          }}
+        >
+          <div className="mqt-progress-label">
+            Processing — {questionIndex + 1}/{totalQuestions}
+          </div>
           <div className="mqt-progress-track" style={{ width: "100%", maxWidth: 200 }}>
             <div className="mqt-progress-fill" style={{ width: `${progress}%` }} />
           </div>
         </div>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          fontSize: 16, fontWeight: 800, fontFamily: "'Rajdhani', sans-serif",
-          color: timerUrgent ? "#ef4444" : "#0F1C15",
-          padding: "6px 12px", background: "rgba(255,255,255,0.8)",
-          border: timerUrgent ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(212,175,55,0.25)",
-          borderRadius: 10, letterSpacing: "0.05em",
-          animation: timerUrgent ? "mqt-pulse 1s ease-in-out infinite" : "none",
-        }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 16,
+            fontWeight: 800,
+            fontFamily: "'Rajdhani', sans-serif",
+            color: timerUrgent ? "#ef4444" : "#0F1C15",
+            padding: "6px 12px",
+            background: "rgba(255,255,255,0.8)",
+            border: timerUrgent
+              ? "1px solid rgba(239,68,68,0.3)"
+              : "1px solid rgba(212,175,55,0.25)",
+            borderRadius: 10,
+            letterSpacing: "0.05em",
+            animation: timerUrgent ? "mqt-pulse 1s ease-in-out infinite" : "none"
+          }}
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
           {formatTime(timeLeft)}
         </div>
@@ -291,10 +339,17 @@ export default function MockTestQuestion({
 
       <div className="mt-page" style={{ background: "transparent" }}>
         <div className="mqt-outer">
-
           <div className="mqt-meta">
             <div className="mqt-qbadge">
-              <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#D4AF37", display: "inline-block" }} />
+              <span
+                style={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: "50%",
+                  background: "#D4AF37",
+                  display: "inline-block"
+                }}
+              />
               Module {questionIndex + 1} / {totalQuestions}
             </div>
             <span className="mqt-answered-count">
@@ -329,9 +384,9 @@ export default function MockTestQuestion({
 
             <div className="mqt-options">
               {question.options.map((opt, i) => {
-                const letter = optionLetters[i]
-                if (letter === undefined) return null
-                const isSel = selectedAnswer === letter
+                const letter = optionLetters[i];
+                if (letter === undefined) return null;
+                const isSel = selectedAnswer === letter;
                 return (
                   <button
                     key={i}
@@ -345,12 +400,32 @@ export default function MockTestQuestion({
                     <span className="mqt-opt-letter">{letter}</span>
                     <span className="mqt-opt-text">{opt}</span>
                     {isSel && (
-                      <div style={{ marginLeft: "auto", width: 20, height: 20, borderRadius: "50%", border: "1.5px solid rgba(212,175,55,0.4)", background: "#D4AF37", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0F1C15" }} />
+                      <div
+                        style={{
+                          marginLeft: "auto",
+                          width: 20,
+                          height: 20,
+                          borderRadius: "50%",
+                          border: "1.5px solid rgba(212,175,55,0.4)",
+                          background: "#D4AF37",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            background: "#0F1C15"
+                          }}
+                        />
                       </div>
                     )}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
@@ -358,7 +433,13 @@ export default function MockTestQuestion({
           <div className="mqt-nav">
             <button className="mqt-nav-btn prev" onClick={onPrev} disabled={isFirst}>
               <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                <path d="M9 2L5 7l4 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <path
+                  d="M9 2L5 7l4 5"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               Back
             </button>
@@ -366,14 +447,26 @@ export default function MockTestQuestion({
               <button className="mqt-nav-btn submit" onClick={onSubmit}>
                 Finalize Assessment
                 <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M2 7h10M8 3l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             ) : (
               <button className="mqt-nav-btn next" onClick={onNext}>
                 {selectedAnswer ? "Next Question" : "Skip & Next"}
                 <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M2 7h10M8 3l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             )}
@@ -382,13 +475,15 @@ export default function MockTestQuestion({
           <div className="mqt-grid-wrap">
             <div className="mqt-grid-title">
               <span>Jump to Module</span>
-              <span>{answeredCount}/{totalQuestions} Complete</span>
+              <span>
+                {answeredCount}/{totalQuestions} Complete
+              </span>
             </div>
             <div className="mqt-grid-dots">
               {Array.from({ length: totalQuestions }, (_, i) => {
-                const qId = i + 1
-                const isAnswered = !!answers[qId]
-                const isCurrent = i === questionIndex
+                const qId = i + 1;
+                const isAnswered = !!answers[qId];
+                const isCurrent = i === questionIndex;
                 return (
                   <button
                     key={i}
@@ -398,7 +493,7 @@ export default function MockTestQuestion({
                   >
                     {qId}
                   </button>
-                )
+                );
               })}
             </div>
             <div className="mqt-legend">
@@ -407,18 +502,29 @@ export default function MockTestQuestion({
                 Current
               </div>
               <div className="mqt-legend-item">
-                <div className="mqt-legend-dot" style={{ background: "rgba(212,175,55,0.3)", border: "1px solid rgba(212,175,55,0.4)" }} />
+                <div
+                  className="mqt-legend-dot"
+                  style={{
+                    background: "rgba(212,175,55,0.3)",
+                    border: "1px solid rgba(212,175,55,0.4)"
+                  }}
+                />
                 Answered
               </div>
               <div className="mqt-legend-item">
-                <div className="mqt-legend-dot" style={{ background: "rgba(255,255,255,0.5)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                <div
+                  className="mqt-legend-dot"
+                  style={{
+                    background: "rgba(255,255,255,0.5)",
+                    border: "1px solid rgba(0,0,0,0.08)"
+                  }}
+                />
                 Pending
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </>
-  )
+  );
 }

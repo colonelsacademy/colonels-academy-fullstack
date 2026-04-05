@@ -1,38 +1,38 @@
 export interface MockTestSubmitPayload {
-  phone?: string
-  score: number
-  totalMarks: number
-  timeTaken: number
-  answers: Record<number, string>
-  userId?: string | null
+  phone?: string;
+  score: number;
+  totalMarks: number;
+  timeTaken: number;
+  answers: Record<number, string>;
+  userId?: string | null;
 }
 
 export interface MockTestSavedResult {
-  _id: string
-  phone: string
-  score: number | null
-  totalMarks: number | null
-  timeTaken: number | null
-  passed: boolean | null
-  answers: Record<string, string>
-  userId: string | null
-  isGuest: boolean
-  isCleared: boolean
-  createdAt: string
+  _id: string;
+  phone: string;
+  score: number | null;
+  totalMarks: number | null;
+  timeTaken: number | null;
+  passed: boolean | null;
+  answers: Record<string, string>;
+  userId: string | null;
+  isGuest: boolean;
+  isCleared: boolean;
+  createdAt: string;
 }
 
 interface ApiSavedShape {
-  id: string
-  phone?: string
-  score: number | null
-  totalMarks: number | null
-  timeTaken: number | null
-  passed: boolean | null
-  answers?: Record<string, string>
-  userId?: string | null
-  isGuest?: boolean
-  isCleared?: boolean
-  createdAt: string
+  id: string;
+  phone?: string;
+  score: number | null;
+  totalMarks: number | null;
+  timeTaken: number | null;
+  passed: boolean | null;
+  answers?: Record<string, string>;
+  userId?: string | null;
+  isGuest?: boolean;
+  isCleared?: boolean;
+  createdAt: string;
 }
 
 function toSavedResult(data: ApiSavedShape): MockTestSavedResult {
@@ -47,8 +47,8 @@ function toSavedResult(data: ApiSavedShape): MockTestSavedResult {
     userId: data.userId ?? null,
     isGuest: data.isGuest ?? false,
     isCleared: data.isCleared ?? false,
-    createdAt: data.createdAt,
-  }
+    createdAt: data.createdAt
+  };
 }
 
 async function parseJson<T>(res: Response): Promise<T> {
@@ -62,11 +62,11 @@ async function parseJson<T>(res: Response): Promise<T> {
 export async function submitMockResult(
   payload: MockTestSubmitPayload
 ): Promise<MockTestSavedResult> {
-  const { score, totalMarks, timeTaken, answers } = payload
+  const { score, totalMarks, timeTaken, answers } = payload;
 
   const stringAnswers = Object.fromEntries(
     Object.entries(answers).map(([k, v]) => [String(k), v])
-  ) as Record<string, string>
+  ) as Record<string, string>;
 
   const res = await fetch("/api/mock-test/results", {
     method: "POST",
@@ -76,9 +76,9 @@ export async function submitMockResult(
       score,
       totalMarks,
       timeTaken,
-      answers: stringAnswers,
-    }),
-  })
+      answers: stringAnswers
+    })
+  });
 
   if (!res.ok) {
     const errBody = (await parseJson<{ message?: string }>(res).catch(() => ({}))) as {
@@ -96,14 +96,12 @@ export async function submitMockResult(
   return toSavedResult(json.result);
 }
 
-export async function getMyLatestMockResult(
-  _uid: string
-): Promise<MockTestSavedResult | null> {
+export async function getMyLatestMockResult(_uid: string): Promise<MockTestSavedResult | null> {
   try {
     const res = await fetch("/api/mock-test/latest", {
       method: "GET",
       credentials: "same-origin",
-      cache: "no-store",
+      cache: "no-store"
     });
 
     if (!res.ok) {
@@ -127,7 +125,7 @@ export async function clearMyMockScore(resultId: string): Promise<void> {
   const res = await fetch(`/api/mock-test/results/${encodeURIComponent(resultId)}/clear`, {
     method: "PATCH",
     credentials: "same-origin",
-    cache: "no-store",
+    cache: "no-store"
   });
 
   if (!res.ok && res.status !== 204) {
@@ -140,9 +138,6 @@ export async function clearMyMockScore(resultId: string): Promise<void> {
 }
 
 /** @deprecated Guest linking is handled via session login; kept for API compatibility. */
-export async function linkResultToUser(
-  _resultId: string,
-  _uid: string
-): Promise<void> {
+export async function linkResultToUser(_resultId: string, _uid: string): Promise<void> {
   // No-op: results are created for the authenticated user only.
 }

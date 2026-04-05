@@ -14,7 +14,10 @@ function isCadetIqTableMissing(err: unknown): boolean {
   return err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2021";
 }
 
-async function resolveDbUserId(fastify: FastifyInstance, authUser: AuthUser): Promise<string | null> {
+async function resolveDbUserId(
+  fastify: FastifyInstance,
+  authUser: AuthUser
+): Promise<string | null> {
   let dbUser = await fastify.prisma.user.findUnique({
     where: { firebaseUid: authUser.uid },
     select: { id: true }

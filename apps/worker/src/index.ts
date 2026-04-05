@@ -2,11 +2,17 @@ import { Worker } from "bullmq";
 import Redis from "ioredis";
 
 import { defaultJobOptions, loadWorkerEnv, queueNames } from "@colonels-academy/config";
-import type { NotificationJob, ProgressRecalcJob, VideoSyncJob } from "@colonels-academy/contracts";
+import type {
+  NotificationJob,
+  ProgressRecalcJob,
+  QuizAttemptJob,
+  VideoSyncJob
+} from "@colonels-academy/contracts";
 import { db } from "@colonels-academy/database";
 
 import { handleNotification } from "./jobs/notifications";
 import { handleProgressRecalc } from "./jobs/progress-recalc";
+import { handleQuizMastery } from "./jobs/quiz-mastery";
 import { handleVideoSync } from "./jobs/video-sync";
 
 function logWorker(level: "info" | "error", event: string, metadata: Record<string, unknown> = {}) {
@@ -81,6 +87,23 @@ async function start() {
     }
   );
 
+  const quizMasteryWorker = new Worker<QuizAttemptJob>(
+    queueNames.quizMastery,
+    async (job) => {
+      logWorker("info", "quiz-mastery.started", {
+        userId: job.data.userId,
+        courseId: job.data.courseId,
+        questionId: job.data.questionId,
+        jobId: job.id
+      });
+      return handleQuizMastery(job);
+    },
+    {
+      connection,
+      concurrency: env.WORKER_CONCURRENCY
+    }
+  );
+
   async function close(signal: string) {
     logWorker("info", "worker.shutdown", {
       signal
@@ -88,7 +111,8 @@ async function start() {
     await Promise.all([
       videoSyncWorker.close(),
       notificationWorker.close(),
-      progressRecalcWorker.close()
+      progressRecalcWorker.close(),
+      quizMasteryWorker.close()
     ]);
     await connection.quit().catch(() => {
       connection.disconnect();
@@ -108,7 +132,8 @@ async function start() {
   await Promise.all([
     videoSyncWorker.waitUntilReady(),
     notificationWorker.waitUntilReady(),
-    progressRecalcWorker.waitUntilReady()
+    progressRecalcWorker.waitUntilReady(),
+    quizMasteryWorker.waitUntilReady()
   ]);
 
   videoSyncWorker.on("completed", (job) => {
@@ -130,6 +155,15 @@ async function start() {
     logWorker("info", "progress-recalc.completed", {
       userId: job.data.userId,
       courseId: job.data.courseId,
+      jobId: job.id
+    });
+  });
+
+  quizMasteryWorker.on("completed", (job) => {
+    logWorker("info", "quiz-mastery.completed", {
+      userId: job.data.userId,
+      courseId: job.data.courseId,
+      questionId: job.data.questionId,
       jobId: job.id
     });
   });
@@ -160,9 +194,24 @@ async function start() {
     });
   });
 
+  quizMasteryWorker.on("failed", (job, error) => {
+    logWorker("error", "quiz-mastery.failed", {
+      userId: job?.data.userId,
+      courseId: job?.data.courseId,
+      questionId: job?.data.questionId,
+      error: error.message,
+      jobId: job?.id
+    });
+  });
+
   logWorker("info", "worker.ready", {
     concurrency: env.WORKER_CONCURRENCY,
-    queues: [queueNames.videoSync, queueNames.notifications, queueNames.progressRecalc],
+    queues: [
+      queueNames.videoSync,
+      queueNames.notifications,
+      queueNames.progressRecalc,
+      queueNames.quizMastery
+    ],
     retryAttempts: defaultJobOptions.attempts
   });
 }

@@ -1,36 +1,45 @@
-import { questions, FULL_MARKS, PASS_MARK_SCORE, optionLetters } from "@/data/mockQuestions"
-import { mockTestBaseCSS } from "@/data/mockTestTheme"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { questions, FULL_MARKS, PASS_MARK_SCORE, optionLetters } from "@/data/mockQuestions";
+import { mockTestBaseCSS } from "@/data/mockTestTheme";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface Props {
-  score: number
-  timeTaken: number
-  answers: Record<number, string>
-  isLoggedIn: boolean
-  saveStatus: "idle" | "saving" | "failed" | "saved"
-  saveError: string | null
-  onGoHome: () => void
-  onRetake: () => void
-  onSaveAndLogin: () => void
-  onRetrySave: () => void
+  score: number;
+  timeTaken: number;
+  answers: Record<number, string>;
+  isLoggedIn: boolean;
+  saveStatus: "idle" | "saving" | "failed" | "saved";
+  saveError: string | null;
+  onGoHome: () => void;
+  onRetake: () => void;
+  onSaveAndLogin: () => void;
+  onRetrySave: () => void;
 }
 
 export default function MockTestResult({
-  score, timeTaken, answers, isLoggedIn, saveStatus, saveError, onGoHome, onRetake, onSaveAndLogin, onRetrySave,
+  score,
+  timeTaken,
+  answers,
+  isLoggedIn,
+  saveStatus,
+  saveError,
+  onGoHome,
+  onRetake,
+  onSaveAndLogin,
+  onRetrySave
 }: Props) {
-  const router = useRouter()
-  const [showReport, setShowReport] = useState(false)
-  const iqReportEnabled = process.env.NEXT_PUBLIC_IQ_REPORT_ENABLED !== "false"
+  const router = useRouter();
+  const [showReport, setShowReport] = useState(false);
+  const iqReportEnabled = process.env.NEXT_PUBLIC_IQ_REPORT_ENABLED !== "false";
 
-  const passed = score >= PASS_MARK_SCORE
-  const pct = Math.round((score / FULL_MARKS) * 100)
-  const correct = questions.filter(q => answers[q.id] === q.answer).length
-  const wrong = Object.values(answers).length - correct
-  const unanswered = questions.length - Object.values(answers).length
-  const mins = Math.floor(timeTaken / 60)
-  const secs = timeTaken % 60
-  const showSaveRecovery = isLoggedIn && (saveStatus === "saving" || saveStatus === "failed")
+  const passed = score >= PASS_MARK_SCORE;
+  const pct = Math.round((score / FULL_MARKS) * 100);
+  const correct = questions.filter((q) => answers[q.id] === q.answer).length;
+  const wrong = Object.values(answers).length - correct;
+  const unanswered = questions.length - Object.values(answers).length;
+  const mins = Math.floor(timeTaken / 60);
+  const secs = timeTaken % 60;
+  const showSaveRecovery = isLoggedIn && (saveStatus === "saving" || saveStatus === "failed");
 
   return (
     <>
@@ -217,13 +226,14 @@ export default function MockTestResult({
         <div className="mt-corner-br" />
 
         <div className="mt-hud-decal">
-          <div>SCORE: {score}/{FULL_MARKS}</div>
+          <div>
+            SCORE: {score}/{FULL_MARKS}
+          </div>
           <div>STATUS: {passed ? "PASS" : "FAIL"}</div>
           <div className="mt-hud-gold">{passed ? "MISSION COMPLETE" : "RETRY RECOMMENDED"}</div>
         </div>
 
         <div className="res-outer">
-
           <div className="mt-card res-hero">
             <div className="res-glow" />
 
@@ -254,45 +264,98 @@ export default function MockTestResult({
             </p>
 
             <div className="res-stats">
-              <div className="res-stat"><div className="res-stat-val g">{correct}</div><div className="res-stat-lbl">Correct</div></div>
-              <div className="res-stat"><div className="res-stat-val r">{wrong}</div><div className="res-stat-lbl">Wrong</div></div>
-              <div className="res-stat"><div className="res-stat-val a">{unanswered}</div><div className="res-stat-lbl">Skipped</div></div>
-              <div className="res-stat"><div className="res-stat-val">{mins}m {secs}s</div><div className="res-stat-lbl">Time</div></div>
-              <div className="res-stat"><div className="res-stat-val b">{score}/{FULL_MARKS}</div><div className="res-stat-lbl">Score</div></div>
+              <div className="res-stat">
+                <div className="res-stat-val g">{correct}</div>
+                <div className="res-stat-lbl">Correct</div>
+              </div>
+              <div className="res-stat">
+                <div className="res-stat-val r">{wrong}</div>
+                <div className="res-stat-lbl">Wrong</div>
+              </div>
+              <div className="res-stat">
+                <div className="res-stat-val a">{unanswered}</div>
+                <div className="res-stat-lbl">Skipped</div>
+              </div>
+              <div className="res-stat">
+                <div className="res-stat-val">
+                  {mins}m {secs}s
+                </div>
+                <div className="res-stat-lbl">Time</div>
+              </div>
+              <div className="res-stat">
+                <div className="res-stat-val b">
+                  {score}/{FULL_MARKS}
+                </div>
+                <div className="res-stat-lbl">Score</div>
+              </div>
             </div>
 
             {/* Verdict cards */}
             <div className="res-verdict-grid">
               <div className="res-verdict-card">
                 <div className="res-verdict-card-hdr">
-                  <svg className="res-verdict-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  <svg
+                    className="res-verdict-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
                   <span className="res-verdict-label">Command Verdict</span>
                 </div>
                 <p className="res-verdict-text">
-                  "{passed
+                  "
+                  {passed
                     ? "Outstanding cognitive agility. Candidate shows superior reasoning and rapid processing capabilities."
-                    : "Satisfactory engagement. Performance indicates strong potential — optimization required in cross-analysis."}"
+                    : "Satisfactory engagement. Performance indicates strong potential — optimization required in cross-analysis."}
+                  "
                 </p>
               </div>
               <div className="res-verdict-card">
                 <div className="res-verdict-card-hdr">
-                  <svg className="res-verdict-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <svg
+                    className="res-verdict-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                   <span className="res-verdict-label">Mission Orders</span>
                 </div>
                 <p className="res-verdict-text" style={{ fontStyle: "normal", color: "#6b7280" }}>
-                  To maximize selection probability, candidate is recommended for the <strong style={{ color: "#0F1C15" }}>Standardized IQ Masterclass</strong> protocol.
+                  To maximize selection probability, candidate is recommended for the{" "}
+                  <strong style={{ color: "#0F1C15" }}>Standardized IQ Masterclass</strong>{" "}
+                  protocol.
                 </p>
               </div>
             </div>
 
             {/* Enroll CTA */}
-            <button className="res-enroll" onClick={() => router.push("/courses/officer-cadet-elite")} style={{ marginBottom: 16 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/>
+            <button
+              className="res-enroll"
+              onClick={() => router.push("/courses/officer-cadet-elite")}
+              style={{ marginBottom: 16 }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                <path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" />
               </svg>
               Enroll in Officer Cadet Course
             </button>
@@ -305,13 +368,25 @@ export default function MockTestResult({
                   <div className="res-save-text-wrap">
                     <div className="res-save-title">Save Your Result</div>
                     <div className="res-save-sub">
-                      Create a free account or log in to permanently save your score and track your progress.
+                      Create a free account or log in to permanently save your score and track your
+                      progress.
                     </div>
                     <div className="res-save-btns">
                       <button className="res-save-login" onClick={onSaveAndLogin}>
                         <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                          <path d="M7 1v6M4 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M2 10v2h10v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          <path
+                            d="M7 1v6M4 4l3-3 3 3"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M2 10v2h10v-2"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
                         </svg>
                         Log In / Register Free
                       </button>
@@ -324,12 +399,15 @@ export default function MockTestResult({
             {showSaveRecovery && (
               <div className={`res-save-status ${saveStatus}`}>
                 <div className="res-save-title">
-                  {saveStatus === "saving" ? "Saving Result to Your Account" : "Result Still Needs to Be Saved"}
+                  {saveStatus === "saving"
+                    ? "Saving Result to Your Account"
+                    : "Result Still Needs to Be Saved"}
                 </div>
                 <div className="res-save-sub">
                   {saveStatus === "saving"
                     ? "Keep this tab open while we store this attempt in your account."
-                    : (saveError || "Your score is visible now, but this attempt is not stored in your account yet.")}
+                    : saveError ||
+                      "Your score is visible now, but this attempt is not stored in your account yet."}
                 </div>
                 {saveStatus === "failed" && (
                   <div className="res-save-btns">
@@ -341,26 +419,47 @@ export default function MockTestResult({
               </div>
             )}
 
-            <div className="res-actions" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div
+              className="res-actions"
+              style={{ display: "flex", flexDirection: "column", gap: 10 }}
+            >
               <button className="res-retake" onClick={onRetake}>
                 Retake Assessment
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 7a6 6 0 1 0 1.5-4M1 3v4h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M1 7a6 6 0 1 0 1.5-4M1 3v4h4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
               <button className="res-report-toggle" onClick={onGoHome}>
                 Return to Home
                 <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                  <path d="M6 2L1 7l5 5M2 7h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M6 2L1 7l5 5M2 7h11"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
               {iqReportEnabled && (
-              <button className="res-report-toggle" onClick={() => setShowReport(v => !v)}>
-                {showReport ? "Hide" : "View"} Answer Report
-                <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                  <path d={showReport ? "M2 9l5-5 5 5" : "M2 5l5 5 5-5"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+                <button className="res-report-toggle" onClick={() => setShowReport((v) => !v)}>
+                  {showReport ? "Hide" : "View"} Answer Report
+                  <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d={showReport ? "M2 9l5-5 5 5" : "M2 5l5 5 5-5"}
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               )}
             </div>
           </div>
@@ -369,37 +468,66 @@ export default function MockTestResult({
             <div className="res-report">
               <div className="res-report-hdr">
                 <span className="res-report-hdr-title">Intel Report — All 60 Modules</span>
-                <span style={{ fontSize: 10, color: "#9ca3af", fontFamily: "monospace" }}>{correct} ✓ · {wrong} ✗ · {unanswered} —</span>
+                <span style={{ fontSize: 10, color: "#9ca3af", fontFamily: "monospace" }}>
+                  {correct} ✓ · {wrong} ✗ · {unanswered} —
+                </span>
               </div>
               {!isLoggedIn ? (
                 <div className="res-report-locked">
                   <div className="res-locked-icon">🔒</div>
                   <div className="res-locked-title">Classified — Login Required</div>
-                  <div className="res-locked-sub">Full intel report requires authentication. Login or register free to unlock all answers and explanations.</div>
-                  <button className="res-save-login" style={{ margin: "0 auto" }} onClick={onSaveAndLogin}>Authenticate to Unlock</button>
+                  <div className="res-locked-sub">
+                    Full intel report requires authentication. Login or register free to unlock all
+                    answers and explanations.
+                  </div>
+                  <button
+                    className="res-save-login"
+                    style={{ margin: "0 auto" }}
+                    onClick={onSaveAndLogin}
+                  >
+                    Authenticate to Unlock
+                  </button>
                 </div>
               ) : (
-                questions.map(q => {
-                  const userAns = answers[q.id]
-                  const isCorrect = userAns === q.answer
-                  const correctText = q.options[optionLetters.indexOf(q.answer)]
-                  const userText = userAns ? q.options[optionLetters.indexOf(userAns)] : null
+                questions.map((q) => {
+                  const userAns = answers[q.id];
+                  const isCorrect = userAns === q.answer;
+                  const correctText = q.options[optionLetters.indexOf(q.answer)];
+                  const userText = userAns ? q.options[optionLetters.indexOf(userAns)] : null;
                   return (
                     <div className="res-report-row" key={q.id}>
                       <div className="res-row-num">
-                        <div className={`res-row-icon ${isCorrect ? "c" : userAns ? "w" : "u"}`}>{isCorrect ? "✓" : userAns ? "✗" : "–"}</div>
+                        <div className={`res-row-icon ${isCorrect ? "c" : userAns ? "w" : "u"}`}>
+                          {isCorrect ? "✓" : userAns ? "✗" : "–"}
+                        </div>
                         Module {q.id}
-                        <span className={`res-row-pts ${isCorrect ? "c" : "w"}`}>{isCorrect ? "+1 pt" : "0 pts"}</span>
+                        <span className={`res-row-pts ${isCorrect ? "c" : "w"}`}>
+                          {isCorrect ? "+1 pt" : "0 pts"}
+                        </span>
                       </div>
                       <div className="res-row-qtext">{q.text}</div>
                       <div className="res-row-pills">
                         <span className="res-pill correct">
-                          <svg width="9" height="9" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                          <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                            <path
+                              d="M2 7l4 4 6-7"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                          </svg>
                           Correct: {q.answer}) {correctText}
                         </span>
                         {userAns && !isCorrect && (
                           <span className="res-pill wrong">
-                            <svg width="9" height="9" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                            <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+                              <path
+                                d="M3 3l8 8M11 3l-8 8"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
                             Your answer: {userAns}) {userText}
                           </span>
                         )}
@@ -407,7 +535,7 @@ export default function MockTestResult({
                       </div>
                       <div className="res-explain">{q.explanation}</div>
                     </div>
-                  )
+                  );
                 })
               )}
             </div>
@@ -423,5 +551,5 @@ export default function MockTestResult({
         </div>
       </div>
     </>
-  )
+  );
 }
