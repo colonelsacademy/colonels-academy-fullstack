@@ -17,21 +17,10 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
 
   function getProgressQueue() {
     if (!progressRecalcQueue) {
-      const env = fastify.redis
-        ? undefined
-        : (() => {
-            try {
-              const { loadApiEnv } = require("@colonels-academy/config");
-              return loadApiEnv();
-            } catch {
-              return null;
-            }
-          })();
-
-      // Use the infrastructure Redis connection if available
-      const connection = fastify.redis ?? { url: env?.REDIS_URL ?? "redis://localhost:6379" };
+      // Only create queue if Redis is available
+      if (!fastify.redis) return null;
       progressRecalcQueue = new Queue<ProgressRecalcJob>(queueNames.progressRecalc, {
-        connection,
+        connection: fastify.redis,
         defaultJobOptions
       });
     }
@@ -230,11 +219,14 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
       // Enqueue background recalculation if lesson was completed
       if (status === "COMPLETED") {
         try {
-          await getProgressQueue().add(
-            "progress-recalc",
-            { userId: dbUser.id, courseId: lesson.courseId, triggeredBy: "lesson-completion" },
-            defaultJobOptions
-          );
+          const queue = getProgressQueue();
+          if (queue) {
+            await queue.add(
+              "progress-recalc",
+              { userId: dbUser.id, courseId: lesson.courseId, triggeredBy: "lesson-completion" },
+              defaultJobOptions
+            );
+          }
         } catch (queueErr) {
           request.log.warn({ err: queueErr }, "learning.progress: failed to enqueue recalc job");
         }
