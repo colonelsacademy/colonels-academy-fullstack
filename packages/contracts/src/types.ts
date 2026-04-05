@@ -76,6 +76,7 @@ export interface CourseDetail {
   accentColor: string;
   heroImageUrl?: string;
   featured: boolean;
+  isComingSoon: boolean;
   format: "cohort" | "self-paced" | "hybrid";
   liveSupport: string;
   instructorSlugs: string[];
@@ -99,6 +100,24 @@ export interface DashboardSnapshot {
   upcomingSessionCount: number;
   pendingTasks: number;
   completionTarget: string;
+}
+
+export interface EnrolledCourse {
+  enrollmentId: string;
+  courseSlug: string;
+  courseTitle: string;
+  heroImageUrl?: string;
+  accentColor: string;
+  progressPercent: number;
+  completedLessons: number;
+  totalLessons: number;
+  enrolledAt: string;
+  status: "ACTIVE" | "PENDING" | "EXPIRED" | "REFUNDED";
+  lastAccessedAt?: string;
+}
+
+export interface EnrollmentsResponse {
+  items: EnrolledCourse[];
 }
 
 export interface SiteMetric {

@@ -61,7 +61,7 @@ function SignupForm() {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       const token = await user.getIdToken();
       await login(token);
-      router.push("/dashboard");
+      router.push("/my-learning");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-up failed.");
     } finally {
@@ -80,7 +80,7 @@ function SignupForm() {
         const { user } = await signInWithPopup(auth, provider);
         const token = await user.getIdToken();
         await login(token);
-        router.push("/dashboard");
+        router.push("/my-learning");
       } else {
         await signInWithRedirect(auth, provider);
       }

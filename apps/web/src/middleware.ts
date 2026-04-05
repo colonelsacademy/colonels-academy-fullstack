@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Standard routes that require authentication
-const PROTECTED_ROUTES = ["/dashboard", "/admin", "/courses/enroll"];
+const PROTECTED_ROUTES = ["/my-learning", "/admin", "/courses/enroll", "/settings", "/delete-account"];
 
 // Routes that are only for unauthenticated users
 const AUTH_ROUTES = ["/login"];
@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
 
   // 2. If trying to access an auth route (like /login) with an active session
   if (isAuthRoute && sessionToken) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/my-learning", request.url));
   }
 
   return NextResponse.next();
@@ -31,5 +31,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/courses/enroll/:path*", "/login"]
+  matcher: ["/my-learning/:path*", "/admin/:path*", "/dashboard/:path*", "/courses/enroll/:path*", "/settings/:path*", "/delete-account/:path*", "/login"]
 };

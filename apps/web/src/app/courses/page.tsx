@@ -33,7 +33,7 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
     tag: c.track.toUpperCase(),
     level: c.level,
     isBestseller: c.featured,
-    comingSoon: false
+    comingSoon: c.isComingSoon ?? false
   }));
 
   const filtered =

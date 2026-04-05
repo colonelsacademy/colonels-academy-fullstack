@@ -454,7 +454,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                     courseId={course.slug}
                     courseTitle={course.title}
                     coursePrice={course.priceNpr}
-                    courseThumbnail={course.heroImageUrl}
+                    {...(course.heroImageUrl ? { courseThumbnail: course.heroImageUrl } : {})}
                     courseCategory={course.track}
                   />
 

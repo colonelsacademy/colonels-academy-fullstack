@@ -16,6 +16,7 @@ import {
   Shield,
   ShieldAlert,
   ShoppingCart,
+  Trash2,
   User,
   X
 } from "lucide-react";
@@ -244,11 +245,15 @@ const Navbar = () => {
                   onClick={() => setUserMenuOpen((v) => !v)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-all"
                 >
-                  <div className="w-7 h-7 rounded-full bg-[#D4AF37] flex items-center justify-center">
-                    <User className="w-4 h-4 text-[#0F1C15]" />
+                  <div className="w-8 h-8 rounded-full border border-[#D4AF37]/50 overflow-hidden bg-gray-900 flex items-center justify-center">
+                    {user.displayName?.charAt(0) ? (
+                      <span className="text-xs text-[#D4AF37] font-bold">{user.displayName.charAt(0).toUpperCase()}</span>
+                    ) : (
+                      <User className="w-4 h-4 text-[#D4AF37]" />
+                    )}
                   </div>
                   <span className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.15em] text-white/90 max-w-[120px] truncate">
-                    {user.email?.split("@")[0]}
+                    {user.displayName?.split(" ")[0] ?? user.email?.split("@")[0]}
                   </span>
                   <ChevronDown
                     className={`w-3 h-3 text-white/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
@@ -262,21 +267,15 @@ const Navbar = () => {
                         {user.displayName ?? user.email?.split("@")[0]}
                       </p>
                       <p className="text-xs text-gray-400">{user.email}</p>
-                    </div>
-                    <div className="py-2">
-                      {user.role === "admin" && (
-                        <Link href="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 transition-colors">
-                          <ShieldAlert className="w-4 h-4" /> HQ Command
+                    </div>                    <div className="py-2">
+                      {user.role?.toLowerCase() === "admin" && (
+                        <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 transition-colors">
+                          <ShieldAlert className="w-4 h-4" /> Dashboard
                         </Link>
                       )}
-                      <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-400 hover:bg-white/5 transition-colors">
+                      <Link href="/my-learning" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-400 hover:bg-white/5 transition-colors">
                         <BookOpen className="w-4 h-4" /> My Courses
                       </Link>
-                      {user.role === "admin" && (
-                        <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors">
-                          <User className="w-4 h-4" /> Dashboard
-                        </Link>
-                      )}
                       <Link href="/settings" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors">
                         <Settings className="w-4 h-4" /> Account Settings
                       </Link>
@@ -346,7 +345,7 @@ const Navbar = () => {
             {authenticated && user ? (
               <div className="flex flex-col gap-2 mt-2">
                 <Link
-                  href="/dashboard"
+                  href="/my-learning"
                   onClick={() => setIsMenuOpen(false)}
                   className="w-full py-3 border border-white/20 text-white font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded flex items-center justify-center gap-2"
                 >
@@ -417,7 +416,7 @@ const Navbar = () => {
                 </button>
               </div>
               {itemCount === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-50">
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
                   <p className="font-bold text-gray-400 text-lg">Your cart is empty</p>
                   <button
@@ -431,35 +430,34 @@ const Navbar = () => {
               ) : (
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {items.map((item) => (
-                    <div key={item.id} className="flex gap-4">
-                      <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                    <div key={item.id} className="flex gap-4 group">
+                      <div className="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center">
                         {item.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                         ) : (
                           <ShoppingCart className="w-6 h-6 text-gray-400" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-gray-900 line-clamp-2">{item.title}</p>
-                        <p className="text-xs text-gray-500 mt-1 capitalize">
-                          {item.type ?? "course"}
-                        </p>
-                        <p className="font-bold text-[#0F1C15] mt-1">
-                          NPR {item.price.toLocaleString()}
-                        </p>
+                      <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-bold text-sm text-gray-900 line-clamp-2">{item.title}</p>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.id)}
+                            aria-label={`Remove ${item.title}`}
+                            className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs text-gray-400 font-bold uppercase tracking-wide">
+                            {item.type === "course" ? "Digital Access" : item.type ?? "course"}
+                          </span>
+                          <span className="font-bold text-[#0F1C15]">NPR {item.price.toLocaleString()}</span>
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
                     </div>
                   ))}
                 </div>

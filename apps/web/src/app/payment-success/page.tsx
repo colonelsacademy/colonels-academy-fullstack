@@ -11,6 +11,7 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const { authenticated } = useAuth();
   const orderId = searchParams.get("orderId");
+  const courseSlug = searchParams.get("courseSlug");
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -46,19 +47,21 @@ function PaymentSuccessContent() {
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() => router.push("/courses")}
+            onClick={() => router.push("/my-learning")}
             className="w-full py-4 bg-[#0F1C15] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all shadow-lg"
           >
             <LayoutDashboard className="w-5 h-5" /> Go to My Courses
           </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/courses")}
-            className="w-full py-4 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-          >
-            <Shield className="w-5 h-5" /> Return to Course Page
-          </button>
+          {courseSlug && (
+            <button
+              type="button"
+              onClick={() => router.push(`/classroom/${courseSlug}`)}
+              className="w-full py-4 bg-[#D4AF37] text-[#0F1C15] border border-[#D4AF37] rounded-xl font-bold hover:bg-[#F4CA30] transition-colors flex items-center justify-center gap-2"
+            >
+              <Shield className="w-5 h-5" /> Start Learning Now
+            </button>
+          )}
         </div>
       </motion.div>
     </div>

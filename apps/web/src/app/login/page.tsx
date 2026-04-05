@@ -25,7 +25,7 @@ const GoogleIcon = () => (
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = searchParams.get("next") ?? "/my-learning";
   const { login } = useAuth();
 
   const [view, setView] = useState<"signin" | "signup">("signin");

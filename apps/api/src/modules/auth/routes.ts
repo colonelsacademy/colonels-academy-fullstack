@@ -56,6 +56,18 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       reply.header("cache-control", "no-store");
 
       const authResult = await fastify.authenticateRequest(request);
+
+      // Enrich role from Postgres so admin users see their role correctly
+      if (authResult.user) {
+        const dbUser = await fastify.prisma.user.findUnique({
+          where: { firebaseUid: authResult.user.uid },
+          select: { role: true }
+        });
+        if (dbUser?.role) {
+          authResult.user.role = dbUser.role.toLowerCase();
+        }
+      }
+
       const response: AuthSessionResponse = {
         authenticated: Boolean(authResult.user),
         user: authResult.user ? toSessionUser(authResult.user) : null,

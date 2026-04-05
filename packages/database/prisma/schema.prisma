@@ -106,6 +106,7 @@ model Course {
   accentColor      String
   heroImageUrl     String?
   isFeatured       Boolean            @default(false)
+  isComingSoon     Boolean            @default(false)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   instructorLinks  CourseInstructor[]

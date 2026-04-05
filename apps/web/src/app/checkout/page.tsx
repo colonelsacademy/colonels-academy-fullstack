@@ -34,12 +34,41 @@ export default function CheckoutPage() {
     setPaymentError("");
 
     try {
-      // Mock payment for now - replace with real Khalti/eSewa integration
+      // 1. Create order in DB
+      const orderRes = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({ courseSlug: i.id })),
+          provider: paymentMethod
+        })
+      });
+
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        throw new Error(err.message || "Failed to create order");
+      }
+
+      const order = await orderRes.json();
+
+      // 2. Mock payment confirmation (replace with real eSewa/Khalti redirect later)
       await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // 3. Confirm order → creates enrollment in DB
+      const confirmRes = await fetch(`/api/orders/${order.orderId}/confirm`, {
+        method: "POST"
+      });
+
+      if (!confirmRes.ok) {
+        const err = await confirmRes.json();
+        throw new Error(err.message || "Failed to confirm order");
+      }
+
+      const confirmed = await confirmRes.json();
       clearCart();
-      router.push("/payment-success");
-    } catch {
-      setPaymentError("Transaction failed. Please try again.");
+      router.push(`/payment-success?orderId=${order.orderId}${confirmed.courseSlug ? `&courseSlug=${confirmed.courseSlug}` : ""}`);
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : "Transaction failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
