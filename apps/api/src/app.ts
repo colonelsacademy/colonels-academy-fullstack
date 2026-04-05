@@ -12,6 +12,7 @@ import catalogRoutes from "./modules/catalog/routes";
 import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
+import mockTestRoutes from "./modules/mock-test/routes";
 import authPlugin from "./plugins/auth";
 import infrastructurePlugin from "./plugins/infrastructure";
 import prismaPlugin from "./plugins/prisma";
@@ -70,6 +71,9 @@ export function buildApp() {
   });
   void app.register(mediaRoutes, {
     prefix: "/v1/media"
+  });
+  void app.register(mockTestRoutes, {
+    prefix: "/v1/mock-test"
   });
 
   app.setErrorHandler((error, request, reply) => {

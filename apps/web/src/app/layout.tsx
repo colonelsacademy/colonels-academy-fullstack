@@ -3,6 +3,7 @@ import { SiteShell } from "@/components/site-shell";
 import { CartProvider } from "@/contexts/CartContext";
 import type { Metadata } from "next";
 import { Inter, Rajdhani } from "next/font/google";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 
@@ -27,10 +28,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${rajdhani.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
             <SiteShell>{children}</SiteShell>
+            <Toaster richColors position="top-center" />
           </CartProvider>
         </AuthProvider>
       </body>

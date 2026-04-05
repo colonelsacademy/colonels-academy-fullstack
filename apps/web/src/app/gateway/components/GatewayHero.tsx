@@ -109,7 +109,7 @@ const GatewayHero = () => {
             {/* CTA buttons */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full sm:w-auto fade-in-up [animation-delay:600ms]">
               <MagneticButton
-                onClick={() => router.push("/iq-test")}
+                onClick={() => router.push("/mocktest")}
                 className="group w-full sm:w-auto px-8 py-5 bg-[#0B1120] text-white rounded-xl font-bold text-base tracking-wider uppercase shadow-xl hover:shadow-2xl hover:shadow-blue-900/20 flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
                 <Target className="w-5 h-5 text-blue-400 group-hover:rotate-180 transition-transform duration-700" />

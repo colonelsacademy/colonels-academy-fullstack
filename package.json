@@ -14,18 +14,18 @@
     "typecheck": "node ./scripts/run-turbo.mjs typecheck",
     "check:boundaries": "node ./scripts/check-boundaries.mjs",
     "validate": "pnpm run biome:check && pnpm run check:boundaries && pnpm run typecheck && pnpm run build",
-    "db:generate": "corepack pnpm --filter @colonels-academy/database run db:generate",
-    "db:migrate": "corepack pnpm --filter @colonels-academy/database run db:migrate",
-    "db:deploy": "corepack pnpm --filter @colonels-academy/database run db:deploy",
-    "db:status": "corepack pnpm --filter @colonels-academy/database run db:status",
-    "db:push": "corepack pnpm --filter @colonels-academy/database run db:push",
-    "db:seed": "corepack pnpm --filter @colonels-academy/database run db:seed",
-    "db:studio": "corepack pnpm --filter @colonels-academy/database run db:studio",
+    "db:generate": "pnpm --filter @colonels-academy/database run db:generate",
+    "db:migrate": "pnpm --filter @colonels-academy/database run db:migrate",
+    "db:deploy": "pnpm --filter @colonels-academy/database run db:deploy",
+    "db:status": "pnpm --filter @colonels-academy/database run db:status",
+    "db:push": "pnpm --filter @colonels-academy/database run db:push",
+    "db:seed": "pnpm --filter @colonels-academy/database run db:seed",
+    "db:studio": "pnpm --filter @colonels-academy/database run db:studio",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "biome:check": "biome check .",
     "biome:format": "biome format --write .",
-    "prepare": "sh scripts/setup-hooks.sh"
+    "prepare": "node -e \"console.log('Skipping git hooks setup on Windows for now.')\""
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "dotenv": "^16.5.0",
     "turbo": "^2.5.3"
   }
 }

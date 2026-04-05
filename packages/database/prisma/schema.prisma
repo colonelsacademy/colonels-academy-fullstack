@@ -75,6 +75,24 @@ model User {
   enrollments Enrollment[]
   orders      PurchaseOrder[]
   progress    UserProgress[]
+  cadetIqMockResults CadetIqMockResult[]
+}
+
+/// Cadet IQ / mock assessment attempts (stored in Postgres; replaces legacy Firestore collection).
+model CadetIqMockResult {
+  id          String   @id @default(cuid())
+  userId      String
+  score       Int?
+  totalMarks  Int?
+  timeTaken   Int?
+  passed      Boolean?
+  answers     Json     @default("{}")
+  isCleared   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isCleared, createdAt(sort: Desc)])
 }
 
 model Instructor {
