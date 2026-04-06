@@ -135,9 +135,9 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         durationLabel: request.body.durationLabel,
         lessonCount: request.body.lessonCount ?? 0,
         priceNpr: request.body.priceNpr,
-        originalPriceNpr: request.body.originalPriceNpr,
+        originalPriceNpr: request.body.originalPriceNpr ?? null,
         accentColor: request.body.accentColor ?? "#D4AF37",
-        heroImageUrl: request.body.heroImageUrl,
+        heroImageUrl: request.body.heroImageUrl ?? null,
         isFeatured: request.body.isFeatured ?? false,
         isComingSoon: request.body.isComingSoon ?? false
       }
@@ -215,7 +215,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         startsAt: new Date(request.body.startsAt),
         endsAt: new Date(request.body.endsAt),
         deliveryMode: request.body.deliveryMode,
-        meetingUrl: request.body.meetingUrl
+        meetingUrl: request.body.meetingUrl ?? null
       }
     });
 
@@ -296,8 +296,8 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         title: request.body.title,
         synopsis: request.body.synopsis ?? "",
         position,
-        bunnyVideoId: request.body.bunnyVideoId,
-        durationMinutes: request.body.durationMinutes,
+        bunnyVideoId: request.body.bunnyVideoId ?? null,
+        durationMinutes: request.body.durationMinutes ?? null,
         contentType:
           (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
         accessKind: (request.body.accessKind as "PREVIEW" | "STANDARD") ?? "STANDARD"

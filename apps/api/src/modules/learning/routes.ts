@@ -72,7 +72,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
           }
         }
       },
-      orderBy: { enrolledAt: "desc" }
+      orderBy: { purchasedAt: "desc" }
     });
 
     // Get completed lesson counts per course
