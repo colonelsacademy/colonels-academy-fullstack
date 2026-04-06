@@ -13,8 +13,10 @@ cmds = [
 cmds = [
   "cd /app && pnpm --filter @colonels-academy/database run db:generate",
   "cd /app && pnpm --filter @colonels-academy/web run build",
+  "mkdir -p /app/apps/web/.next/standalone/apps/web/.next",
   "cp -r /app/apps/web/.next/static /app/apps/web/.next/standalone/apps/web/.next/static",
-  "cp -r /app/apps/web/public /app/apps/web/.next/standalone/apps/web/public"
+  "mkdir -p /app/apps/web/.next/standalone/apps/web/public",
+  "cp -r /app/apps/web/public/. /app/apps/web/.next/standalone/apps/web/public/"
 ]
 
 [start]
