@@ -23,7 +23,7 @@ const DAILY_MISSIONS = [
 ];
 
 export default function DashboardPage() {
-  const { user, authenticated } = useAuth();
+  const { user, authenticated, loading: authLoading } = useAuth();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [missions, setMissions] = useState(DAILY_MISSIONS);
   const [loading, setLoading] = useState(true);
@@ -58,6 +58,18 @@ export default function DashboardPage() {
 
   const completedLessons = enrollments.reduce((sum, e) => sum + e.completedLessons, 0);
   const totalLessons = enrollments.reduce((sum, e) => sum + e.totalLessons, 0);
+
+  // Show loading spinner while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!authenticated) {
     return (

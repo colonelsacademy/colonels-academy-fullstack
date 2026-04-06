@@ -197,14 +197,6 @@ const Navbar = () => {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8 h-full overflow-visible">
-            <Dropdown
-              id="programs"
-              label="Officer Programs"
-              items={defaultPrograms}
-              width="w-80"
-              activeId={activeDropdown}
-              setActiveId={setActiveDropdown}
-            />
             <Link
               href="/#mentors"
               className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
