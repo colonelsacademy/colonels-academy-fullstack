@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { Eye, EyeOff, Lock, Mail, Shield, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 const GoogleIcon = () => (
@@ -34,8 +34,17 @@ const GoogleIcon = () => (
   </svg>
 );
 
+function safeNextPath(next: string | null): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return "/dashboard";
+  }
+  return next;
+}
+
 function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get("next"));
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -61,7 +70,7 @@ function SignupForm() {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       const token = await user.getIdToken();
       await login(token);
-      router.push("/my-learning");
+      router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-up failed.");
     } finally {
@@ -80,7 +89,7 @@ function SignupForm() {
         const { user } = await signInWithPopup(auth, provider);
         const token = await user.getIdToken();
         await login(token);
-        router.push("/my-learning");
+        router.push(next);
       } else {
         await signInWithRedirect(auth, provider);
       }
@@ -219,7 +228,7 @@ function SignupForm() {
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={`/login?next=${encodeURIComponent(next)}`}
             className="text-[#D4AF37] font-semibold hover:text-[#B8860B] transition-colors"
           >
             Sign in

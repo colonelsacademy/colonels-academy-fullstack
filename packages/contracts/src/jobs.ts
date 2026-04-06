@@ -13,3 +13,10 @@ export interface ProgressRecalcJob {
   courseId: string;
   triggeredBy: "lesson-completion" | "enrollment-change";
 }
+
+export interface QuizAttemptJob {
+  userId: string;
+  courseId: string;
+  questionId: string;
+  lessonId: string;
+}

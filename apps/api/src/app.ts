@@ -14,6 +14,7 @@ import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
 import ordersRoutes from "./modules/orders/routes";
+import mockTestRoutes from "./modules/mock-test/routes";
 import authPlugin from "./plugins/auth";
 import infrastructurePlugin from "./plugins/infrastructure";
 import prismaPlugin from "./plugins/prisma";
@@ -78,6 +79,8 @@ export function buildApp() {
   });
   void app.register(ordersRoutes, {
     prefix: "/v1/orders"
+  void app.register(mockTestRoutes, {
+    prefix: "/v1/mock-test"
   });
 
   app.setErrorHandler((error, request, reply) => {

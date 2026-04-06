@@ -1,17 +1,23 @@
 import { PrismaClient } from "@prisma/client";
 
-const globalForDatabase = globalThis as typeof globalThis & {
-  __colonelsAcademyPrisma?: PrismaClient;
+import type { CadetIqMockResultDelegate } from "./cadet-iq-mock-types";
+
+/** Prisma client plus delegates for models that may be missing from generated types until `prisma generate` runs. */
+export type DatabaseClient = PrismaClient & {
+  cadetIqMockResult: CadetIqMockResultDelegate;
 };
 
-export function createDatabaseClient() {
-  return new PrismaClient();
+const globalForDatabase = globalThis as typeof globalThis & {
+  __colonelsAcademyPrisma?: DatabaseClient;
+};
+
+export function createDatabaseClient(): DatabaseClient {
+  return new PrismaClient() as DatabaseClient;
 }
 
-export const db = globalForDatabase.__colonelsAcademyPrisma ?? createDatabaseClient();
+export const db: DatabaseClient =
+  globalForDatabase.__colonelsAcademyPrisma ?? createDatabaseClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForDatabase.__colonelsAcademyPrisma = db;
 }
-
-export type DatabaseClient = PrismaClient;
