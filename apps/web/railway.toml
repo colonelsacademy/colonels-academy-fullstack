@@ -2,4 +2,4 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "node apps/web/.next/standalone/server.js"
+startCommand = "node /app/apps/web/.next/standalone/apps/web/server.js"
