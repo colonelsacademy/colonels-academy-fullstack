@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm install -g corepack@0.31.0 && corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @colonels-academy/database run db:generate && pnpm --filter @colonels-academy/web run build"
+buildCommand = "cd ../.. && npm install -g corepack@0.31.0 && corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @colonels-academy/database run db:generate && pnpm --filter @colonels-academy/web run build"
 
 [deploy]
-startCommand = "pnpm --filter @colonels-academy/web run start -- --hostname 0.0.0.0 --port ${PORT:-3000}"
+startCommand = "node ../../apps/web/.next/standalone/apps/web/server.js"
