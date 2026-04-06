@@ -31,7 +31,7 @@ export function middleware(request: NextRequest) {
   if (isAuthRoute && sessionToken) {
     // Check if there's a 'next' parameter to redirect to
     const next = nextUrl.searchParams.get("next");
-    if (next && next.startsWith("/") && !next.startsWith("//")) {
+    if (next?.startsWith("/") && !next.startsWith("//")) {
       return NextResponse.redirect(new URL(next, request.url));
     }
     return NextResponse.redirect(new URL("/my-learning", request.url));
