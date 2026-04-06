@@ -6,6 +6,7 @@ import type {
   CatalogInstructorsResponse,
   CourseDetail,
   DashboardOverviewResponse,
+  EnrollmentsApiResponse,
   LiveSessionsResponse
 } from "@colonels-academy/contracts";
 
@@ -100,6 +101,12 @@ export function createApiClient(options: CreateApiClientOptions) {
     },
     getLiveSessions(requestOptions?: ApiRequestOptions) {
       return requestJson<LiveSessionsResponse>("/v1/learning/live-sessions", requestOptions);
+    },
+    getEnrollments(requestOptions: ApiRequestOptions = {}) {
+      return requestJson<EnrollmentsApiResponse>("/v1/learning/enrollments", {
+        ...requestOptions,
+        credentials: "include"
+      });
     },
     getAuthSession(requestOptions?: ApiRequestOptions) {
       return requestJson<AuthSessionResponse>("/v1/auth/session", requestOptions);

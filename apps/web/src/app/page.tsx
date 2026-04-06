@@ -65,7 +65,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     tag: course.track.toUpperCase(),
     level: course.level,
     isBestseller: course.featured,
-    comingSoon: false
+    comingSoon: course.isComingSoon ?? false
   }));
 
   const mappedCourses =

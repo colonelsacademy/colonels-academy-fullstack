@@ -7,12 +7,14 @@ import Fastify from "fastify";
 
 import { loadApiEnv } from "@colonels-academy/config";
 
+import adminRoutes from "./modules/admin/routes";
 import authRoutes from "./modules/auth/routes";
 import catalogRoutes from "./modules/catalog/routes";
 import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
 import mockTestRoutes from "./modules/mock-test/routes";
+import ordersRoutes from "./modules/orders/routes";
 import authPlugin from "./plugins/auth";
 import infrastructurePlugin from "./plugins/infrastructure";
 import prismaPlugin from "./plugins/prisma";
@@ -71,6 +73,12 @@ export function buildApp() {
   });
   void app.register(mediaRoutes, {
     prefix: "/v1/media"
+  });
+  void app.register(adminRoutes, {
+    prefix: "/v1/admin"
+  });
+  void app.register(ordersRoutes, {
+    prefix: "/v1/orders"
   });
   void app.register(mockTestRoutes, {
     prefix: "/v1/mock-test"

@@ -1,6 +1,6 @@
 import { BookMarked, BookOpen, Shield, Target, Users } from "lucide-react";
 
-export type Category = "all" | "army" | "police" | "apf" | "staff";
+export type Category = "all" | "army" | "police" | "apf" | "staff" | "mission";
 
 export const ICON_MAP = {
   BookOpen: BookOpen,
@@ -43,5 +43,7 @@ export const CATEGORIES = [
   { id: "all", label: "All Forces", iconId: "BookOpen" as IconKey },
   { id: "army", label: "Nepal Army", iconId: "Shield" as IconKey },
   { id: "police", label: "Nepal Police", iconId: "Users" as IconKey },
-  { id: "apf", label: "APF", iconId: "Target" as IconKey }
+  { id: "apf", label: "APF", iconId: "Target" as IconKey },
+  { id: "staff", label: "Staff College", iconId: "BookMarked" as IconKey },
+  { id: "mission", label: "Mission Prep", iconId: "Target" as IconKey }
 ];

@@ -46,6 +46,64 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
     return progressRecalcQueue;
   }
 
+  // ── GET /v1/learning/enrollments ───────────────────────────────────────────
+  fastify.get("/enrollments", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
+
+    const dbUser = await fastify.prisma.user.findUnique({
+      where: { firebaseUid: authUser.uid },
+      select: { id: true }
+    });
+
+    if (!dbUser) {
+      return reply.notFound("User not found in database.");
+    }
+
+    const enrollments = await fastify.prisma.enrollment.findMany({
+      where: { userId: dbUser.id, status: "ACTIVE" },
+      include: {
+        course: {
+          select: {
+            slug: true,
+            title: true,
+            heroImageUrl: true,
+            accentColor: true,
+            _count: { select: { lessons: true } }
+          }
+        }
+      },
+      orderBy: { purchasedAt: "desc" }
+    });
+
+    // Get completed lesson counts per course
+    const completedCounts = await fastify.prisma.userProgress.groupBy({
+      by: ["courseId"],
+      where: {
+        userId: dbUser.id,
+        status: "COMPLETED",
+        courseId: { in: enrollments.map((e) => e.courseId) }
+      },
+      _count: { lessonId: true }
+    });
+
+    const completedMap = new Map(completedCounts.map((c) => [c.courseId, c._count.lessonId]));
+
+    return {
+      items: enrollments.map((e) => ({
+        enrollmentId: e.id,
+        courseSlug: e.course.slug,
+        courseTitle: e.course.title,
+        heroImageUrl: e.course.heroImageUrl ?? undefined,
+        accentColor: e.course.accentColor ?? "#D4AF37",
+        progressPercent: e.progressPercent,
+        completedLessons: completedMap.get(e.courseId) ?? 0,
+        totalLessons: e.course._count.lessons,
+        enrolledAt: e.purchasedAt.toISOString(),
+        status: e.status as "ACTIVE" | "PENDING" | "EXPIRED" | "REFUNDED",
+        lastAccessedAt: e.updatedAt?.toISOString()
+      }))
+    };
+  });
   function getQuizMasteryQueue() {
     if (!quizMasteryQueue) {
       quizMasteryQueue = new Queue<QuizAttemptJob>(queueNames.quizMastery, {
@@ -189,11 +247,14 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
       // Enqueue background recalculation if lesson was completed
       if (status === "COMPLETED") {
         try {
-          await getProgressQueue().add(
-            "progress-recalc",
-            { userId: dbUser.id, courseId: lesson.courseId, triggeredBy: "lesson-completion" },
-            defaultJobOptions
-          );
+          const queue = getProgressQueue();
+          if (queue) {
+            await queue.add(
+              "progress-recalc",
+              { userId: dbUser.id, courseId: lesson.courseId, triggeredBy: "lesson-completion" },
+              defaultJobOptions
+            );
+          }
         } catch (queueErr) {
           request.log.warn({ err: queueErr }, "learning.progress: failed to enqueue recalc job");
         }

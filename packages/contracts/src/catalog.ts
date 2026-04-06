@@ -12,7 +12,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Army",
     experience: "25+ years",
     specialization: "Strategy, command preparation, and selection-board drills",
-    avatarUrl: "/images/instructors/Rajesh-Thapa.jpg",
+    avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/Rajesh%20Thapa.png",
     bio: "Former directing staff with deep experience preparing officer-cadet and command-track candidates for high-stakes military assessments."
   },
   {
@@ -21,7 +21,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Police",
     experience: "30+ years",
     specialization: "Criminal law, investigation, and oral-board performance",
-    avatarUrl: "/images/instructors/KP-Sharma.jpg",
+    avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/KP%20Sharma.png",
     bio: "Law-enforcement mentor focused on analytical reasoning, legal frameworks, and interview readiness for inspector-track learners."
   },
   {
@@ -30,7 +30,7 @@ export const instructors: InstructorProfile[] = [
     branch: "APF Nepal",
     experience: "28+ years",
     specialization: "Border security, tactical ops, and field leadership",
-    avatarUrl: "/images/instructors/SB-Basnet.jpg",
+    avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/SB%20Basnet.png",
     bio: "Operations-focused instructor helping cadets translate theory into disciplined, scenario-based decision making."
   }
 ];
@@ -50,8 +50,9 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 8500,
     originalPriceNpr: 12000,
     accentColor: "#5E6B3C",
-    heroImageUrl: "/images/courses/nepal-army-staff-college.jpg",
+    heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-army-staff-college.png",
     featured: true,
+    isComingSoon: false,
     format: "hybrid",
     liveSupport: "Weekly faculty-led doctrine clinic and answer-writing review.",
     instructorSlugs: ["rajesh-thapa"],
@@ -81,8 +82,10 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7500,
     accentColor: "#224785",
-    heroImageUrl: "/images/courses/nepal-police-inspector-cadet.jpg",
+    heroImageUrl:
+      "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png",
     featured: true,
+    isComingSoon: false,
     format: "cohort",
     liveSupport: "Twice-weekly oral-board rehearsal and case debrief sessions.",
     instructorSlugs: ["kp-sharma"],
@@ -112,8 +115,9 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7000,
     accentColor: "#B6762C",
-    heroImageUrl: "/images/courses/apf-inspector-cadet.jpg",
+    heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/apf-inspector-cadet.png",
     featured: true,
+    isComingSoon: false,
     format: "hybrid",
     liveSupport: "Weekend live tactical scenario lab with faculty review.",
     instructorSlugs: ["sb-basnet"],
@@ -143,8 +147,9 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7000,
     accentColor: "#8F7A38",
-    heroImageUrl: "/images/courses/nepal-army-officer-cadet.jpg",
+    heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-army-officer-cadet.png",
     featured: true,
+    isComingSoon: false,
     format: "cohort",
     liveSupport: "Structured faculty office hours and cohort checkpoints.",
     instructorSlugs: ["rajesh-thapa"],
@@ -174,8 +179,9 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 6000,
     originalPriceNpr: 9000,
     accentColor: "#8C4136",
-    heroImageUrl: "/images/courses/nepal-army-officer-cadet.jpg",
+    heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-army-officer-cadet.png",
     featured: false,
+    isComingSoon: false,
     format: "self-paced",
     liveSupport: "Monthly pronunciation and briefing workshop.",
     instructorSlugs: ["rajesh-thapa"],

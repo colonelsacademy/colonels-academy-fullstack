@@ -4,18 +4,17 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { getFirebaseClientAuth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
-  getRedirectResult,
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect
+  updateProfile
 } from "firebase/auth";
-import { Eye, EyeOff, Lock, Mail, Shield } from "lucide-react";
-import Link from "next/link";
+import { ArrowRight, Shield } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 const GoogleIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
+  <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
       fill="#4285F4"
@@ -38,55 +37,22 @@ const GoogleIcon = () => (
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = searchParams.get("next") ?? "/my-learning";
   const { login } = useAuth();
 
+  const [view, setView] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
-
-  useEffect(() => {
-    if (useEmulator) return;
-    async function handleRedirectResult() {
-      const auth = getFirebaseClientAuth();
-      if (!auth) return;
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          setLoading(true);
-          const token = await result.user.getIdToken();
-          await login(token);
-          router.push(next);
-        }
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Sign-in failed.");
-        setLoading(false);
-      }
-    }
-    handleRedirectResult();
-  }, [login, next, router, useEmulator]);
-
-  async function handleEmail(e: React.FormEvent) {
-    e.preventDefault();
+  const resetForm = () => {
     setError(null);
-    setLoading(true);
-    try {
-      const auth = getFirebaseClientAuth();
-      if (!auth) throw new Error("Firebase is not configured.");
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-      const token = await user.getIdToken();
-      await login(token);
-      router.push(next);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign-in failed.");
-    } finally {
-      setLoading(false);
-    }
-  }
+    setEmail("");
+    setPassword("");
+    setName("");
+  };
 
   async function handleGoogle() {
     setError(null);
@@ -95,133 +61,182 @@ function LoginForm() {
       const auth = getFirebaseClientAuth();
       if (!auth) throw new Error("Firebase is not configured.");
       const provider = new GoogleAuthProvider();
-      if (useEmulator) {
-        const { user } = await signInWithPopup(auth, provider);
-        const token = await user.getIdToken();
-        await login(token);
-        router.push(next);
-      } else {
-        await signInWithRedirect(auth, provider);
-      }
+      const { user } = await signInWithPopup(auth, provider);
+      const token = await user.getIdToken();
+      await login(token);
+      router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
       setLoading(false);
     }
   }
 
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const auth = getFirebaseClientAuth();
+      if (!auth) throw new Error("Firebase is not configured.");
+
+      if (view === "signup") {
+        const res = await createUserWithEmailAndPassword(auth, email, password);
+        if (name) await updateProfile(res.user, { displayName: name });
+        const token = await res.user.getIdToken();
+        await login(token);
+      } else {
+        const res = await signInWithEmailAndPassword(auth, email, password);
+        const token = await res.user.getIdToken();
+        await login(token);
+      }
+      router.push(next);
+    } catch (err: unknown) {
+      const firebaseErr = err as { code?: string; message?: string };
+      if (firebaseErr.code === "auth/email-already-in-use") {
+        setError("Email already registered. Please sign in.");
+        setView("signin");
+      } else if (
+        firebaseErr.code === "auth/wrong-password" ||
+        firebaseErr.code === "auth/invalid-credential" ||
+        firebaseErr.code === "auth/user-not-found"
+      ) {
+        setError("Incorrect email or password. Please try again.");
+      } else if (firebaseErr.code === "auth/too-many-requests") {
+        setError("Too many attempts. Please wait a moment and try again.");
+      } else if (firebaseErr.code === "auth/weak-password") {
+        setError("Password must be at least 6 characters.");
+      } else {
+        setError(firebaseErr.message || "Authentication failed. Please try again.");
+      }
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="w-full max-w-md">
-      {/* Logo */}
-      <div className="flex flex-col items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#B8860B] flex items-center justify-center shadow-lg">
-          <Shield className="w-6 h-6 text-white" />
-        </div>
-        <div className="text-center">
-          <h1 className="font-['Rajdhani'] font-bold text-gray-900 text-xl uppercase tracking-wider">
-            The Colonel&apos;s Academy
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">Sign in to your account</p>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-        {/* Google button */}
-        <button
-          type="button"
-          onClick={handleGoogle}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-gray-200 rounded-xl text-gray-700 text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 shadow-sm"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100" />
+    <div className="min-h-screen bg-[#f6f7f8] flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-[#f6f7f8] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+        {/* Mobile Brand Header */}
+        <div className="md:hidden bg-[#0F1C15] px-6 py-5 flex items-center gap-3">
+          <div className="w-9 h-9 bg-[#D4AF37] rounded-lg flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-[#0F1C15]" />
           </div>
-          <div className="relative flex justify-center">
-            <span className="px-3 bg-white text-gray-400 text-xs uppercase tracking-widest">
-              or
-            </span>
-          </div>
-        </div>
-
-        <form onSubmit={handleEmail} className="space-y-4">
           <div>
-            <label
-              htmlFor="login-email"
-              className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5"
-            >
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                id="login-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
-                placeholder="cadet@example.com"
-              />
+            <div className="font-bold text-sm leading-tight text-[#D4AF37]">
+              THE COLONEL&apos;S <span className="text-white">ACADEMY</span>
+            </div>
+            <div className="text-xs text-gray-400 mt-0.5">
+              {view === "signin" ? "Welcome Back, Cadet" : "Join the Ranks"}
             </div>
           </div>
+        </div>
 
+        {/* Left Panel — desktop only */}
+        <div className="hidden md:flex md:w-5/12 bg-[#0F1C15] p-12 text-white flex-col justify-between">
           <div>
-            <label
-              htmlFor="login-password"
-              className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5"
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-[#D4AF37] rounded-lg flex items-center justify-center">
+                <Shield className="w-6 h-6 text-[#0F1C15]" />
+              </div>
+              <div className="font-bold text-lg leading-tight text-[#D4AF37]">
+                THE COLONEL&apos;S
+                <br />
+                <span className="text-white">ACADEMY</span>
+              </div>
+            </div>
+            <h2 className="text-3xl font-['Rajdhani'] font-bold uppercase mb-4">
+              {view === "signin" ? "Welcome Back" : "Join the Ranks"}
+            </h2>
+            <p className="text-gray-400 text-sm">
+              Secure access for Officer Cadets and Staff College candidates.
+            </p>
+          </div>
+          <div className="text-xs text-gray-600">Nepal&apos;s #1 Ranked Instructor Team</div>
+        </div>
+
+        {/* Right Panel */}
+        <div className="w-full md:w-7/12 p-8 md:p-12 flex flex-col justify-center">
+          <div className="max-w-sm mx-auto w-full">
+            <h2 className="text-2xl font-bold text-[#0F1C15] mb-6">
+              {view === "signin" ? "HQ Access" : "New Account"}
+            </h2>
+
+            {/* Google Button */}
+            <button
+              type="button"
+              onClick={handleGoogle}
+              disabled={loading}
+              className="w-full py-3 bg-white border border-gray-200 rounded-xl flex items-center justify-center gap-3 font-bold text-gray-700 hover:bg-gray-50 transition-all mb-6 disabled:opacity-60 shadow-sm"
             >
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <GoogleIcon />
+              Continue with Google
+            </button>
+
+            <div className="relative mb-6 text-center">
+              <span className="bg-[#f6f7f8] px-3 text-gray-400 text-xs font-bold uppercase relative z-10">
+                Or via Email
+              </span>
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+            </div>
+
+            <form onSubmit={handleEmail} className="space-y-4">
+              {view === "signup" && (
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#0F1C15]"
+                  placeholder="Full Name"
+                />
+              )}
               <input
-                id="login-password"
-                type={showPassword ? "text" : "password"}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#0F1C15]"
+                placeholder="Email"
                 required
+              />
+              <input
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
-                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#0F1C15]"
+                placeholder="Password"
+                required
               />
+
+              {error && (
+                <div className="text-red-500 text-xs text-center font-bold bg-red-50 border border-red-100 p-3 rounded-xl">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-[#0F1C15] text-white rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {loading ? "Processing..." : view === "signin" ? "Login" : "Create Account"}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+
+            <div className="text-center mt-6 text-sm text-gray-500">
+              {view === "signin" ? "New here?" : "Already have an account?"}
               <button
                 type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                tabIndex={-1}
+                onClick={() => {
+                  setView(view === "signin" ? "signup" : "signin");
+                  resetForm();
+                }}
+                className="ml-2 font-bold text-[#0F1C15] hover:underline"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {view === "signin" ? "Sign Up" : "Sign In"}
               </button>
             </div>
           </div>
-
-          {error && (
-            <p className="text-red-600 text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-[#D4AF37] text-white font-semibold text-sm rounded-xl hover:bg-[#C9A227] active:bg-[#B8860B] transition-all disabled:opacity-50 shadow-sm mt-2"
-          >
-            {loading ? "Signing in…" : "Sign In"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="text-[#2D6A4F] font-semibold hover:text-[#1B4332] transition-colors"
-          >
-            Create one
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
@@ -229,17 +244,14 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <Suspense
-        fallback={
-          <div className="w-full max-w-md animate-pulse">
-            <div className="h-16 w-48 bg-gray-200 rounded-lg mx-auto mb-8" />
-            <div className="h-[420px] bg-white rounded-2xl shadow border border-gray-100" />
-          </div>
-        }
-      >
-        <LoginForm />
-      </Suspense>
-    </div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -13,6 +13,7 @@ import {
 import { BadgeCheck, BookOpen, Clock, Layers, Lock, Play, ShoppingCart, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
+import { useEffect, useState } from "react";
 
 // ─────────────────────────────────────────────
 // Wing badge colors matching old app exactly
@@ -103,7 +104,9 @@ const TiltCard = ({
 function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
   const router = useRouter();
   const { addItem, items } = useCart();
-  const inCart = items.some((i) => i.id === course.id);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const inCart = mounted && items.some((i) => i.id === course.id);
   const wing = WING_BADGE[course.category] ?? { badge: "bg-gray-600", accent: "#4b5563" };
   const wingLabel = WING_LABEL[course.category] ?? course.category;
   const hasDiscount = course.originalPrice > course.price;

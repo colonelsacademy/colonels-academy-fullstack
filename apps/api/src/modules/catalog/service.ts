@@ -53,6 +53,7 @@ function mapCourseRecord(record: CourseRecord): CourseDetail {
     priceNpr: record.priceNpr,
     accentColor: record.accentColor,
     featured: record.isFeatured,
+    isComingSoon: record.isComingSoon,
     format: fallback?.format ?? "cohort",
     liveSupport: fallback?.liveSupport ?? "Scheduled instructor support.",
     instructorSlugs: record.instructorLinks.map(

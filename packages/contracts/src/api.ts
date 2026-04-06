@@ -2,6 +2,7 @@ import type {
   CourseDetail,
   DashboardSnapshot,
   EnrollmentGuardResponse,
+  EnrollmentsResponse,
   InstructorProfile,
   LessonDetail,
   LiveSessionPreview,
@@ -58,6 +59,8 @@ export interface CourseLessonsResponse {
 }
 
 export type { EnrollmentGuardResponse };
+
+export interface EnrollmentsApiResponse extends EnrollmentsResponse {}
 
 export interface QueueDepthSnapshot {
   waiting: number;

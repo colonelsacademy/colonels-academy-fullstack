@@ -10,8 +10,6 @@ export async function syncUserWithPostgres(
 ) {
   const { uid, email, claims } = authUser;
 
-  // UPSERT: Create user if not exists, otherwise update
-  // We use firebaseUid as the unique identifier.
   try {
     const displayName = (claims.name as string) || undefined;
     const user = await prisma.user.upsert({
@@ -27,9 +25,14 @@ export async function syncUserWithPostgres(
         role: "STUDENT"
       }
     });
+
+    // Sync Postgres role back onto the authUser so the session response includes it
+    if (user.role) {
+      authUser.role = user.role.toLowerCase();
+    }
+
     return user;
   } catch (error) {
-    // Non-fatal: Postgres sync failure should not block the Firebase login flow.
     log.warn({ err: error, uid }, "user-sync: failed to sync user with Postgres");
     return null;
   }

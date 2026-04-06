@@ -10,6 +10,7 @@ import type {
   CatalogInstructorsResponse,
   CourseDetail,
   DashboardOverviewResponse,
+  EnrolledCourse,
   InstructorProfile
 } from "@colonels-academy/contracts";
 
@@ -89,5 +90,21 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
       },
       note: "Data is currently served from the local starter snapshot (API unreachable)."
     };
+  }
+}
+
+export async function getEnrollments(): Promise<EnrolledCourse[]> {
+  try {
+    const res = await fetch("/api/learning/enrollments", { credentials: "include" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
+    return (data.items ?? []).map((e: EnrolledCourse) => ({
+      ...e,
+      ...(e.heroImageUrl ? { heroImageUrl: getAssetUrl(e.heroImageUrl, cdnUrl) } : {})
+    }));
+  } catch (error) {
+    console.error("Failed to fetch enrollments:", error);
+    return [];
   }
 }
