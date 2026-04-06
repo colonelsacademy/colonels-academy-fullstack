@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
   transpilePackages: [
     "@colonels-academy/api-client",
     "@colonels-academy/config",
