@@ -16,4 +16,4 @@ cmds = [
 ]
 
 [start]
-cmd = "node /app/apps/web/.next/standalone/apps/web/server.js"
+cmd = "node /app/apps/web/.next/standalone/server.js"
