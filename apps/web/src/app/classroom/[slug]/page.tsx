@@ -1,7 +1,11 @@
 "use client";
 
 import VideoPlayer from "@/components/ui/VideoPlayer";
-import type { CourseLessonsResponse, LessonDetail, ModuleDetail } from "@colonels-academy/contracts";
+import type {
+  CourseLessonsResponse,
+  LessonDetail,
+  ModuleDetail
+} from "@colonels-academy/contracts";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
@@ -57,8 +61,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
           setUnorganised(data.unorganisedLessons);
 
           // Set first available lesson as active
-          const firstLesson =
-            data.modules[0]?.lessons[0] ?? data.unorganisedLessons[0] ?? null;
+          const firstLesson = data.modules[0]?.lessons[0] ?? data.unorganisedLessons[0] ?? null;
           setActiveLesson(firstLesson);
 
           // Check enrollment by seeing if any lesson is not locked (beyond preview)
@@ -70,10 +73,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
 
           // Build completed set from progress
           const completed = new Set(
-            [
-              ...data.modules.flatMap((m) => m.lessons),
-              ...data.unorganisedLessons
-            ]
+            [...data.modules.flatMap((m) => m.lessons), ...data.unorganisedLessons]
               .filter((l) => l.progressStatus === "COMPLETED")
               .map((l) => l.id)
           );
@@ -150,7 +150,9 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate ${isActive ? "text-[#0B1120]" : "text-gray-600"}`}>
+          <p
+            className={`text-sm font-medium truncate ${isActive ? "text-[#0B1120]" : "text-gray-600"}`}
+          >
             {lesson.title}
           </p>
           <div className="flex items-center gap-2 mt-1">
@@ -243,15 +245,21 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
                   </div>
                   <div className="flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
                     <div className="flex-1">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Duration</p>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">
+                        Duration
+                      </p>
                       <p className="font-bold text-gray-900">{courseDuration}</p>
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Lessons</p>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">
+                        Lessons
+                      </p>
                       <p className="font-bold text-gray-900">{courseLessonCount}</p>
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Level</p>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">
+                        Level
+                      </p>
                       <p className="font-bold text-gray-900">{courseLevel}</p>
                     </div>
                   </div>
@@ -305,7 +313,10 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
                         <p className="text-xs text-gray-500">2.4 MB</p>
                       </div>
                     </div>
-                    <button type="button" className="text-sm font-bold text-blue-600 hover:underline">
+                    <button
+                      type="button"
+                      className="text-sm font-bold text-blue-600 hover:underline"
+                    >
                       Download
                     </button>
                   </div>

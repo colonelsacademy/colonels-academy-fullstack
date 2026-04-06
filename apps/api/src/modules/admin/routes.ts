@@ -2,7 +2,10 @@ import type { FastifyPluginAsync } from "fastify";
 
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── Auth guard helper ──────────────────────────────────────────────────────
-  async function requireAdmin(request: Parameters<typeof fastify.authenticateRequest>[0], reply: { forbidden: (msg: string) => unknown }) {
+  async function requireAdmin(
+    request: Parameters<typeof fastify.authenticateRequest>[0],
+    reply: { forbidden: (msg: string) => unknown }
+  ) {
     const { user } = await fastify.authenticateRequest(request);
     if (!user) return reply.forbidden("Admin access required.");
 
@@ -97,11 +100,21 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── POST /v1/admin/courses ─────────────────────────────────────────────────
   fastify.post<{
     Body: {
-      slug: string; title: string; track: string; summary: string;
-      description: string; level: string; durationLabel: string;
-      lessonCount: number; priceNpr: number; originalPriceNpr?: number;
-      accentColor: string; heroImageUrl?: string; isFeatured?: boolean; isComingSoon?: boolean;
-    }
+      slug: string;
+      title: string;
+      track: string;
+      summary: string;
+      description: string;
+      level: string;
+      durationLabel: string;
+      lessonCount: number;
+      priceNpr: number;
+      originalPriceNpr?: number;
+      accentColor: string;
+      heroImageUrl?: string;
+      isFeatured?: boolean;
+      isComingSoon?: boolean;
+    };
   }>("/courses", async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
@@ -150,16 +163,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   );
 
   // ── DELETE /v1/admin/courses/:slug ─────────────────────────────────────────
-  fastify.delete<{ Params: { slug: string } }>(
-    "/courses/:slug",
-    async (request, reply) => {
-      const user = await requireAdmin(request, reply);
-      if (!user) return;
+  fastify.delete<{ Params: { slug: string } }>("/courses/:slug", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
 
-      await fastify.prisma.course.delete({ where: { slug: request.params.slug } });
-      return { ok: true };
-    }
-  );
+    await fastify.prisma.course.delete({ where: { slug: request.params.slug } });
+    return { ok: true };
+  });
 
   // ── GET /v1/admin/enrollments ──────────────────────────────────────────────
   fastify.get("/enrollments", async (request, reply) => {
@@ -180,7 +190,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
   // ── POST /v1/admin/live-sessions ───────────────────────────────────────────
   fastify.post<{
-    Body: { courseSlug: string; title: string; startsAt: string; endsAt: string; deliveryMode: string; meetingUrl?: string }
+    Body: {
+      courseSlug: string;
+      title: string;
+      startsAt: string;
+      endsAt: string;
+      deliveryMode: string;
+      meetingUrl?: string;
+    };
   }>("/live-sessions", async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
@@ -229,9 +246,15 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       where: { courseId: course.id },
       orderBy: { position: "asc" },
       select: {
-        id: true, title: true, synopsis: true, position: true,
-        durationMinutes: true, contentType: true, accessKind: true,
-        bunnyVideoId: true, moduleId: true
+        id: true,
+        title: true,
+        synopsis: true,
+        position: true,
+        durationMinutes: true,
+        contentType: true,
+        accessKind: true,
+        bunnyVideoId: true,
+        moduleId: true
       }
     });
 
@@ -241,7 +264,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── POST /v1/admin/courses/:slug/lessons ───────────────────────────────────
   fastify.post<{
     Params: { slug: string };
-    Body: { title: string; synopsis?: string; bunnyVideoId?: string; durationMinutes?: number; accessKind?: string; contentType?: string }
+    Body: {
+      title: string;
+      synopsis?: string;
+      bunnyVideoId?: string;
+      durationMinutes?: number;
+      accessKind?: string;
+      contentType?: string;
+    };
   }>("/courses/:slug/lessons", async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
@@ -268,7 +298,8 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         position,
         bunnyVideoId: request.body.bunnyVideoId,
         durationMinutes: request.body.durationMinutes,
-        contentType: (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
+        contentType:
+          (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
         accessKind: (request.body.accessKind as "PREVIEW" | "STANDARD") ?? "STANDARD"
       }
     });
@@ -285,7 +316,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── PATCH /v1/admin/lessons/:id ────────────────────────────────────────────
   fastify.patch<{
     Params: { id: string };
-    Body: { title?: string; synopsis?: string; bunnyVideoId?: string; durationMinutes?: number; accessKind?: string; position?: number }
+    Body: {
+      title?: string;
+      synopsis?: string;
+      bunnyVideoId?: string;
+      durationMinutes?: number;
+      accessKind?: string;
+      position?: number;
+    };
   }>("/lessons/:id", async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
@@ -295,9 +333,15 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       data: {
         ...(request.body.title ? { title: request.body.title } : {}),
         ...(request.body.synopsis !== undefined ? { synopsis: request.body.synopsis } : {}),
-        ...(request.body.bunnyVideoId !== undefined ? { bunnyVideoId: request.body.bunnyVideoId || null } : {}),
-        ...(request.body.durationMinutes !== undefined ? { durationMinutes: request.body.durationMinutes } : {}),
-        ...(request.body.accessKind ? { accessKind: request.body.accessKind as "PREVIEW" | "STANDARD" } : {}),
+        ...(request.body.bunnyVideoId !== undefined
+          ? { bunnyVideoId: request.body.bunnyVideoId || null }
+          : {}),
+        ...(request.body.durationMinutes !== undefined
+          ? { durationMinutes: request.body.durationMinutes }
+          : {}),
+        ...(request.body.accessKind
+          ? { accessKind: request.body.accessKind as "PREVIEW" | "STANDARD" }
+          : {}),
         ...(request.body.position !== undefined ? { position: request.body.position } : {})
       }
     });

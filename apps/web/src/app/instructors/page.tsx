@@ -33,7 +33,9 @@ export default async function InstructorsPage() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-[#0F1C15] to-[#1a2e20] flex items-center justify-center">
-                    <span className="text-[#D4AF37] font-bold text-6xl">{instructor.name.charAt(0)}</span>
+                    <span className="text-[#D4AF37] font-bold text-6xl">
+                      {instructor.name.charAt(0)}
+                    </span>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0F1C15]/90 via-[#0F1C15]/40 to-transparent" />
@@ -66,11 +68,15 @@ export default async function InstructorsPage() {
                   <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/10">
                     <div className="flex flex-col">
                       <span className="text-white font-bold text-sm">1,200+</span>
-                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">Students</span>
+                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">
+                        Students
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-white font-bold text-sm">{instructor.experience}</span>
-                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">Experience</span>
+                      <span className="text-white/40 text-[9px] uppercase font-bold tracking-widest">
+                        Experience
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -89,7 +95,10 @@ export default async function InstructorsPage() {
         </div>
 
         <div className="mt-16 text-center">
-          <Link href="/courses" className="inline-flex items-center gap-3 px-8 py-4 bg-[#0F1C15] text-white font-bold rounded-2xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-all">
+          <Link
+            href="/courses"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-[#0F1C15] text-white font-bold rounded-2xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-all"
+          >
             <Users className="w-5 h-5" />
             Explore Our Courses
           </Link>

@@ -12,7 +12,7 @@ export const instructors: InstructorProfile[] = [
     branch: "Nepal Army",
     experience: "25+ years",
     specialization: "Strategy, command preparation, and selection-board drills",
-avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/Rajesh%20Thapa.png",
+    avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/Rajesh%20Thapa.png",
     bio: "Former directing staff with deep experience preparing officer-cadet and command-track candidates for high-stakes military assessments."
   },
   {
@@ -21,7 +21,7 @@ avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/Rajesh%20Thapa
     branch: "Nepal Police",
     experience: "30+ years",
     specialization: "Criminal law, investigation, and oral-board performance",
-avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/KP%20Sharma.png",
+    avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/KP%20Sharma.png",
     bio: "Law-enforcement mentor focused on analytical reasoning, legal frameworks, and interview readiness for inspector-track learners."
   },
   {
@@ -30,7 +30,7 @@ avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/KP%20Sharma.pn
     branch: "APF Nepal",
     experience: "28+ years",
     specialization: "Border security, tactical ops, and field leadership",
-avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/SB%20Basnet.png",
+    avatarUrl: "https://uat.thecolonelsacademy.com/images/instructors/SB%20Basnet.png",
     bio: "Operations-focused instructor helping cadets translate theory into disciplined, scenario-based decision making."
   }
 ];
@@ -82,7 +82,8 @@ export const courseCatalog: CourseDetail[] = [
     priceNpr: 4500,
     originalPriceNpr: 7500,
     accentColor: "#224785",
-    heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png",
+    heroImageUrl:
+      "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png",
     featured: true,
     isComingSoon: false,
     format: "cohort",
@@ -235,4 +236,3 @@ export const dashboardSnapshot: DashboardSnapshot = {
   pendingTasks: 4,
   completionTarget: "Officer Cadet board window"
 };
-

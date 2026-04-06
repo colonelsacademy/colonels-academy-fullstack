@@ -10,7 +10,7 @@ import {
   Package,
   Shield,
   ShoppingBag,
-  User,
+  User
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -66,7 +66,9 @@ export default function CheckoutPage() {
 
       const confirmed = await confirmRes.json();
       clearCart();
-      router.push(`/payment-success?orderId=${order.orderId}${confirmed.courseSlug ? `&courseSlug=${confirmed.courseSlug}` : ""}`);
+      router.push(
+        `/payment-success?orderId=${order.orderId}${confirmed.courseSlug ? `&courseSlug=${confirmed.courseSlug}` : ""}`
+      );
     } catch (err) {
       setPaymentError(err instanceof Error ? err.message : "Transaction failed. Please try again.");
     } finally {
@@ -77,11 +79,9 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8">
-
         {/* LEFT COLUMN */}
         <div className="md:col-span-2 space-y-6">
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-
             {/* NOT LOGGED IN */}
             {!authenticated && (
               <div>
@@ -93,7 +93,8 @@ export default function CheckoutPage() {
                 </div>
 
                 <p className="text-sm bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#0F1C15] p-4 rounded-xl mb-8">
-                  Register now and get <strong>10% off</strong> your first purchase. Already have an account? Sign in to apply your member price.
+                  Register now and get <strong>10% off</strong> your first purchase. Already have an
+                  account? Sign in to apply your member price.
                 </p>
 
                 <div className="space-y-3">
@@ -229,7 +230,11 @@ export default function CheckoutPage() {
                       <div className="w-10 h-10 rounded-lg bg-white/10 overflow-hidden shrink-0 flex items-center justify-center">
                         {item.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <Package className="w-4 h-4 text-gray-400" />
                         )}
@@ -263,7 +268,6 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

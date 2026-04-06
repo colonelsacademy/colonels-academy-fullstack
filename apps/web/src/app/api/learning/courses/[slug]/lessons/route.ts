@@ -1,10 +1,7 @@
 import { API_BASE_URL } from "@/lib/apiClient";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const cookie = request.headers.get("cookie");
 

@@ -358,7 +358,11 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
                       <div className="w-20 h-20 rounded-full bg-[#0F1C15] overflow-hidden flex items-center justify-center text-[#D4AF37] font-bold text-2xl shrink-0">
                         {instructor.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={instructor.avatarUrl} alt={instructor.name} className="w-full h-full object-cover" />
+                          <img
+                            src={instructor.avatarUrl}
+                            alt={instructor.name}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           instructor.name.charAt(0)
                         )}

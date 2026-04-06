@@ -18,7 +18,7 @@ export default function CourseAddToCart({
   courseTitle,
   coursePrice,
   courseThumbnail,
-  courseCategory,
+  courseCategory
 }: CourseAddToCartProps) {
   const { addItem, items } = useCart();
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function CourseAddToCart({
       price: coursePrice,
       ...(courseThumbnail ? { image: courseThumbnail } : {}),
       category: courseCategory,
-      type: "course",
+      type: "course"
     });
   };
 
@@ -55,7 +55,13 @@ export default function CourseAddToCart({
       </button>
       <Link
         href={inCart ? "/checkout" : "#"}
-        onClick={(e) => { if (!inCart) { e.preventDefault(); handleAdd(); router.push("/checkout"); } }}
+        onClick={(e) => {
+          if (!inCart) {
+            e.preventDefault();
+            handleAdd();
+            router.push("/checkout");
+          }
+        }}
         className="py-3.5 bg-[#D4AF37] text-[#0F1C15] font-bold uppercase tracking-widest rounded-xl hover:bg-[#F4CA30] transition-colors shadow-lg flex items-center justify-center text-xs"
       >
         Buy now

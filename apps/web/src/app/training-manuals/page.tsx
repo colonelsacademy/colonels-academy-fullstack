@@ -6,7 +6,7 @@ const MANUALS = [
   { title: "Written Exam Strategy Manual", category: "Written", pages: "56 pages" },
   { title: "Leadership & Command Principles", category: "Leadership", pages: "40 pages" },
   { title: "Nepal Constitution & Law Handbook", category: "Legal", pages: "72 pages" },
-  { title: "Current Affairs Monthly Digest", category: "GK", pages: "24 pages" },
+  { title: "Current Affairs Monthly Digest", category: "GK", pages: "24 pages" }
 ];
 
 export default function TrainingManualsPage() {
@@ -16,13 +16,20 @@ export default function TrainingManualsPage() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-50 mb-6">
           <BookMarked className="w-8 h-8 text-emerald-700" />
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 font-['Rajdhani'] uppercase mb-3">Training Manuals</h1>
-        <p className="text-gray-500">Comprehensive guides and manuals for your preparation journey.</p>
+        <h1 className="text-4xl font-bold text-gray-900 font-['Rajdhani'] uppercase mb-3">
+          Training Manuals
+        </h1>
+        <p className="text-gray-500">
+          Comprehensive guides and manuals for your preparation journey.
+        </p>
       </div>
 
       <div className="grid gap-4">
         {MANUALS.map((m) => (
-          <div key={m.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+          <div
+            key={m.title}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center justify-between hover:shadow-md transition-shadow"
+          >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
                 <FileText className="w-6 h-6 text-emerald-600" />
@@ -35,7 +42,10 @@ export default function TrainingManualsPage() {
                 </div>
               </div>
             </div>
-            <button type="button" className="flex items-center gap-2 px-4 py-2 bg-[#0F1C15] text-white text-xs font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-colors">
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 bg-[#0F1C15] text-white text-xs font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-colors"
+            >
               <Download className="w-3.5 h-3.5" />
               Download
             </button>

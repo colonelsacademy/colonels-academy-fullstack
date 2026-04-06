@@ -1,7 +1,14 @@
 "use client";
 
 import { useAuth } from "@/components/auth/AuthProvider";
-import { ArrowRight, CreditCard, History, Settings as SettingsIcon, ShieldAlert, User } from "lucide-react";
+import {
+  ArrowRight,
+  CreditCard,
+  History,
+  Settings as SettingsIcon,
+  ShieldAlert,
+  User
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -102,7 +109,8 @@ export default function SettingsPage() {
               </div>
               <div className="p-6">
                 <p className="text-sm text-gray-600 mb-6 font-medium">
-                  Elevate your status to access elite officer programs and staff college prep materials.
+                  Elevate your status to access elite officer programs and staff college prep
+                  materials.
                 </p>
                 <Link
                   href="/courses"
@@ -143,7 +151,8 @@ export default function SettingsPage() {
                   Account Deletion
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  This operation is irreversible. All records, certifications, and course progress will be permanently expunged.
+                  This operation is irreversible. All records, certifications, and course progress
+                  will be permanently expunged.
                 </p>
               </div>
               <Link

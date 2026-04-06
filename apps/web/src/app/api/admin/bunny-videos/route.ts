@@ -20,15 +20,23 @@ export async function GET() {
 
     const data = await res.json();
     return NextResponse.json({
-      items: (data.items ?? []).map((v: { guid: string; title: string; status: number; length: number; thumbnailFileName: string }) => ({
-        guid: v.guid,
-        title: v.title,
-        status: v.status, // 4 = ready
-        lengthSeconds: v.length,
-        thumbnail: v.thumbnailFileName
-          ? `https://vz-${libraryId}.b-cdn.net/${v.guid}/${v.thumbnailFileName}`
-          : null
-      }))
+      items: (data.items ?? []).map(
+        (v: {
+          guid: string;
+          title: string;
+          status: number;
+          length: number;
+          thumbnailFileName: string;
+        }) => ({
+          guid: v.guid,
+          title: v.title,
+          status: v.status, // 4 = ready
+          lengthSeconds: v.length,
+          thumbnail: v.thumbnailFileName
+            ? `https://vz-${libraryId}.b-cdn.net/${v.guid}/${v.thumbnailFileName}`
+            : null
+        })
+      )
     });
   } catch {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

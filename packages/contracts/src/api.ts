@@ -62,7 +62,6 @@ export type { EnrollmentGuardResponse };
 
 export interface EnrollmentsApiResponse extends EnrollmentsResponse {}
 
-
 export interface QueueDepthSnapshot {
   waiting: number;
   active: number;

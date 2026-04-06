@@ -12,7 +12,9 @@ export async function GET(request: Request) {
     });
 
     if (!apiResponse.ok) {
-      const error = await apiResponse.json().catch(() => ({ message: "Failed to fetch enrollments" }));
+      const error = await apiResponse
+        .json()
+        .catch(() => ({ message: "Failed to fetch enrollments" }));
       return NextResponse.json(error, { status: apiResponse.status });
     }
 
