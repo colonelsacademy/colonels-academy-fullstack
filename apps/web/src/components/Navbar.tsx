@@ -103,7 +103,8 @@ const Dropdown = ({
           open: { opacity: 1, y: 0, pointerEvents: "auto" as const, scale: 1 }
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className={`absolute top-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 pt-2 ${width}`}
+        role="menu"
+        className={`absolute top-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 pt-2 ${width} z-[100]`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100 transform -translate-y-1/2" />
@@ -157,6 +158,11 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
+      // Don't close dropdown if clicking inside a dropdown button or menu
+      const target = e.target as HTMLElement;
+      if (target.closest('[aria-haspopup="true"]') || target.closest('[role="menu"]')) {
+        return;
+      }
       setActiveDropdown(null);
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
@@ -182,7 +188,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 w-full z-50 bg-[#0F1C15] border-b border-[#D4AF37]/30 shadow-xl">
+      <nav className="sticky top-0 w-full z-50 bg-[#0F1C15] border-b border-[#D4AF37]/30 shadow-xl overflow-visible">
         <div className="container mx-auto px-6 flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" aria-label="The Colonel's Academy — home">
@@ -190,7 +196,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8 h-full">
+          <div className="hidden md:flex items-center gap-8 h-full overflow-visible">
             <Dropdown
               id="programs"
               label="Officer Programs"
@@ -275,11 +281,11 @@ const Navbar = () => {
                     <div className="py-2">
                       {user.role?.toLowerCase() === "admin" && (
                         <Link
-                          href="/dashboard"
+                          href="/admin"
                           onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 transition-colors"
                         >
-                          <ShieldAlert className="w-4 h-4" /> Dashboard
+                          <ShieldAlert className="w-4 h-4" /> HQ Command
                         </Link>
                       )}
                       <Link

@@ -29,6 +29,11 @@ export function middleware(request: NextRequest) {
 
   // 2. If trying to access an auth route (like /login) with an active session
   if (isAuthRoute && sessionToken) {
+    // Check if there's a 'next' parameter to redirect to
+    const next = nextUrl.searchParams.get("next");
+    if (next?.startsWith("/") && !next.startsWith("//")) {
+      return NextResponse.redirect(new URL(next, request.url));
+    }
     return NextResponse.redirect(new URL("/my-learning", request.url));
   }
 
@@ -40,7 +45,6 @@ export const config = {
   matcher: [
     "/my-learning/:path*",
     "/admin/:path*",
-    "/dashboard/:path*",
     "/courses/enroll/:path*",
     "/settings/:path*",
     "/delete-account/:path*",
