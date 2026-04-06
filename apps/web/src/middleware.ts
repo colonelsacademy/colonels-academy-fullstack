@@ -34,7 +34,7 @@ export function middleware(request: NextRequest) {
     if (next && next.startsWith("/") && !next.startsWith("//")) {
       return NextResponse.redirect(new URL(next, request.url));
     }
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/my-learning", request.url));
   }
 
   return NextResponse.next();
@@ -45,7 +45,6 @@ export const config = {
   matcher: [
     "/my-learning/:path*",
     "/admin/:path*",
-    "/dashboard/:path*",
     "/courses/enroll/:path*",
     "/settings/:path*",
     "/delete-account/:path*",
