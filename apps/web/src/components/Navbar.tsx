@@ -29,7 +29,9 @@ type DropdownKey = "programs" | "resources" | null;
 const defaultPrograms = [
   { name: "Nepal Army Programs", path: "/courses?category=army", icon: Shield },
   { name: "Nepal Police Programs", path: "/courses?category=police", icon: Shield },
-  { name: "APF Programs", path: "/courses?category=apf", icon: Shield }
+  { name: "APF Programs", path: "/courses?category=apf", icon: Shield },
+  { name: "Staff College Prep", path: "/courses?category=staff", icon: Shield },
+  { name: "Mission Prep", path: "/courses?category=mission", icon: Shield }
 ];
 
 const academyResources = [
