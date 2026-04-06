@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/components/auth/AuthProvider";
-import React, { useCallback, useEffect, useState } from "react";
 import {
   Activity,
   BarChart2,
@@ -25,6 +24,7 @@ import {
   Wifi,
   X
 } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1243,7 +1243,7 @@ function StaffHQTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [_editingId, setEditingId] = useState<string | null>(null);
   const [courses, setCourses] = useState<{ slug: string; title: string }[]>([]);
   const [form, setForm] = useState({
     courseSlug: "",

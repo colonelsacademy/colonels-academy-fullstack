@@ -2,7 +2,7 @@
 process.env.PORT = process.env.PORT || "3000";
 process.env.HOSTNAME = "0.0.0.0";
 
-const path = require("path");
+const path = require("node:path");
 const serverPath = path.join(__dirname, ".next", "standalone", "apps", "web", "server.js");
 
 // Change working directory so static files resolve correctly
