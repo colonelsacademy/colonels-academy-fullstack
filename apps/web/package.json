@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "PORT=$PORT HOSTNAME=0.0.0.0 node .next/standalone/apps/web/server.js",
+    "start": "node start.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
