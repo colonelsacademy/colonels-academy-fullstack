@@ -30,7 +30,7 @@ export interface AuthCookieSettings {
   csrfMaxAgeSeconds: number;
   secure: boolean;
   domain?: string;
-  sameSite: "lax";
+  sameSite: "none" | "lax" | "strict";
 }
 
 declare module "fastify" {
@@ -134,7 +134,7 @@ export default fp(async (fastify) => {
     sessionMaxAgeMs: env.SESSION_MAX_AGE_DAYS * 24 * 60 * 60 * 1_000,
     csrfMaxAgeSeconds: env.CSRF_TOKEN_MAX_AGE_MINUTES * 60,
     secure: env.SESSION_COOKIE_SECURE,
-    sameSite: "lax",
+    sameSite: "none",
     ...(env.SESSION_COOKIE_DOMAIN ? { domain: env.SESSION_COOKIE_DOMAIN } : {})
   };
 
