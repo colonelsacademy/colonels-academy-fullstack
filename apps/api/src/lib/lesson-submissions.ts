@@ -1,12 +1,12 @@
-import type { Prisma } from "@prisma/client";
 import type {
   LessonSubmissionDetail,
+  SubjectArea,
   SubmissionRubricScore,
   SubmissionStatus,
-  SubmissionType,
-  SubjectArea
+  SubmissionType
 } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
+import type { Prisma } from "@prisma/client";
 
 import { assertLessonAccess } from "./access-guard";
 

@@ -4,14 +4,14 @@ import type {
   DashboardSnapshot,
   EnrollmentGuardResponse,
   InstructorProfile,
-  LessonDetail,
-  LearningPhaseMilestoneDetail,
-  LiveSessionPreview,
   LearningAnalyticsSummary,
+  LearningPhaseMilestoneDetail,
+  LessonDetail,
   LessonSubmissionDetail,
+  LiveSessionPreview,
   ModuleDetail,
-  SubjectPerformanceDetail,
   StudySessionDetail,
+  SubjectPerformanceDetail,
   WeeklyStudyScheduleDay
 } from "./types";
 

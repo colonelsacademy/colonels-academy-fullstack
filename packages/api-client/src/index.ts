@@ -4,17 +4,17 @@ import type {
   BunnyPlaybackResponse,
   CatalogCoursesResponse,
   CatalogInstructorsResponse,
-  CourseSubmissionsResponse,
   CourseDetail,
   CourseLessonsResponse,
   CoursePhasesResponse,
+  CourseSubmissionsResponse,
   DashboardOverviewResponse,
   LearningAnalyticsResponse,
   LearningMilestonesResponse,
   LiveSessionsResponse,
   PendingSubmissionReviewsResponse,
-  SubmissionMutationResponse,
-  StudySessionMutationResponse
+  StudySessionMutationResponse,
+  SubmissionMutationResponse
 } from "@colonels-academy/contracts";
 
 export interface ApiFetcherInit extends RequestInit {

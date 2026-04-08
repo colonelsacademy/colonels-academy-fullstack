@@ -9,17 +9,17 @@ import type {
   SubmissionType
 } from "@colonels-academy/contracts";
 
-import { getCourseMilestones } from "../../lib/course-phase-plan";
 import { assertLessonAccess } from "../../lib/access-guard";
+import { getCourseMilestones } from "../../lib/course-phase-plan";
 import { getLearningAnalytics } from "../../lib/learning-analytics";
 import {
-  createLessonSubmission,
   LessonSubmissionError,
+  createLessonSubmission,
   listCourseSubmissions
 } from "../../lib/lesson-submissions";
 import {
-  evaluateAndRecordAutoMilestone,
   MilestoneProgressError,
+  evaluateAndRecordAutoMilestone,
   requestMilestoneReview
 } from "../../lib/milestone-progress";
 import {
@@ -27,7 +27,7 @@ import {
   findOrCreateMockExamSession,
   listPhaseMockExamLessonIds
 } from "../../lib/mock-exam";
-import { startStudySession, StudySessionError, updateStudySession } from "../../lib/study-session";
+import { StudySessionError, startStudySession, updateStudySession } from "../../lib/study-session";
 
 // ── Params / Body types ───────────────────────────────────────────────────────
 

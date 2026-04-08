@@ -1,15 +1,15 @@
 import type { FastifyPluginAsync } from "fastify";
 
 import {
-  approveMilestoneReview,
-  listPendingMilestoneReviews,
-  MilestoneProgressError
-} from "../../lib/milestone-progress";
-import {
   LessonSubmissionError,
   listPendingSubmissionReviews,
   reviewLessonSubmission
 } from "../../lib/lesson-submissions";
+import {
+  MilestoneProgressError,
+  approveMilestoneReview,
+  listPendingMilestoneReviews
+} from "../../lib/milestone-progress";
 
 type MilestoneApprovalBody = {
   Body: {

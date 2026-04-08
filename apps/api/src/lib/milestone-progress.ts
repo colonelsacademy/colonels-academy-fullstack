@@ -1,10 +1,10 @@
 import {
-  phaseMilestoneCriterionSchema,
-  type PhaseMilestoneCriterion
+  type PhaseMilestoneCriterion,
+  phaseMilestoneCriterionSchema
 } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
 
-import { computeWeightedCoursePerformance, SUBJECT_LABELS } from "./assessment-weighting";
+import { SUBJECT_LABELS, computeWeightedCoursePerformance } from "./assessment-weighting";
 import { getMockExamAttemptContext } from "./mock-exam";
 
 type MilestoneDefinition = {

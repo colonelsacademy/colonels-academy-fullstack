@@ -2,9 +2,9 @@ import type {
   CourseLessonsResponse,
   CourseSubmissionsResponse,
   StudySessionMutationResponse,
+  SubjectArea,
   SubmissionMutationResponse,
-  SubmissionType,
-  SubjectArea
+  SubmissionType
 } from "@colonels-academy/contracts";
 
 async function parseJson<T>(response: Response): Promise<T> {

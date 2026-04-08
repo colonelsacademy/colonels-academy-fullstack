@@ -1,8 +1,8 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { type CourseDetail, courseCatalog, type LessonDetail } from "@colonels-academy/contracts";
+import { type CourseDetail, type LessonDetail, courseCatalog } from "@colonels-academy/contracts";
 import { mobileTheme } from "@colonels-academy/design-tokens";
 
 import { ScreenShell } from "../../src/components/screen-shell";
@@ -143,22 +143,25 @@ export default function CourseDetailScreen() {
     }
   );
 
-  const modules: MobileModule[] = [
-    ...lessonResponse.modules.map((module) => ({
-      id: module.id,
-      title: module.title,
-      lessons: module.lessons.map(mapLesson)
-    })),
-    ...(lessonResponse.unorganisedLessons.length > 0
-      ? [
-          {
-            id: "independent-lessons",
-            title: "Independent Lessons",
-            lessons: lessonResponse.unorganisedLessons.map(mapLesson)
-          }
-        ]
-      : [])
-  ];
+  const modules: MobileModule[] = useMemo(
+    () => [
+      ...lessonResponse.modules.map((module) => ({
+        id: module.id,
+        title: module.title,
+        lessons: module.lessons.map(mapLesson)
+      })),
+      ...(lessonResponse.unorganisedLessons.length > 0
+        ? [
+            {
+              id: "independent-lessons",
+              title: "Independent Lessons",
+              lessons: lessonResponse.unorganisedLessons.map(mapLesson)
+            }
+          ]
+        : [])
+    ],
+    [lessonResponse.modules, lessonResponse.unorganisedLessons]
+  );
 
   useEffect(() => {
     setActiveLesson((current) => {
@@ -178,7 +181,7 @@ export default function CourseDetailScreen() {
 
       return pickDefaultLesson(modules);
     });
-  }, [lessonResponse]);
+  }, [modules]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {

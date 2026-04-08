@@ -1,12 +1,12 @@
 import {
-  resolveAssessmentComponent,
-  courseAssessmentWeightingSchema,
-  staffCollegeCommandAssessmentWeighting,
   type AnalyticsWeightingMode,
   type CourseAssessmentWeighting,
   type SubjectArea,
   type SubjectPerformanceDetail,
-  type WeightedComponentPerformanceDetail
+  type WeightedComponentPerformanceDetail,
+  courseAssessmentWeightingSchema,
+  resolveAssessmentComponent,
+  staffCollegeCommandAssessmentWeighting
 } from "@colonels-academy/contracts";
 
 export const SUBJECT_LABELS: Record<SubjectArea, string> = {
