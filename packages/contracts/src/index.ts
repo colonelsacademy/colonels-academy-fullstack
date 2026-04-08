@@ -1,4 +1,5 @@
 export * from "./api";
+export * from "./assessment-components";
 export * from "./catalog";
 export * from "./jobs";
 export * from "./schemas";

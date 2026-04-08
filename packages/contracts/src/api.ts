@@ -1,11 +1,18 @@
 import type {
   CourseDetail,
+  CoursePhaseDetail,
   DashboardSnapshot,
   EnrollmentGuardResponse,
   InstructorProfile,
   LessonDetail,
+  LearningPhaseMilestoneDetail,
   LiveSessionPreview,
-  ModuleDetail
+  LearningAnalyticsSummary,
+  LessonSubmissionDetail,
+  ModuleDetail,
+  SubjectPerformanceDetail,
+  StudySessionDetail,
+  WeeklyStudyScheduleDay
 } from "./types";
 
 export interface AuthSessionUser {
@@ -39,11 +46,74 @@ export interface CatalogInstructorsResponse {
   items: InstructorProfile[];
 }
 
+export interface CoursePhasesResponse {
+  courseSlug: string;
+  deliveryModel: "paced-hybrid";
+  liveClassCadence: string;
+  currentPhaseNumber: number;
+  phases: CoursePhaseDetail[];
+  weeklySchedule: WeeklyStudyScheduleDay[];
+  note: string;
+}
+
 export interface DashboardOverviewResponse {
   authenticated: boolean;
   user: AuthSessionUser | null;
   overview: DashboardSnapshot;
   note: string;
+}
+
+export interface LearningMilestonesResponse {
+  courseSlug: string;
+  currentPhaseNumber: number;
+  phases: LearningPhaseMilestoneDetail[];
+  accessPolicy: string;
+  note: string;
+}
+
+export interface StudySessionMutationResponse {
+  ok: true;
+  session: StudySessionDetail;
+  note?: string;
+}
+
+export interface LearningAnalyticsResponse {
+  courseSlug: string;
+  summary: LearningAnalyticsSummary;
+  subjects: SubjectPerformanceDetail[];
+}
+
+export interface CourseSubmissionsResponse {
+  courseSlug: string;
+  items: LessonSubmissionDetail[];
+}
+
+export interface SubmissionMutationResponse {
+  ok: true;
+  submission: LessonSubmissionDetail;
+  note?: string;
+}
+
+export interface PendingSubmissionReviewsResponse {
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+  items: Array<{
+    id: string;
+    submittedAt: string;
+    title: string;
+    submissionType: string;
+    phaseNumber?: number;
+    subjectArea?: string;
+    assetUrl?: string;
+    officer: {
+      id: string;
+      displayName?: string;
+      email: string;
+    };
+  }>;
 }
 
 export interface LiveSessionsResponse {

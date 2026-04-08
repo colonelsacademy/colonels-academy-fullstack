@@ -9,6 +9,7 @@ import { loadApiEnv } from "@colonels-academy/config";
 
 import authRoutes from "./modules/auth/routes";
 import catalogRoutes from "./modules/catalog/routes";
+import dsRoutes from "./modules/ds/routes";
 import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
@@ -65,6 +66,9 @@ export function buildApp() {
   });
   void app.register(catalogRoutes, {
     prefix: "/v1/catalog"
+  });
+  void app.register(dsRoutes, {
+    prefix: "/v1/ds"
   });
   void app.register(learningRoutes, {
     prefix: "/v1/learning"

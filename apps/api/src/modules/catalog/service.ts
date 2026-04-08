@@ -7,8 +7,14 @@ import type {
   InstructorProfile,
   LessonDetail
 } from "@colonels-academy/contracts";
-import { courseCatalog, instructors } from "@colonels-academy/contracts";
+import {
+  courseCatalog,
+  instructors,
+  resolveAssessmentComponent
+} from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
+
+import { isPhaseUnlocked, resolveCoursePhaseAccess } from "../../lib/course-phase-plan";
 
 async function loadCourseRecords(prisma: DatabaseClient) {
   return prisma.course.findMany({
@@ -172,6 +178,9 @@ export async function getCourseLessons(
       where: { courseId: course.id },
       orderBy: { position: "asc" },
       include: {
+        // Phase metadata is optional today, but once populated it drives
+        // milestone-aware curriculum grouping and lesson gating.
+        // Keeping it in the response now avoids a later contract break.
         lessons: {
           orderBy: { position: "asc" },
           include: {
@@ -192,6 +201,8 @@ export async function getCourseLessons(
     // Fetch user context if provided
     const userProgress: Record<string, "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"> = {};
     let isEnrolled = false;
+    const phaseAccess = await resolveCoursePhaseAccess(prisma, log, course.slug, userId, userRole);
+    const milestoneTitleByPhase = new Map<number, string>();
 
     if (userId) {
       const [enrollment, progressRecords] = await Promise.all([
@@ -209,12 +220,27 @@ export async function getCourseLessons(
       }
     }
 
+    if (phaseAccess?.courseId) {
+      const milestoneRecords = await prisma.phaseMilestone.findMany({
+        where: { courseId: phaseAccess.courseId },
+        select: { phaseNumber: true, title: true }
+      });
+
+      for (const milestone of milestoneRecords) {
+        milestoneTitleByPhase.set(milestone.phaseNumber, milestone.title);
+      }
+    }
+
     const isAdminOrDs = userRole?.toLowerCase() === "admin" || userRole?.toLowerCase() === "ds";
 
     const mapLesson = (l: {
       id: string;
       courseId: string;
       moduleId?: string | null;
+      phaseNumber?: number | null;
+      subjectArea?: string | null;
+      componentCode?: string | null;
+      componentLabel?: string | null;
       title: string;
       synopsis: string;
       position: number;
@@ -230,11 +256,27 @@ export async function getCourseLessons(
       const status = userProgress[l.id] ?? "NOT_STARTED";
       let isLocked = false;
       let unlockRequirement: string | undefined;
+      const resolvedComponent = resolveAssessmentComponent({
+        courseSlug: course.slug,
+        subjectArea: (l.subjectArea as LessonDetail["subjectArea"]) ?? undefined,
+        title: l.title,
+        componentCode: l.componentCode,
+        componentLabel: l.componentLabel
+      });
 
       if (!isAdminOrDs) {
         if (!isEnrolled && l.accessKind !== "PREVIEW") {
           isLocked = true;
           unlockRequirement = "Enroll in this course to access this lesson.";
+        } else if (l.phaseNumber && phaseAccess && !isPhaseUnlocked(phaseAccess, l.phaseNumber)) {
+          isLocked = true;
+          const requiredPhaseNumber = l.phaseNumber - 1;
+          const milestoneTitle =
+            milestoneTitleByPhase.get(requiredPhaseNumber) ??
+            `Phase ${requiredPhaseNumber} milestone`;
+          unlockRequirement = phaseAccess.pendingPhaseNumbers.has(requiredPhaseNumber)
+            ? `Await review for '${milestoneTitle}'`
+            : `Complete '${milestoneTitle}' first`;
         } else if (l.prerequisiteId && userProgress[l.prerequisiteId] !== "COMPLETED") {
           isLocked = true;
           const prereqTitle = l.prerequisite?.title ?? "the previous lesson";
@@ -255,6 +297,13 @@ export async function getCourseLessons(
       };
 
       if (l.moduleId) lesson.moduleId = l.moduleId;
+      if (l.phaseNumber) lesson.phaseNumber = l.phaseNumber;
+      if (l.subjectArea) {
+        lesson.subjectArea = l.subjectArea as NonNullable<LessonDetail["subjectArea"]>;
+      }
+      if (resolvedComponent?.componentCode) lesson.componentCode = resolvedComponent.componentCode;
+      if (resolvedComponent?.componentLabel)
+        lesson.componentLabel = resolvedComponent.componentLabel;
       if (l.durationMinutes) lesson.durationMinutes = l.durationMinutes;
       if (l.bunnyVideoId) lesson.bunnyVideoId = l.bunnyVideoId;
       if (l.meetingUrl) lesson.meetingUrl = l.meetingUrl;
@@ -267,13 +316,35 @@ export async function getCourseLessons(
 
     return {
       courseSlug: course.slug,
-      modules: modules.map((m) => ({
-        id: m.id,
-        courseId: m.courseId,
-        title: m.title,
-        position: m.position,
-        lessons: m.lessons.map(mapLesson)
-      })),
+      modules: modules.map((m) => {
+        const resolvedComponent = resolveAssessmentComponent({
+          courseSlug: course.slug,
+          subjectArea: (m.subjectArea as LessonDetail["subjectArea"]) ?? undefined,
+          title: m.title,
+          componentCode: m.componentCode,
+          componentLabel: m.componentLabel
+        });
+
+        return {
+          id: m.id,
+          courseId: m.courseId,
+          ...(m.phaseNumber ? { phaseNumber: m.phaseNumber } : {}),
+          ...(m.subjectArea
+            ? {
+                subjectArea: m.subjectArea as NonNullable<LessonDetail["subjectArea"]>
+              }
+            : {}),
+          ...(resolvedComponent?.componentCode
+            ? { componentCode: resolvedComponent.componentCode }
+            : {}),
+          ...(resolvedComponent?.componentLabel
+            ? { componentLabel: resolvedComponent.componentLabel }
+            : {}),
+          title: m.title,
+          position: m.position,
+          lessons: m.lessons.map(mapLesson)
+        };
+      }),
       unorganisedLessons: unorganisedLessons.map(mapLesson)
     };
   } catch (error) {

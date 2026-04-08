@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 
+import { getCoursePhasePlan } from "../../lib/course-phase-plan";
 import { getCourseBySlug, getCourseLessons, listCourses, listInstructors } from "./service";
 
 const catalogRoutes: FastifyPluginAsync = async (fastify) => {
@@ -44,6 +45,33 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
 
     if (!response) {
       return reply.notFound("Course lessons not found.");
+    }
+
+    return response;
+  });
+
+  fastify.get<{ Params: { slug: string } }>("/courses/:slug/phases", async (request, reply) => {
+    const { user: authUser } = await fastify.authenticateRequest(request);
+
+    let dbUserId: string | undefined;
+    if (authUser) {
+      const dbUser = await fastify.prisma.user.findUnique({
+        where: { firebaseUid: authUser.uid },
+        select: { id: true }
+      });
+      dbUserId = dbUser?.id;
+    }
+
+    const response = await getCoursePhasePlan(
+      fastify.prisma,
+      request.log,
+      request.params.slug,
+      dbUserId,
+      authUser?.role
+    );
+
+    if (!response) {
+      return reply.notFound("Course phase plan not found.");
     }
 
     return response;

@@ -4,9 +4,17 @@ import type {
   BunnyPlaybackResponse,
   CatalogCoursesResponse,
   CatalogInstructorsResponse,
+  CourseSubmissionsResponse,
   CourseDetail,
+  CourseLessonsResponse,
+  CoursePhasesResponse,
   DashboardOverviewResponse,
-  LiveSessionsResponse
+  LearningAnalyticsResponse,
+  LearningMilestonesResponse,
+  LiveSessionsResponse,
+  PendingSubmissionReviewsResponse,
+  SubmissionMutationResponse,
+  StudySessionMutationResponse
 } from "@colonels-academy/contracts";
 
 export interface ApiFetcherInit extends RequestInit {
@@ -89,6 +97,18 @@ export function createApiClient(options: CreateApiClientOptions) {
       return requestJson<CatalogCoursesResponse>("/v1/catalog/courses", requestOptions);
     },
     getCourseBySlug,
+    getCourseLessons(slug: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<CourseLessonsResponse>(
+        `/v1/catalog/courses/${slug}/lessons`,
+        requestOptions
+      );
+    },
+    getCoursePhases(slug: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<CoursePhasesResponse>(
+        `/v1/catalog/courses/${slug}/phases`,
+        requestOptions
+      );
+    },
     getInstructors(requestOptions?: ApiRequestOptions) {
       return requestJson<CatalogInstructorsResponse>("/v1/catalog/instructors", requestOptions);
     },
@@ -100,6 +120,138 @@ export function createApiClient(options: CreateApiClientOptions) {
     },
     getLiveSessions(requestOptions?: ApiRequestOptions) {
       return requestJson<LiveSessionsResponse>("/v1/learning/live-sessions", requestOptions);
+    },
+    getLearningMilestones(courseSlug: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<LearningMilestonesResponse>(
+        `/v1/learning/milestones/${courseSlug}`,
+        requestOptions
+      );
+    },
+    getLearningAnalytics(courseSlug: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<LearningAnalyticsResponse>(
+        `/v1/learning/analytics/${courseSlug}`,
+        requestOptions
+      );
+    },
+    getCourseSubmissions(courseSlug: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<CourseSubmissionsResponse>(
+        `/v1/learning/submissions/${courseSlug}`,
+        requestOptions
+      );
+    },
+    createSubmission(
+      body: {
+        courseSlug: string;
+        lessonId?: string;
+        phaseNumber?: number;
+        subjectArea?:
+          | "TACTICS_ADMIN"
+          | "CURRENT_AFFAIRS"
+          | "MILITARY_HISTORY_STRATEGY"
+          | "APPRECIATION_PLANS"
+          | "LECTURETTE";
+        submissionType: "LECTURETTE" | "ESSAY" | "APPRECIATION_PLAN";
+        title: string;
+        body?: string;
+        assetUrl?: string;
+      },
+      requestOptions: ApiRequestOptions = {}
+    ) {
+      const headers = new Headers(requestOptions.headers);
+      headers.set("content-type", "application/json");
+
+      return requestJson<SubmissionMutationResponse>("/v1/learning/submissions", {
+        ...requestOptions,
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
+    },
+    startStudySession(
+      body: {
+        courseSlug: string;
+        lessonId?: string;
+        source?: "WEB" | "MOBILE" | "MANUAL";
+        deviceSessionId?: string;
+      },
+      requestOptions: ApiRequestOptions = {}
+    ) {
+      const headers = new Headers(requestOptions.headers);
+      headers.set("content-type", "application/json");
+
+      return requestJson<StudySessionMutationResponse>("/v1/learning/study-sessions/start", {
+        ...requestOptions,
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
+    },
+    heartbeatStudySession(
+      sessionId: string,
+      body: {
+        deviceSessionId?: string;
+      } = {},
+      requestOptions: ApiRequestOptions = {}
+    ) {
+      const headers = new Headers(requestOptions.headers);
+      headers.set("content-type", "application/json");
+
+      return requestJson<StudySessionMutationResponse>(
+        `/v1/learning/study-sessions/${sessionId}/heartbeat`,
+        {
+          ...requestOptions,
+          method: "POST",
+          headers,
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    endStudySession(
+      sessionId: string,
+      body: {
+        deviceSessionId?: string;
+      } = {},
+      requestOptions: ApiRequestOptions = {}
+    ) {
+      const headers = new Headers(requestOptions.headers);
+      headers.set("content-type", "application/json");
+
+      return requestJson<StudySessionMutationResponse>(
+        `/v1/learning/study-sessions/${sessionId}/end`,
+        {
+          ...requestOptions,
+          method: "POST",
+          headers,
+          body: JSON.stringify(body)
+        }
+      );
+    },
+    getPendingSubmissionReviews(courseSlug: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<PendingSubmissionReviewsResponse>(
+        `/v1/ds/submissions/${courseSlug}/pending`,
+        requestOptions
+      );
+    },
+    reviewSubmission(
+      submissionId: string,
+      body: {
+        status: "REVIEWED" | "REVISION_REQUESTED";
+        score?: number;
+        maxScore?: number;
+        reviewNotes?: string;
+        rubricScores?: Array<{ criterion: string; score: number; maxScore: number }>;
+      },
+      requestOptions: ApiRequestOptions = {}
+    ) {
+      const headers = new Headers(requestOptions.headers);
+      headers.set("content-type", "application/json");
+
+      return requestJson<SubmissionMutationResponse>(`/v1/ds/submissions/${submissionId}/review`, {
+        ...requestOptions,
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
     },
     getAuthSession(requestOptions?: ApiRequestOptions) {
       return requestJson<AuthSessionResponse>("/v1/auth/session", requestOptions);

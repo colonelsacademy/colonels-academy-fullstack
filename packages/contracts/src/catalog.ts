@@ -1,8 +1,11 @@
 import type {
+  CourseAssessmentWeighting,
   CourseDetail,
+  CoursePhaseBlueprint,
   DashboardSnapshot,
   InstructorProfile,
-  LiveSessionPreview
+  LiveSessionPreview,
+  WeeklyStudyScheduleDay
 } from "./types";
 
 export const instructors: InstructorProfile[] = [
@@ -45,15 +48,16 @@ export const courseCatalog: CourseDetail[] = [
     description:
       "A flagship command-preparation program for experienced candidates targeting the Staff College pathway. It combines doctrine review, case-study breakdowns, command writing, and structured coaching.",
     level: "Advanced",
-    durationLabel: "60 hours",
-    lessonCount: 75,
+    durationLabel: "6 months",
+    lessonCount: 102,
     priceNpr: 8500,
     originalPriceNpr: 12000,
     accentColor: "#5E6B3C",
     heroImageUrl: "/images/courses/nepal-army-staff-college.jpg",
     featured: true,
     format: "hybrid",
-    liveSupport: "Weekly faculty-led doctrine clinic and answer-writing review.",
+    liveSupport:
+      "3 live online classes per week: doctrine clinic, current-affairs briefing, and answer-writing review.",
     instructorSlugs: ["rajesh-thapa"],
     outcomeBullets: [
       "Build staff-college answer structure with command clarity",
@@ -190,6 +194,324 @@ export const courseCatalog: CourseDetail[] = [
       "Spoken briefings",
       "Deployment readiness checkpoints"
     ]
+  }
+];
+
+export const staffCollegeCommandAssessmentWeighting: CourseAssessmentWeighting = {
+  label: "Nepal Army Staff College Command Track [2026] weighting model",
+  subjects: [
+    {
+      subjectArea: "TACTICS_ADMIN",
+      label: "Tactics & Administration",
+      weightPercent: 20,
+      components: [
+        {
+          code: "TACTICS",
+          label: "Tactics",
+          weightPercent: 70
+        },
+        {
+          code: "ADMINISTRATION",
+          label: "Administration",
+          weightPercent: 20
+        },
+        {
+          code: "MILITARY_LAW",
+          label: "Military Law",
+          weightPercent: 10
+        }
+      ]
+    },
+    {
+      subjectArea: "CURRENT_AFFAIRS",
+      label: "Contemporary Affairs",
+      weightPercent: 20,
+      components: [
+        {
+          code: "NATIONAL",
+          label: "National",
+          weightPercent: 40
+        },
+        {
+          code: "REGIONAL",
+          label: "Regional",
+          weightPercent: 30
+        },
+        {
+          code: "INTERNATIONAL",
+          label: "International",
+          weightPercent: 20
+        },
+        {
+          code: "MILITARY_TECH",
+          label: "Military Technology",
+          weightPercent: 10
+        }
+      ]
+    },
+    {
+      subjectArea: "MILITARY_HISTORY_STRATEGY",
+      label: "Military History & Strategic Thoughts",
+      weightPercent: 20
+    },
+    {
+      subjectArea: "APPRECIATION_PLANS",
+      label: "Military Appreciation & Plans",
+      weightPercent: 20
+    },
+    {
+      subjectArea: "LECTURETTE",
+      label: "Lecturette / Oral Presentation",
+      weightPercent: 20
+    }
+  ]
+};
+
+export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
+  {
+    phaseNumber: 1,
+    slug: "foundation",
+    title: "Foundation",
+    monthLabel: "Month 1",
+    focus: "Build doctrinal foundations and study habits across all five subjects.",
+    summary:
+      "Officers establish fundamentals in tactics and administration, current-affairs methodology, military history, appreciation basics, and lecturette confidence.",
+    subjectThemes: [
+      "Tactics and administration fundamentals",
+      "Current-affairs note-making and defence relevance",
+      "Military history foundations",
+      "Appreciation doctrine basics",
+      "Lecturette introduction and short delivery drills"
+    ],
+    liveSessionPattern:
+      "Three live classes per week focused on orientation, doctrine walkthroughs, and guided Q&A.",
+    milestone: {
+      id: "phase-1-self-assessment",
+      title: "Self-Assessment Quiz",
+      description:
+        "A phase-end readiness check covering foundational concepts before the development phase unlocks.",
+      criteria: [
+        {
+          kind: "QUIZ_SCORE",
+          label: "Score at least 60% on the self-assessment quiz",
+          threshold: 60,
+          unit: "%",
+          manualReview: false
+        }
+      ]
+    }
+  },
+  {
+    phaseNumber: 2,
+    slug: "development",
+    title: "Development",
+    monthLabel: "Month 2",
+    focus: "Deepen subject knowledge and move from recall into guided application.",
+    summary:
+      "Learners progress into scenario exercises, case-based discussions, military law and administration study, strategic thinkers, and structured 10-minute presentations.",
+    subjectThemes: [
+      "Advanced tactics and scenario exercises",
+      "Administration, leadership, and military law",
+      "Strategic thinkers and modern military history",
+      "Appreciation workshops and simulation drills",
+      "Structured lecturette delivery"
+    ],
+    liveSessionPattern:
+      "Three live classes per week focused on case studies, answer review, and faculty-guided discussion.",
+    milestone: {
+      id: "phase-2-mock-exam-1",
+      title: "Mock Exam I",
+      description:
+        "First timed mock across the command-track syllabus to confirm readiness for higher-pressure work.",
+      criteria: [
+        {
+          kind: "ASSESSMENT_ATTEMPT",
+          label: "Attempt Mock Exam I",
+          manualReview: false
+        },
+        {
+          kind: "ASSESSMENT_SCORE",
+          label: "Score at least 40% overall",
+          threshold: 40,
+          unit: "%",
+          manualReview: false
+        }
+      ]
+    }
+  },
+  {
+    phaseNumber: 3,
+    slug: "application",
+    title: "Application",
+    monthLabel: "Month 3",
+    focus: "Practice exam-style writing, analytical judgment, and timed execution.",
+    summary:
+      "This phase emphasizes essay technique, current-affairs analysis, appreciation writing, comparative history responses, and formal lecturette practice with Q&A.",
+    subjectThemes: [
+      "Essay writing for tactics and law",
+      "PEEL-based current-affairs analysis",
+      "Comparative military history responses",
+      "Full appreciation and planning exercises",
+      "Formal presentation and Q&A handling"
+    ],
+    liveSessionPattern:
+      "Three live classes per week centered on faculty review, writing clinics, and full exercise debriefs.",
+    milestone: {
+      id: "phase-3-mock-exam-2",
+      title: "Mock Exam II",
+      description:
+        "A timed mock that tests applied understanding across subjects before weak-area consolidation begins.",
+      criteria: [
+        {
+          kind: "ASSESSMENT_ATTEMPT",
+          label: "Complete Mock Exam II under timed conditions",
+          manualReview: false
+        },
+        {
+          kind: "ASSESSMENT_SCORE",
+          label: "Meet the configured passing threshold for Mock Exam II",
+          threshold: 50,
+          unit: "%",
+          manualReview: false
+        }
+      ]
+    }
+  },
+  {
+    phaseNumber: 4,
+    slug: "consolidation",
+    title: "Consolidation",
+    monthLabel: "Month 4",
+    focus: "Repair weak areas, polish exam method, and bring DS back into the loop.",
+    summary:
+      "Officers revisit weak subjects, complete mixed-format practice, refine lecturette performance, and prepare for progression review with DS.",
+    subjectThemes: [
+      "Targeted weak-area review",
+      "Mixed MCQ and essay practice",
+      "Lecturette rehearsals with faculty feedback",
+      "Progress review and mentorship conversations"
+    ],
+    liveSessionPattern:
+      "Three live classes per week focused on remediation, faculty feedback, and progress review.",
+    milestone: {
+      id: "phase-4-ds-approval",
+      title: "DS Review and Approval",
+      description:
+        "Directing Staff reviews effort, engagement, and readiness before simulation content opens.",
+      criteria: [
+        {
+          kind: "DS_APPROVAL",
+          label: "Receive Directing Staff approval to progress",
+          manualReview: true
+        }
+      ]
+    }
+  },
+  {
+    phaseNumber: 5,
+    slug: "simulation",
+    title: "Simulation",
+    monthLabel: "Month 5",
+    focus: "Recreate exam conditions and evaluate performance at full intensity.",
+    summary:
+      "Learners complete full-length simulation assessments, receive faculty debriefs, and submit advanced lecturette work for evaluated review.",
+    subjectThemes: [
+      "Full mock simulation across all subjects",
+      "Post-exam faculty review",
+      "Panel-style lecturette evaluation",
+      "Individualized performance feedback"
+    ],
+    liveSessionPattern:
+      "Three live classes per week for simulation debriefs, strategy adjustments, and panel practice.",
+    milestone: {
+      id: "phase-5-mock-exam-3",
+      title: "Mock Exam III",
+      description:
+        "A full simulation milestone that confirms officers have experienced the pressure and pacing of the real exam cycle.",
+      criteria: [
+        {
+          kind: "ASSESSMENT_ATTEMPT",
+          label: "Complete Mock Exam III full simulation",
+          manualReview: false
+        }
+      ]
+    }
+  },
+  {
+    phaseNumber: 6,
+    slug: "final-preparation",
+    title: "Final Preparation",
+    monthLabel: "Month 6",
+    focus: "Finalize revision, readiness, and confidence ahead of the real exam window.",
+    summary:
+      "The closing phase compresses revision, short quizzes, counselling, and exam-readiness work into a disciplined final push.",
+    subjectThemes: [
+      "Rapid revision across all subjects",
+      "Daily recall quizzes and short drills",
+      "Stress and time management",
+      "Final lecturette polish and counselling"
+    ],
+    liveSessionPattern:
+      "Three live classes per week for final Q&A, revision support, and readiness counselling.",
+    milestone: {
+      id: "phase-6-final-readiness",
+      title: "Final Readiness Check",
+      description:
+        "A final self-assessment and counselling checkpoint to close the command-track program.",
+      criteria: [
+        {
+          kind: "QUIZ_SCORE",
+          label: "Complete the final self-assessment",
+          manualReview: false
+        },
+        {
+          kind: "COUNSELLING",
+          label: "Complete final counselling with DS",
+          unit: "step",
+          manualReview: true
+        }
+      ]
+    }
+  }
+];
+
+export const staffCollegeCommandWeeklySchedule: WeeklyStudyScheduleDay[] = [
+  {
+    day: "Sunday",
+    morning: "Tactics & Military Technology",
+    afternoon: "Military History",
+    evening: "Tactics & Military Technology quiz"
+  },
+  {
+    day: "Monday",
+    morning: "Appreciation theory & application",
+    afternoon: "Military Law, Administration & Leadership",
+    evening: "Current Affairs topic selection"
+  },
+  {
+    day: "Tuesday",
+    morning: "Military History",
+    afternoon: "Writing skills",
+    evening: "Current Affairs review"
+  },
+  {
+    day: "Wednesday",
+    morning: "Administration & Leadership",
+    afternoon: "Military Law",
+    evening: "Military Law and Administration quiz"
+  },
+  {
+    day: "Thursday",
+    morning: "Tactics & Military Technology",
+    afternoon: "Appreciation theory & application",
+    evening: "Appreciation quiz"
+  },
+  {
+    day: "Friday",
+    morning: "Current Affairs review",
+    afternoon: "Expert talk or recorded lecture",
+    evening: "Planning for next week",
+    note: "Use the live-class calendar to anchor the three weekly instructor-led sessions."
   }
 ];
 
