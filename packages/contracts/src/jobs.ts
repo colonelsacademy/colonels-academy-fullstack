@@ -20,3 +20,8 @@ export interface QuizAttemptJob {
   questionId: string;
   lessonId: string;
 }
+
+export interface StudySessionReconcileJob {
+  batchSize?: number;
+  staleAfterMs?: number;
+}

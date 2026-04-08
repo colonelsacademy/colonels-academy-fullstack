@@ -2,9 +2,32 @@ import { Queue } from "bullmq";
 import type { FastifyPluginAsync } from "fastify";
 
 import { defaultJobOptions, queueNames } from "@colonels-academy/config";
-import type { ProgressRecalcJob, QuizAttemptJob } from "@colonels-academy/contracts";
+import type {
+  ProgressRecalcJob,
+  QuizAttemptJob,
+  SubjectArea,
+  SubmissionType
+} from "@colonels-academy/contracts";
 
 import { assertLessonAccess } from "../../lib/access-guard";
+import { getCourseMilestones } from "../../lib/course-phase-plan";
+import { getLearningAnalytics } from "../../lib/learning-analytics";
+import {
+  LessonSubmissionError,
+  createLessonSubmission,
+  listCourseSubmissions
+} from "../../lib/lesson-submissions";
+import {
+  MilestoneProgressError,
+  evaluateAndRecordAutoMilestone,
+  requestMilestoneReview
+} from "../../lib/milestone-progress";
+import {
+  finalizeMockExamSessionIfComplete,
+  findOrCreateMockExamSession,
+  listPhaseMockExamLessonIds
+} from "../../lib/mock-exam";
+import { StudySessionError, startStudySession, updateStudySession } from "../../lib/study-session";
 
 // ── Params / Body types ───────────────────────────────────────────────────────
 
@@ -20,20 +43,51 @@ type QuizAttemptBody = {
   };
 };
 
+type MilestoneReviewRequestBody = {
+  Body: {
+    notes?: string;
+  };
+};
+
+type StudySessionStartBody = {
+  Body: {
+    courseSlug: string;
+    lessonId?: string;
+    source?: "WEB" | "MOBILE" | "MANUAL";
+    deviceSessionId?: string;
+  };
+};
+
+type StudySessionUpdateBody = {
+  Body: {
+    deviceSessionId?: string;
+  };
+};
+
+type SubmissionCreateBody = {
+  Body: {
+    courseSlug: string;
+    lessonId?: string;
+    phaseNumber?: number;
+    subjectArea?: SubjectArea;
+    submissionType: SubmissionType;
+    title: string;
+    body?: string;
+    assetUrl?: string;
+  };
+};
+
 const learningRoutes: FastifyPluginAsync = async (fastify) => {
   // Lazy-init queues — only created on first request that needs them
   let progressRecalcQueue: Queue<ProgressRecalcJob> | null = null;
   let quizMasteryQueue: Queue<QuizAttemptJob> | null = null;
 
   function getRedisConnection() {
-    if (fastify.redis) return fastify.redis;
-    try {
-      const { loadApiEnv } = require("@colonels-academy/config");
-      const env = loadApiEnv();
-      return { url: env?.REDIS_URL ?? "redis://localhost:6379" };
-    } catch {
-      return { url: "redis://localhost:6379" };
+    if (!fastify.redis) {
+      throw fastify.httpErrors.serviceUnavailable("Redis-backed queues are not configured.");
     }
+
+    return fastify.redis;
   }
 
   function getProgressQueue() {
@@ -186,6 +240,351 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // ── POST /v1/learning/progress/:lessonId ───────────────────────────────────
+  fastify.get<{ Params: { courseSlug: string } }>(
+    "/milestones/:courseSlug",
+    async (request, reply) => {
+      const { user: authUser } = await fastify.authenticateRequest(request);
+
+      let dbUserId: string | undefined;
+      if (authUser) {
+        const dbUser = await fastify.prisma.user.findUnique({
+          where: { firebaseUid: authUser.uid },
+          select: { id: true }
+        });
+        dbUserId = dbUser?.id;
+      }
+
+      const response = await getCourseMilestones(
+        fastify.prisma,
+        request.log,
+        request.params.courseSlug,
+        dbUserId,
+        authUser?.role
+      );
+
+      if (!response) {
+        return reply.notFound("Milestones not found for this course.");
+      }
+
+      return response;
+    }
+  );
+
+  fastify.get<{ Params: { courseSlug: string } }>(
+    "/analytics/:courseSlug",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+
+      const dbUser = await fastify.prisma.user.findUnique({
+        where: { firebaseUid: authUser.uid },
+        select: { id: true }
+      });
+
+      if (!dbUser) {
+        return reply.notFound("User not found in database.");
+      }
+
+      try {
+        return await getLearningAnalytics(fastify.prisma, dbUser.id, request.params.courseSlug);
+      } catch (error) {
+        if (error instanceof LessonSubmissionError) {
+          return reply.status(error.statusCode).send({
+            message: error.message,
+            statusCode: error.statusCode
+          });
+        }
+
+        throw error;
+      }
+    }
+  );
+
+  fastify.get<{ Params: { courseSlug: string } }>(
+    "/submissions/:courseSlug",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+
+      const dbUser = await fastify.prisma.user.findUnique({
+        where: { firebaseUid: authUser.uid },
+        select: { id: true }
+      });
+
+      if (!dbUser) {
+        return reply.notFound("User not found in database.");
+      }
+
+      try {
+        const items = await listCourseSubmissions(
+          fastify.prisma,
+          dbUser.id,
+          request.params.courseSlug
+        );
+
+        return {
+          courseSlug: request.params.courseSlug,
+          items
+        };
+      } catch (error) {
+        if (error instanceof LessonSubmissionError) {
+          return reply.status(error.statusCode).send({
+            message: error.message,
+            statusCode: error.statusCode
+          });
+        }
+
+        throw error;
+      }
+    }
+  );
+
+  fastify.post<SubmissionCreateBody>("/submissions", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
+
+    const dbUser = await fastify.prisma.user.findUnique({
+      where: { firebaseUid: authUser.uid },
+      select: { id: true }
+    });
+
+    if (!dbUser) {
+      return reply.notFound("User not found in database.");
+    }
+
+    if (!request.body.title?.trim()) {
+      return reply.badRequest("A submission title is required.");
+    }
+
+    try {
+      const submission = await createLessonSubmission({
+        fastify,
+        auth: {
+          userId: dbUser.id,
+          ...(authUser.role ? { userRole: authUser.role } : {})
+        },
+        courseSlug: request.body.courseSlug,
+        submissionType: request.body.submissionType,
+        title: request.body.title,
+        ...(request.body.lessonId ? { lessonId: request.body.lessonId } : {}),
+        ...(request.body.phaseNumber ? { phaseNumber: request.body.phaseNumber } : {}),
+        ...(request.body.subjectArea ? { subjectArea: request.body.subjectArea } : {}),
+        ...(request.body.body ? { body: request.body.body } : {}),
+        ...(request.body.assetUrl ? { assetUrl: request.body.assetUrl } : {})
+      });
+
+      return {
+        ok: true,
+        submission,
+        note: "Submission received."
+      };
+    } catch (error) {
+      if (error instanceof LessonSubmissionError) {
+        return reply.status(error.statusCode).send({
+          message: error.message,
+          statusCode: error.statusCode
+        });
+      }
+
+      throw error;
+    }
+  });
+
+  fastify.post<
+    { Params: { courseSlug: string; phaseNumber: string } } & MilestoneReviewRequestBody
+  >("/milestones/:courseSlug/:phaseNumber/request-review", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
+
+    const dbUser = await fastify.prisma.user.findUnique({
+      where: { firebaseUid: authUser.uid },
+      select: { id: true }
+    });
+
+    if (!dbUser) {
+      return reply.notFound("User not found in database.");
+    }
+
+    const phaseNumber = Number.parseInt(request.params.phaseNumber, 10);
+
+    if (!Number.isInteger(phaseNumber) || phaseNumber < 1) {
+      return reply.badRequest("A valid phase number is required.");
+    }
+
+    const course = await fastify.prisma.course.findUnique({
+      where: { slug: request.params.courseSlug },
+      select: { id: true }
+    });
+
+    if (!course) {
+      return reply.notFound("Course not found.");
+    }
+
+    const enrollment = await fastify.prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId: dbUser.id,
+          courseId: course.id
+        }
+      },
+      select: { status: true }
+    });
+
+    if (!enrollment || enrollment.status !== "ACTIVE") {
+      return reply.forbidden("You are not enrolled in this course.");
+    }
+
+    try {
+      const milestone = await requestMilestoneReview(
+        fastify.prisma,
+        dbUser.id,
+        course.id,
+        phaseNumber,
+        request.body?.notes?.trim() || undefined
+      );
+
+      return {
+        ok: true,
+        requestedReview: true,
+        milestone
+      };
+    } catch (error) {
+      if (error instanceof MilestoneProgressError) {
+        return reply.status(error.statusCode).send({
+          message: error.message,
+          statusCode: error.statusCode
+        });
+      }
+
+      throw error;
+    }
+  });
+
+  fastify.post<StudySessionStartBody>("/study-sessions/start", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
+
+    const dbUser = await fastify.prisma.user.findUnique({
+      where: { firebaseUid: authUser.uid },
+      select: { id: true }
+    });
+
+    if (!dbUser) {
+      return reply.notFound("User not found in database.");
+    }
+
+    try {
+      const session = await startStudySession({
+        fastify,
+        auth: {
+          userId: dbUser.id,
+          ...(authUser.role ? { userRole: authUser.role } : {})
+        },
+        courseSlug: request.body.courseSlug,
+        source: request.body.source ?? "WEB",
+        ...(request.body.lessonId ? { lessonId: request.body.lessonId } : {}),
+        ...(request.body.deviceSessionId ? { deviceSessionId: request.body.deviceSessionId } : {})
+      });
+
+      return {
+        ok: true,
+        session,
+        note: "Study session started."
+      };
+    } catch (error) {
+      if (error instanceof StudySessionError) {
+        return reply.status(error.statusCode).send({
+          message: error.message,
+          statusCode: error.statusCode
+        });
+      }
+
+      throw error;
+    }
+  });
+
+  fastify.post<{ Params: { sessionId: string } } & StudySessionUpdateBody>(
+    "/study-sessions/:sessionId/heartbeat",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+
+      const dbUser = await fastify.prisma.user.findUnique({
+        where: { firebaseUid: authUser.uid },
+        select: { id: true }
+      });
+
+      if (!dbUser) {
+        return reply.notFound("User not found in database.");
+      }
+
+      try {
+        const session = await updateStudySession({
+          prisma: fastify.prisma,
+          userId: dbUser.id,
+          sessionId: request.params.sessionId,
+          action: "heartbeat",
+          ...(request.body?.deviceSessionId
+            ? { deviceSessionId: request.body.deviceSessionId }
+            : {})
+        });
+
+        return {
+          ok: true,
+          session,
+          note: "Study session heartbeat recorded."
+        };
+      } catch (error) {
+        if (error instanceof StudySessionError) {
+          return reply.status(error.statusCode).send({
+            message: error.message,
+            statusCode: error.statusCode
+          });
+        }
+
+        throw error;
+      }
+    }
+  );
+
+  fastify.post<{ Params: { sessionId: string } } & StudySessionUpdateBody>(
+    "/study-sessions/:sessionId/end",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+
+      const dbUser = await fastify.prisma.user.findUnique({
+        where: { firebaseUid: authUser.uid },
+        select: { id: true }
+      });
+
+      if (!dbUser) {
+        return reply.notFound("User not found in database.");
+      }
+
+      try {
+        const session = await updateStudySession({
+          prisma: fastify.prisma,
+          userId: dbUser.id,
+          sessionId: request.params.sessionId,
+          action: "end",
+          ...(request.body?.deviceSessionId
+            ? { deviceSessionId: request.body.deviceSessionId }
+            : {})
+        });
+
+        return {
+          ok: true,
+          session,
+          note: "Study session ended."
+        };
+      } catch (error) {
+        if (error instanceof StudySessionError) {
+          return reply.status(error.statusCode).send({
+            message: error.message,
+            statusCode: error.statusCode
+          });
+        }
+
+        throw error;
+      }
+    }
+  );
+
+  // ── POST /v1/learning/progress/:lessonId ───────────────────────────────────
   fastify.post<LessonProgressParams & LessonProgressBody>(
     "/progress/:lessonId",
     async (request, reply) => {
@@ -205,6 +604,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
         select: {
           id: true,
           courseId: true,
+          phaseNumber: true,
           prerequisiteId: true,
           title: true,
           prerequisite: { select: { title: true } }
@@ -256,7 +656,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
             );
           }
         } catch (queueErr) {
-          request.log.warn({ err: queueErr }, "learning.progress: failed to enqueue recalc job");
+          request.log.error({ err: queueErr }, "learning.progress: failed to enqueue recalc job");
         }
       }
 
@@ -284,7 +684,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
       select: {
         id: true,
         lessonId: true,
-        lesson: { select: { courseId: true } },
+        lesson: { select: { courseId: true, phaseNumber: true } },
         correctOptionIndex: true,
         explanation: true,
         difficulty: true
@@ -304,10 +704,37 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
       userId: dbUser.id,
       userRole: authUser.role,
       courseId,
-      lesson: { id: lessonId, prerequisiteId: null, title: "" }
+      lesson: {
+        id: lessonId,
+        phaseNumber: question.lesson.phaseNumber,
+        prerequisiteId: null,
+        title: ""
+      }
     });
 
     const isCorrect = selectedOptionIndex === question.correctOptionIndex;
+    let resolvedQuizSessionId = sessionId ?? null;
+    let isPhaseMockExamQuestion = false;
+
+    if (question.lesson.phaseNumber) {
+      const mockExamLessonIds = await listPhaseMockExamLessonIds(
+        fastify.prisma,
+        courseId,
+        question.lesson.phaseNumber
+      );
+
+      isPhaseMockExamQuestion = mockExamLessonIds.includes(lessonId);
+
+      if (isPhaseMockExamQuestion) {
+        resolvedQuizSessionId = await findOrCreateMockExamSession({
+          prisma: fastify.prisma,
+          userId: dbUser.id,
+          courseId,
+          phaseNumber: question.lesson.phaseNumber,
+          ...(sessionId !== undefined ? { requestedSessionId: sessionId } : {})
+        });
+      }
+    }
 
     await fastify.prisma.quizAttempt.create({
       data: {
@@ -315,13 +742,26 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
         questionId,
         lessonId,
         courseId,
-        sessionId: sessionId ?? null,
+        sessionId: resolvedQuizSessionId,
         selectedOptionIndex,
         isCorrect,
         timeTakenMs,
         difficultySnapshot: question.difficulty
       }
     });
+
+    let mockExamProgress:
+      | { totalQuestions: number; attemptedQuestions: number; finished: boolean }
+      | undefined;
+
+    if (resolvedQuizSessionId && question.lesson.phaseNumber && isPhaseMockExamQuestion) {
+      mockExamProgress = await finalizeMockExamSessionIfComplete({
+        prisma: fastify.prisma,
+        sessionId: resolvedQuizSessionId,
+        courseId,
+        phaseNumber: question.lesson.phaseNumber
+      });
+    }
 
     try {
       await getQuizMasteryQueue().add(
@@ -330,13 +770,33 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
         defaultJobOptions
       );
     } catch (queueErr) {
-      request.log.warn({ err: queueErr }, "learning.quiz.attempt: failed to enqueue mastery job");
+      request.log.error({ err: queueErr }, "learning.quiz.attempt: failed to enqueue mastery job");
+    }
+
+    let milestone = null;
+    if (question.lesson.phaseNumber) {
+      try {
+        milestone = await evaluateAndRecordAutoMilestone(
+          fastify.prisma,
+          dbUser.id,
+          courseId,
+          question.lesson.phaseNumber
+        );
+      } catch (milestoneErr) {
+        request.log.warn(
+          { err: milestoneErr, userId: dbUser.id, courseId, lessonId },
+          "learning.quiz.attempt: failed to evaluate milestone progress"
+        );
+      }
     }
 
     return {
       ok: true,
       isCorrect,
-      explanation: isCorrect ? null : (question.explanation ?? null)
+      explanation: isCorrect ? null : (question.explanation ?? null),
+      milestone,
+      ...(resolvedQuizSessionId ? { quizSessionId: resolvedQuizSessionId } : {}),
+      ...(mockExamProgress ? { mockExamProgress } : {})
     };
   });
 
