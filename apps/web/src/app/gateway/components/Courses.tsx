@@ -357,7 +357,8 @@ export const CourseFilter = ({ activeCategory }: CourseFilterProps) => {
     const params = new URLSearchParams(searchParams.toString());
     if (cat === "all") params.delete("category");
     else params.set("category", cat);
-    router.push(`/courses?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    router.push(queryString ? `/?${queryString}` : "/", { scroll: false });
   };
 
   return (

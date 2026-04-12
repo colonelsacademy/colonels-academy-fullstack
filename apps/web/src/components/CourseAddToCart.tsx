@@ -1,9 +1,11 @@
 "use client";
 
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingBag } from "lucide-react";
+import { ArrowRight, PlayCircle, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface CourseAddToCartProps {
   courseId: string;
@@ -21,8 +23,37 @@ export default function CourseAddToCart({
   courseCategory
 }: CourseAddToCartProps) {
   const { addItem, items } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [loading, setLoading] = useState(true);
   const inCart = items.some((i) => i.id === courseId);
+
+  // Check if user is enrolled in this course
+  useEffect(() => {
+    async function checkEnrollment() {
+      if (!user) {
+        setIsEnrolled(false);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/learning/enrollments", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          const enrolled = data.items?.some((e: { courseSlug: string }) => e.courseSlug === courseId);
+          setIsEnrolled(enrolled);
+        }
+      } catch (error) {
+        console.error("Failed to check enrollment:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkEnrollment();
+  }, [user, courseId]);
 
   const handleAdd = () => {
     if (inCart) {
@@ -39,6 +70,31 @@ export default function CourseAddToCart({
     });
   };
 
+  // If user is already enrolled, show "Continue Learning" button
+  if (isEnrolled) {
+    return (
+      <Link
+        href="/my-learning"
+        className="w-full py-3.5 bg-emerald-600 text-white font-bold uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-colors shadow-lg flex items-center justify-center gap-2 text-xs mb-4"
+      >
+        <PlayCircle className="w-4 h-4" />
+        Continue Learning
+        <ArrowRight className="w-4 h-4" />
+      </Link>
+    );
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="py-3.5 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="py-3.5 bg-gray-100 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
+  // Show normal buy buttons
   return (
     <div className="grid grid-cols-2 gap-3 mb-4">
       <button

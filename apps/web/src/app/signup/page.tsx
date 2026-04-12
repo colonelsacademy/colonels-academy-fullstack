@@ -85,14 +85,10 @@ function SignupForm() {
       const auth = getFirebaseClientAuth();
       if (!auth) throw new Error("Firebase is not configured.");
       const provider = new GoogleAuthProvider();
-      if (useEmulator) {
-        const { user } = await signInWithPopup(auth, provider);
-        const token = await user.getIdToken();
-        await login(token);
-        router.push(next);
-      } else {
-        await signInWithRedirect(auth, provider);
-      }
+      const { user } = await signInWithPopup(auth, provider);
+      const token = await user.getIdToken();
+      await login(token);
+      router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-up failed.");
       setLoading(false);

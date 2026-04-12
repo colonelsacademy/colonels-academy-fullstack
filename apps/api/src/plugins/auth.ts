@@ -134,7 +134,7 @@ export default fp(async (fastify) => {
     sessionMaxAgeMs: env.SESSION_MAX_AGE_DAYS * 24 * 60 * 60 * 1_000,
     csrfMaxAgeSeconds: env.CSRF_TOKEN_MAX_AGE_MINUTES * 60,
     secure: env.SESSION_COOKIE_SECURE,
-    sameSite: "none",
+    sameSite: env.SESSION_COOKIE_SECURE ? "none" : "lax",
     ...(env.SESSION_COOKIE_DOMAIN ? { domain: env.SESSION_COOKIE_DOMAIN } : {})
   };
 

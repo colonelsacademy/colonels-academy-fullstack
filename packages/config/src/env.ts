@@ -93,6 +93,8 @@ const publicMobileEnvSchema = z.object({
   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   EXPO_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
   EXPO_PUBLIC_FIREBASE_APP_ID: optionalString,
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: optionalString,
+  EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: optionalString,
   EXPO_PUBLIC_BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net")
 });
 
