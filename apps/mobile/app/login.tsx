@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { LogIn } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Alert,
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { LogIn } from "lucide-react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useAuth } from "../src/providers/auth-provider";
 import { useTheme } from "../src/contexts/ThemeContext";
-import { router } from "expo-router";
+import { useAuth } from "../src/providers/auth-provider";
 
 export default function LoginScreen() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, error, user } = useAuth();
@@ -57,7 +57,7 @@ export default function LoginScreen() {
         await signInWithEmail(email, password);
       }
       router.replace("/(tabs)");
-    } catch (err) {
+    } catch (_err) {
       Alert.alert(isSignUp ? "Signup Failed" : "Login Failed", error || "Please try again");
     } finally {
       setLoading(false);
@@ -95,8 +95,17 @@ export default function LoginScreen() {
           <View style={styles.logoContainer}>
             <LogIn size={48} color="#D4AF37" strokeWidth={2} />
           </View>
-          <Text style={[styles.title, { color: colors.text.primary }]}>{isSignUp ? "Create Account" : "Welcome Back"}</Text>
-          <Text style={[styles.subtitle, { color: isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.9)" }]}>{isSignUp ? "Sign up to get started" : "Sign in to continue"}</Text>
+          <Text style={[styles.title, { color: colors.text.primary }]}>
+            {isSignUp ? "Create Account" : "Welcome Back"}
+          </Text>
+          <Text
+            style={[
+              styles.subtitle,
+              { color: isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.9)" }
+            ]}
+          >
+            {isSignUp ? "Sign up to get started" : "Sign in to continue"}
+          </Text>
         </View>
 
         {/* Form */}
@@ -104,7 +113,14 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.text.primary }]}>Email</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background.primary, color: colors.text.primary, borderColor: colors.border.primary }]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                  borderColor: colors.border.primary
+                }
+              ]}
               placeholder="Enter your email"
               placeholderTextColor={colors.text.tertiary}
               value={email}
@@ -118,7 +134,14 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.text.primary }]}>Password</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background.primary, color: colors.text.primary, borderColor: colors.border.primary }]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                  borderColor: colors.border.primary
+                }
+              ]}
               placeholder="Enter your password"
               placeholderTextColor={colors.text.tertiary}
               value={password}
@@ -168,10 +191,15 @@ export default function LoginScreen() {
           <TouchableOpacity
             onPress={handleGoogleLogin}
             disabled={loading}
-            style={[styles.googleButton, { backgroundColor: colors.background.primary, borderColor: colors.border.primary }]}
+            style={[
+              styles.googleButton,
+              { backgroundColor: colors.background.primary, borderColor: colors.border.primary }
+            ]}
             activeOpacity={0.85}
           >
-            <Text style={[styles.googleText, { color: colors.text.primary }]}>🔍 Continue with Google</Text>
+            <Text style={[styles.googleText, { color: colors.text.primary }]}>
+              🔍 Continue with Google
+            </Text>
           </TouchableOpacity>
 
           {/* Back Button */}
@@ -190,17 +218,17 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   scrollContent: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   header: {
     alignItems: "center",
     paddingTop: 80,
     paddingBottom: 40,
     paddingHorizontal: 20,
-    overflow: "hidden",
+    overflow: "hidden"
   },
   logoContainer: {
     width: 100,
@@ -216,7 +244,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 16,
-    elevation: 8,
+    elevation: 8
   },
   title: {
     fontSize: 32,
@@ -224,32 +252,32 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     marginBottom: 8,
     letterSpacing: -0.5,
-    textAlign: "center",
+    textAlign: "center"
   },
   subtitle: {
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.9)",
     fontWeight: "400",
-    textAlign: "center",
+    textAlign: "center"
   },
   form: {
     flex: 1,
     padding: 20,
-    paddingTop: 32,
+    paddingTop: 32
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 20
   },
   label: {
     fontSize: 14,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: 8
   },
   input: {
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    borderWidth: 1,
+    borderWidth: 1
   },
   loginButton: {
     width: "100%",
@@ -265,27 +293,27 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 6,
+    elevation: 6
   },
   loginText: {
     fontSize: 16,
     fontWeight: "900",
     color: "#FFFFFF",
-    letterSpacing: 1.5,
+    letterSpacing: 1.5
   },
   divider: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 24,
+    marginVertical: 24
   },
   dividerLine: {
     flex: 1,
-    height: 1,
+    height: 1
   },
   dividerText: {
     marginHorizontal: 16,
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "700"
   },
   googleButton: {
     width: "100%",
@@ -294,31 +322,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 16,
-    borderWidth: 2,
+    borderWidth: 2
   },
   googleText: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "700"
   },
   backButton: {
     marginTop: 20,
     alignItems: "center",
-    padding: 12,
+    padding: 12
   },
   backText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "600"
   },
   toggleButton: {
     marginTop: 16,
     alignItems: "center",
-    padding: 12,
+    padding: 12
   },
   toggleText: {
-    fontSize: 14,
+    fontSize: 14
   },
   toggleTextBold: {
     fontWeight: "700",
-    color: "#D4AF37",
-  },
+    color: "#D4AF37"
+  }
 });

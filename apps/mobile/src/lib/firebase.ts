@@ -1,18 +1,18 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as WebBrowser from "expo-web-browser";
 import Constants from "expo-constants";
+import * as WebBrowser from "expo-web-browser";
 import { type FirebaseOptions, getApp, getApps, initializeApp } from "firebase/app";
 import {
-  type User,
   GoogleAuthProvider,
+  type User,
+  createUserWithEmailAndPassword,
   getAuth,
-  getRedirectResult,
   getReactNativePersistence,
+  getRedirectResult,
   initializeAuth,
   onIdTokenChanged,
   signInWithCredential,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signOut
 } from "firebase/auth";
 
@@ -24,7 +24,7 @@ WebBrowser.maybeCompleteAuthSession();
 function getFirebaseConfig(): FirebaseOptions | null {
   // Try to get from Expo Constants first (for standalone builds)
   const extra = Constants.expoConfig?.extra;
-  
+
   if (extra?.EXPO_PUBLIC_FIREBASE_API_KEY) {
     return {
       apiKey: extra.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -33,7 +33,7 @@ function getFirebaseConfig(): FirebaseOptions | null {
       appId: extra.EXPO_PUBLIC_FIREBASE_APP_ID
     };
   }
-  
+
   // Fallback to process.env (for dev mode)
   const env = readPublicMobileEnv();
 
@@ -80,13 +80,13 @@ export function getFirebaseMobileAuth() {
   }
 }
 
-export { 
-  GoogleAuthProvider, 
-  getRedirectResult, 
-  onIdTokenChanged, 
-  signInWithCredential, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut 
+export {
+  GoogleAuthProvider,
+  getRedirectResult,
+  onIdTokenChanged,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut
 };
 export type { User };

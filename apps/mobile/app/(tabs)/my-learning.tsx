@@ -1,19 +1,19 @@
+import { Image } from "expo-image";
+import { type Href, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Award, BookOpen, ChevronRight, Clock, Star, TrendingUp, Users } from "lucide-react-native";
 import { useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  RefreshControl,
-  ActivityIndicator,
+  View
 } from "react-native";
-import { Image } from "expo-image";
-import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
-import { BookOpen, Clock, Star, Award, TrendingUp, ChevronRight, Users } from "lucide-react-native";
-import { useAuth } from "../../src/providers/auth-provider";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { useAuth } from "../../src/providers/auth-provider";
 
 export default function MyLearningScreen() {
   const router = useRouter();
@@ -26,24 +26,26 @@ export default function MyLearningScreen() {
       id: "1",
       slug: "nepal-army-staff-college",
       title: "Nepal Army Staff College - Course [2026]",
-      heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-army-staff-college.png?w=300&q=70",
+      heroImageUrl:
+        "https://uat.thecolonelsacademy.com/images/courses/nepal-army-staff-college.png?w=300&q=70",
       lessonCount: 75,
       durationLabel: "60 Hours",
       rating: 4.9,
       students: 2450,
-      progress: 35,
+      progress: 35
     },
     {
       id: "2",
       slug: "nepal-police-inspector-cadet",
       title: "Nepal Police Inspector Cadet - Course [2026]",
-      heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png?w=300&q=70",
+      heroImageUrl:
+        "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png?w=300&q=70",
       lessonCount: 65,
       durationLabel: "50 Hours",
       rating: 4.8,
       students: 1800,
-      progress: 12,
-    },
+      progress: 12
+    }
   ];
 
   const isLoading = false;
@@ -59,7 +61,7 @@ export default function MyLearningScreen() {
       paddingBottom: 16,
       backgroundColor: Colors.background.primary,
       borderBottomWidth: 1,
-      borderBottomColor: Colors.border.primary,
+      borderBottomColor: Colors.border.primary
     },
     headerTitle: { fontSize: 28, fontWeight: "700", color: Colors.text.primary, marginBottom: 4 },
     headerSubtitle: { fontSize: 14, color: Colors.text.secondary },
@@ -70,7 +72,7 @@ export default function MyLearningScreen() {
       backgroundColor: Colors.background.primary,
       gap: 12,
       borderBottomWidth: 1,
-      borderBottomColor: Colors.border.primary,
+      borderBottomColor: Colors.border.primary
     },
     statCard: {
       flex: 1,
@@ -80,7 +82,7 @@ export default function MyLearningScreen() {
       alignItems: "center",
       borderWidth: 1,
       borderColor: Colors.border.primary,
-      gap: 8,
+      gap: 8
     },
     statValue: { fontSize: 24, fontWeight: "700", color: Colors.text.primary },
     statLabel: { fontSize: 10, color: Colors.text.tertiary, fontWeight: "700", letterSpacing: 1 },
@@ -91,7 +93,7 @@ export default function MyLearningScreen() {
       letterSpacing: 1.5,
       paddingHorizontal: 16,
       marginTop: 20,
-      marginBottom: 12,
+      marginBottom: 12
     },
     // ── Exact same as explore courseCard ──────────────────────────────────────
     courseCard: {
@@ -107,13 +109,13 @@ export default function MyLearningScreen() {
       shadowOpacity: cardShadowOpacity,
       shadowRadius: 16,
       elevation: 8,
-      height: 140,
+      height: 140
     },
     courseHeader: { flexDirection: "row", height: 140 },
     courseThumbnail: {
       width: 140,
       height: 140,
-      backgroundColor: Colors.background.tertiary,
+      backgroundColor: Colors.background.tertiary
     },
     progressTrack: {
       position: "absolute",
@@ -121,7 +123,7 @@ export default function MyLearningScreen() {
       left: 0,
       width: 140,
       height: 3,
-      backgroundColor: "rgba(0,0,0,0.25)",
+      backgroundColor: "rgba(0,0,0,0.25)"
     },
     progressFill: { height: 3, backgroundColor: "#10B981" },
     activeBadge: {
@@ -131,7 +133,7 @@ export default function MyLearningScreen() {
       paddingHorizontal: 6,
       paddingVertical: 3,
       borderRadius: 6,
-      backgroundColor: "#10B981",
+      backgroundColor: "#10B981"
     },
     activeBadgeText: { fontSize: 8, fontWeight: "900", color: "#FFFFFF", letterSpacing: 0.5 },
     courseBody: { flex: 1, padding: 12, paddingLeft: 14, justifyContent: "space-between" },
@@ -140,7 +142,7 @@ export default function MyLearningScreen() {
       flexDirection: "row",
       alignItems: "flex-start",
       justifyContent: "space-between",
-      marginBottom: 4,
+      marginBottom: 4
     },
     courseTitle: {
       flex: 1,
@@ -148,7 +150,7 @@ export default function MyLearningScreen() {
       fontWeight: "700",
       color: Colors.text.primary,
       lineHeight: 18,
-      letterSpacing: -0.3,
+      letterSpacing: -0.3
     },
     courseMeta: { flexDirection: "row", alignItems: "center", gap: 10 },
     metaItem: { flexDirection: "row", alignItems: "center", gap: 3 },
@@ -157,7 +159,7 @@ export default function MyLearningScreen() {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginTop: 2,
+      marginTop: 2
     },
     courseDuration: { flexDirection: "row", alignItems: "center", gap: 4 },
     durationText: { fontSize: 11, fontWeight: "600", color: "#10B981" },
@@ -168,7 +170,7 @@ export default function MyLearningScreen() {
       borderRadius: 8,
       flexDirection: "row",
       alignItems: "center",
-      gap: 3,
+      gap: 3
     },
     continueBtnText: { fontSize: 11, fontWeight: "700", color: "#FFFFFF" },
     // ── Empty states ──────────────────────────────────────────────────────────
@@ -180,7 +182,7 @@ export default function MyLearningScreen() {
       color: Colors.text.primary,
       marginTop: 16,
       marginBottom: 8,
-      textAlign: "center",
+      textAlign: "center"
     },
     emptyDesc: { fontSize: 14, color: Colors.text.secondary, textAlign: "center", lineHeight: 22 },
     emptyBtn: {
@@ -188,9 +190,9 @@ export default function MyLearningScreen() {
       backgroundColor: "#1E40AF",
       paddingHorizontal: 32,
       paddingVertical: 14,
-      borderRadius: 12,
+      borderRadius: 12
     },
-    emptyBtnText: { fontSize: 14, fontWeight: "900", color: "#FFFFFF", letterSpacing: 0.5 },
+    emptyBtnText: { fontSize: 14, fontWeight: "900", color: "#FFFFFF", letterSpacing: 0.5 }
   });
 
   if (isLoading) {
@@ -213,8 +215,10 @@ export default function MyLearningScreen() {
         <View style={styles.emptyContainer}>
           <Award size={72} color={Colors.text.tertiary} strokeWidth={1.5} />
           <Text style={styles.emptyTitle}>Start Your Learning Journey</Text>
-          <Text style={styles.emptyDesc}>Sign in to access your courses and track your progress.</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push("/login" as any)}>
+          <Text style={styles.emptyDesc}>
+            Sign in to access your courses and track your progress.
+          </Text>
+          <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push("/login" as Href)}>
             <Text style={styles.emptyBtnText}>SIGN IN</Text>
           </TouchableOpacity>
         </View>
@@ -244,13 +248,18 @@ export default function MyLearningScreen() {
           </View>
           <View style={styles.statCard}>
             <BookOpen size={20} color="#1E40AF" strokeWidth={2.5} />
-            <Text style={styles.statValue}>{enrolledCourses.reduce((a, c) => a + c.lessonCount, 0)}</Text>
+            <Text style={styles.statValue}>
+              {enrolledCourses.reduce((a, c) => a + c.lessonCount, 0)}
+            </Text>
             <Text style={styles.statLabel}>LESSONS</Text>
           </View>
           <View style={styles.statCard}>
             <Award size={20} color="#D4AF37" strokeWidth={2.5} />
             <Text style={styles.statValue}>
-              {Math.round(enrolledCourses.reduce((a, c) => a + c.progress, 0) / enrolledCourses.length)}%
+              {Math.round(
+                enrolledCourses.reduce((a, c) => a + c.progress, 0) / enrolledCourses.length
+              )}
+              %
             </Text>
             <Text style={styles.statLabel}>PROGRESS</Text>
           </View>
@@ -262,7 +271,10 @@ export default function MyLearningScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => { setRefreshing(true); setTimeout(() => setRefreshing(false), 800); }}
+            onRefresh={() => {
+              setRefreshing(true);
+              setTimeout(() => setRefreshing(false), 800);
+            }}
             tintColor="#10B981"
           />
         }
@@ -271,8 +283,13 @@ export default function MyLearningScreen() {
           <View style={styles.emptyWrap}>
             <BookOpen size={56} color={Colors.text.tertiary} strokeWidth={1.5} />
             <Text style={styles.emptyTitle}>No Courses Yet</Text>
-            <Text style={styles.emptyDesc}>Explore our course catalog and start learning today.</Text>
-            <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push("/(tabs)/courses" as any)}>
+            <Text style={styles.emptyDesc}>
+              Explore our course catalog and start learning today.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyBtn}
+              onPress={() => router.push("/(tabs)/courses" as Href)}
+            >
               <Text style={styles.emptyBtnText}>EXPLORE COURSES</Text>
             </TouchableOpacity>
           </View>
@@ -283,7 +300,7 @@ export default function MyLearningScreen() {
               <TouchableOpacity
                 key={course.id}
                 activeOpacity={0.95}
-                onPress={() => router.push(`/course/${course.slug}` as any)}
+                onPress={() => router.push(`/course/${course.slug}` as Href)}
               >
                 <View style={styles.courseCard}>
                   <View style={styles.courseHeader}>
@@ -327,7 +344,9 @@ export default function MyLearningScreen() {
                           </View>
                           <View style={styles.metaItem}>
                             <Users size={12} color={Colors.text.tertiary} strokeWidth={2} />
-                            <Text style={styles.metaText}>{(course.students / 1000).toFixed(1)}K</Text>
+                            <Text style={styles.metaText}>
+                              {(course.students / 1000).toFixed(1)}K
+                            </Text>
                           </View>
                         </View>
                       </View>
@@ -339,7 +358,7 @@ export default function MyLearningScreen() {
                         </View>
                         <TouchableOpacity
                           style={styles.continueBtn}
-                          onPress={() => router.push(`/course/${course.slug}` as any)}
+                          onPress={() => router.push(`/course/${course.slug}` as Href)}
                         >
                           <Text style={styles.continueBtnText}>Continue</Text>
                           <ChevronRight size={12} color="#FFFFFF" strokeWidth={2.5} />

@@ -1,33 +1,42 @@
-import { useState, useEffect, useCallback } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
-  View,
-  Text,
+  Bell,
+  BookMarked,
+  Calendar,
+  ClipboardList,
+  Clock,
+  LogIn,
+  Play,
+  Users
+} from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  RefreshControl,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  RefreshControl,
-  Linking,
-  Alert,
-  ActivityIndicator,
+  View
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { Play, Calendar, Clock, Users, BookMarked, ClipboardList, Bell, LogIn } from "lucide-react-native";
-import { useAuth } from "../../src/providers/auth-provider";
-import { useAsyncResource } from "../../src/hooks/use-async-resource";
-import { mobileApiClient } from "../../src/lib/api";
-import { useFocusEffect, router } from "expo-router";
-import { useProtectedRoute } from "../../src/hooks/use-protected-route";
 import { useTheme } from "../../src/contexts/ThemeContext";
+import { useAsyncResource } from "../../src/hooks/use-async-resource";
+import { useProtectedRoute } from "../../src/hooks/use-protected-route";
+import { mobileApiClient } from "../../src/lib/api";
+import { useAuth } from "../../src/providers/auth-provider";
 
 export default function ScheduleScreen() {
   const { user, isReady } = useProtectedRoute();
   const { isDark, colors: Colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<{ id: string; topic: string; day: string; date: string; time: string; instructor: string; type: string; meetLink: string; isLive: boolean; courseSlug: string }[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       const data = await mobileApiClient.getLiveSessions();
       setSessions(data.items || []);
@@ -36,11 +45,17 @@ export default function ScheduleScreen() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchSessions(); }, []);
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
-  useFocusEffect(useCallback(() => { fetchSessions(); }, []));
+  useFocusEffect(
+    useCallback(() => {
+      fetchSessions();
+    }, [fetchSessions])
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,14 +63,14 @@ export default function ScheduleScreen() {
       fetchSessions();
     }, 3000);
     return () => clearInterval(timer);
-  }, []);
+  }, [fetchSessions]);
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.background.secondary },
     header: {
       backgroundColor: isDark ? "#0B1120" : "#0B1120",
       padding: 20,
-      paddingTop: 60,
+      paddingTop: 60
     },
     headerLabel: {
       fontSize: 10,
@@ -63,7 +78,7 @@ export default function ScheduleScreen() {
       color: "#6B7280",
       letterSpacing: 2,
       textTransform: "uppercase",
-      marginBottom: 4,
+      marginBottom: 4
     },
     headerTitle: { fontSize: 28, fontWeight: "700", color: "#FFFFFF", marginBottom: 4 },
     headerSubtitle: { fontSize: 13, color: "#9CA3AF" },
@@ -73,14 +88,14 @@ export default function ScheduleScreen() {
       borderRadius: 16,
       overflow: "hidden",
       borderWidth: 1,
-      borderColor: "rgba(212, 175, 55, 0.3)",
+      borderColor: "rgba(212, 175, 55, 0.3)"
     },
     featuredBackground: {
       position: "absolute",
       top: 0,
       right: 0,
       opacity: 0.1,
-      padding: 16,
+      padding: 16
     },
     featuredContent: { padding: 20, position: "relative", zIndex: 10 },
     liveIndicator: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 },
@@ -90,14 +105,14 @@ export default function ScheduleScreen() {
       fontWeight: "900",
       color: "#D4AF37",
       letterSpacing: 2,
-      textTransform: "uppercase",
+      textTransform: "uppercase"
     },
     featuredTopic: {
       fontSize: 22,
       fontWeight: "700",
       color: "#FFFFFF",
       lineHeight: 28,
-      marginBottom: 16,
+      marginBottom: 16
     },
     sessionDetails: { gap: 8, marginBottom: 20 },
     detailRow: { flexDirection: "row", alignItems: "center", gap: 6 },
@@ -111,7 +126,7 @@ export default function ScheduleScreen() {
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderRadius: 12,
-      flex: 1,
+      flex: 1
     },
     joinButtonText: { fontSize: 14, fontWeight: "700", color: "#0B1120" },
     pendingButton: {
@@ -122,7 +137,7 @@ export default function ScheduleScreen() {
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderRadius: 12,
-      flex: 1,
+      flex: 1
     },
     pendingButtonText: { fontSize: 14, fontWeight: "700", color: "#9CA3AF" },
     scheduledButton: {
@@ -133,28 +148,28 @@ export default function ScheduleScreen() {
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderRadius: 12,
-      flex: 1,
+      flex: 1
     },
     scheduledButtonText: { fontSize: 14, fontWeight: "700", color: "#9CA3AF" },
     typeBadge: {
       backgroundColor: "rgba(255, 255, 255, 0.05)",
       paddingVertical: 4,
       paddingHorizontal: 12,
-      borderRadius: 20,
+      borderRadius: 20
     },
     typeBadgeText: {
       fontSize: 10,
       fontWeight: "700",
       color: "#9CA3AF",
       letterSpacing: 1.5,
-      textTransform: "uppercase",
+      textTransform: "uppercase"
     },
     section: { padding: 16 },
     sectionTitle: {
       fontSize: 18,
       fontWeight: "700",
       color: Colors.text.primary,
-      marginBottom: 16,
+      marginBottom: 16
     },
     upcomingGrid: { gap: 16 },
     upcomingCard: {
@@ -162,13 +177,13 @@ export default function ScheduleScreen() {
       borderRadius: 16,
       padding: 16,
       borderWidth: 1,
-      borderColor: Colors.border.primary,
+      borderColor: Colors.border.primary
     },
     upcomingHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 8,
+      marginBottom: 8
     },
     upcomingLabel: {
       fontSize: 10,
@@ -179,21 +194,21 @@ export default function ScheduleScreen() {
       backgroundColor: Colors.background.secondary,
       paddingHorizontal: 8,
       paddingVertical: 4,
-      borderRadius: 4,
+      borderRadius: 4
     },
     upcomingType: {
       fontSize: 10,
       fontWeight: "900",
       color: "#D4AF37",
       letterSpacing: 1.5,
-      textTransform: "uppercase",
+      textTransform: "uppercase"
     },
     upcomingTopic: {
       fontSize: 14,
       fontWeight: "700",
       color: Colors.text.primary,
       marginBottom: 8,
-      lineHeight: 18,
+      lineHeight: 18
     },
     upcomingDetails: { gap: 6 },
     upcomingDetailRow: { flexDirection: "row", alignItems: "center", gap: 6 },
@@ -202,7 +217,7 @@ export default function ScheduleScreen() {
       fontSize: 11,
       fontWeight: "700",
       color: Colors.text.secondary,
-      marginTop: 4,
+      marginTop: 4
     },
     materialsGrid: { gap: 16 },
     materialCard: {
@@ -210,7 +225,7 @@ export default function ScheduleScreen() {
       borderRadius: 16,
       padding: 20,
       borderWidth: 1,
-      borderColor: Colors.border.primary,
+      borderColor: Colors.border.primary
     },
     materialHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 },
     materialTitle: {
@@ -218,7 +233,7 @@ export default function ScheduleScreen() {
       fontWeight: "700",
       color: Colors.text.secondary,
       letterSpacing: 1.5,
-      textTransform: "uppercase",
+      textTransform: "uppercase"
     },
     materialList: { gap: 8 },
     materialItem: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -227,7 +242,7 @@ export default function ScheduleScreen() {
       fontSize: 14,
       fontWeight: "700",
       color: Colors.text.primary,
-      marginBottom: 2,
+      marginBottom: 2
     },
     materialItemDue: { fontSize: 10, color: Colors.text.tertiary },
     materialStatus: {
@@ -235,14 +250,14 @@ export default function ScheduleScreen() {
       fontWeight: "700",
       color: Colors.text.tertiary,
       letterSpacing: 1,
-      textTransform: "uppercase",
+      textTransform: "uppercase"
     },
     noteItem: {
       backgroundColor: Colors.background.secondary,
       borderWidth: 1,
       borderColor: Colors.border.primary,
       borderRadius: 12,
-      padding: 8,
+      padding: 8
     },
     noteTitle: { fontSize: 14, fontWeight: "700", color: Colors.text.primary, marginBottom: 4 },
     noteDetail: { fontSize: 11, color: Colors.text.secondary, lineHeight: 16 },
@@ -255,7 +270,7 @@ export default function ScheduleScreen() {
       borderWidth: 1,
       borderColor: Colors.border.primary,
       borderStyle: "dashed",
-      alignItems: "center",
+      alignItems: "center"
     },
     emptyText: { fontSize: 14, color: Colors.text.tertiary },
     authRequiredTitle: {
@@ -264,22 +279,22 @@ export default function ScheduleScreen() {
       color: Colors.text.primary,
       marginTop: 16,
       marginBottom: 8,
-      textAlign: "center",
+      textAlign: "center"
     },
     authRequiredText: {
       fontSize: 14,
       color: Colors.text.secondary,
       textAlign: "center",
       marginBottom: 24,
-      lineHeight: 20,
+      lineHeight: 20
     },
     loginButton: {
       backgroundColor: "#D4AF37",
       paddingVertical: 12,
       paddingHorizontal: 32,
-      borderRadius: 12,
+      borderRadius: 12
     },
-    loginButtonText: { fontSize: 14, fontWeight: "700", color: "#0B1120" },
+    loginButtonText: { fontSize: 14, fontWeight: "700", color: "#0B1120" }
   });
 
   if (!isReady) {
@@ -294,7 +309,9 @@ export default function ScheduleScreen() {
 
   if (!user) {
     return (
-      <View style={[styles.container, { alignItems: "center", justifyContent: "center", padding: 20 }]}>
+      <View
+        style={[styles.container, { alignItems: "center", justifyContent: "center", padding: 20 }]}
+      >
         <StatusBar style="light" />
         <LogIn size={48} color="#D4AF37" />
         <Text style={styles.authRequiredTitle}>Authentication Required</Text>
@@ -308,7 +325,7 @@ export default function ScheduleScreen() {
     );
   }
 
-  const formatSession = (session: any) => {
+  const formatSession = (session: { id: string; title?: string; startsAt: string; endsAt: string; deliveryMode?: string; meetingUrl?: string; courseSlug?: string }) => {
     const startDate = new Date(session.startsAt);
     const endDate = new Date(session.endsAt);
     return {
@@ -321,7 +338,7 @@ export default function ScheduleScreen() {
       type: session.deliveryMode?.toUpperCase() || "LECTURE",
       meetLink: session.meetingUrl || "",
       isLive: currentTime >= startDate && currentTime <= endDate,
-      courseSlug: session.courseSlug,
+      courseSlug: session.courseSlug
     };
   };
 
@@ -346,7 +363,7 @@ export default function ScheduleScreen() {
     }
     try {
       let url = meetLink.trim();
-      if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) url = `https://${url}`;
       const supported = await Linking.canOpenURL(url);
       if (supported) {
         await Linking.openURL(url);
@@ -372,7 +389,9 @@ export default function ScheduleScreen() {
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4AF37" />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4AF37" />
+      }
     >
       <StatusBar style="light" />
 
@@ -400,7 +419,9 @@ export default function ScheduleScreen() {
             <View style={styles.sessionDetails}>
               <View style={styles.detailRow}>
                 <Calendar size={14} color="#9CA3AF" />
-                <Text style={styles.detailText}>{nextSession.day}, {nextSession.date}</Text>
+                <Text style={styles.detailText}>
+                  {nextSession.day}, {nextSession.date}
+                </Text>
               </View>
               <View style={styles.detailRow}>
                 <Clock size={14} color="#9CA3AF" />
@@ -448,17 +469,21 @@ export default function ScheduleScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Upcoming Sessions</Text>
           <View style={styles.upcomingGrid}>
-            {upcomingSessions.map((session, index) => (
-              <View key={index} style={styles.upcomingCard}>
+            {upcomingSessions.map((session) => (
+              <View key={session.id} style={styles.upcomingCard}>
                 <View style={styles.upcomingHeader}>
                   <Text style={styles.upcomingLabel}>NEXT PHASE</Text>
                   <Text style={styles.upcomingType}>{session.type}</Text>
                 </View>
-                <Text style={styles.upcomingTopic} numberOfLines={2}>{session.topic}</Text>
+                <Text style={styles.upcomingTopic} numberOfLines={2}>
+                  {session.topic}
+                </Text>
                 <View style={styles.upcomingDetails}>
                   <View style={styles.upcomingDetailRow}>
                     <Calendar size={12} color={Colors.text.tertiary} />
-                    <Text style={styles.upcomingDetailText}>{session.day} • {session.date}</Text>
+                    <Text style={styles.upcomingDetailText}>
+                      {session.day} • {session.date}
+                    </Text>
                   </View>
                   <View style={styles.upcomingDetailRow}>
                     <Clock size={12} color={Colors.text.tertiary} />
@@ -482,10 +507,12 @@ export default function ScheduleScreen() {
               <Text style={styles.materialTitle}>PRE-CLASS MATERIALS</Text>
             </View>
             <View style={styles.materialList}>
-              {prep.map((item, index) => (
-                <View key={index} style={styles.materialItem}>
+              {prep.map((item) => (
+                <View key={item.title} style={styles.materialItem}>
                   <View style={styles.materialItemContent}>
-                    <Text style={styles.materialItemTitle} numberOfLines={1}>{item.title}</Text>
+                    <Text style={styles.materialItemTitle} numberOfLines={1}>
+                      {item.title}
+                    </Text>
                     <Text style={styles.materialItemDue}>Due {item.due}</Text>
                   </View>
                   <Text style={styles.materialStatus}>{item.status}</Text>
@@ -500,10 +527,12 @@ export default function ScheduleScreen() {
               <Text style={styles.materialTitle}>ASSIGNMENTS</Text>
             </View>
             <View style={styles.materialList}>
-              {assignments.map((item, index) => (
-                <View key={index} style={styles.materialItem}>
+              {assignments.map((item) => (
+                <View key={item.title} style={styles.materialItem}>
                   <View style={styles.materialItemContent}>
-                    <Text style={styles.materialItemTitle} numberOfLines={1}>{item.title}</Text>
+                    <Text style={styles.materialItemTitle} numberOfLines={1}>
+                      {item.title}
+                    </Text>
                     <Text style={styles.materialItemDue}>Due {item.due}</Text>
                   </View>
                   <Text style={styles.materialStatus}>{item.status}</Text>
@@ -518,8 +547,8 @@ export default function ScheduleScreen() {
               <Text style={styles.materialTitle}>INSTRUCTOR NOTES</Text>
             </View>
             <View style={styles.materialList}>
-              {notes.map((item, index) => (
-                <View key={index} style={styles.noteItem}>
+              {notes.map((item) => (
+                <View key={item.title} style={styles.noteItem}>
                   <Text style={styles.noteTitle}>{item.title}</Text>
                   <Text style={styles.noteDetail}>{item.detail}</Text>
                 </View>

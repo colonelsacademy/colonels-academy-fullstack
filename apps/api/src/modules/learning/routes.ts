@@ -344,7 +344,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/live-sessions", async () => {
     const now = new Date();
     const sessions = await fastify.prisma.liveSession.findMany({
-      where: { 
+      where: {
         endsAt: { gte: now } // Show sessions that haven't ended yet (includes live sessions)
       },
       include: { course: { select: { slug: true } } },

@@ -1,10 +1,10 @@
 import { Tabs } from "expo-router";
-import { Home, Compass, GraduationCap, Video, User } from "lucide-react-native";
+import { Compass, GraduationCap, Home, User, Video } from "lucide-react-native";
 import { useTheme } from "../../src/contexts/ThemeContext";
 
 export default function TabsLayout() {
   const { colors: Colors } = useTheme();
-  
+
   return (
     <Tabs
       screenOptions={{
@@ -17,20 +17,20 @@ export default function TabsLayout() {
           height: 72,
           paddingBottom: 4,
           paddingTop: 12,
-          paddingHorizontal: 4,
+          paddingHorizontal: 4
         },
         tabBarLabelStyle: {
           fontSize: 9.5,
           fontWeight: "600",
-          marginTop: 2,
+          marginTop: 2
         },
         tabBarItemStyle: {
           paddingHorizontal: 0,
-          paddingBottom: 0,
+          paddingBottom: 0
         },
         tabBarIconStyle: {
-          marginBottom: 0,
-        },
+          marginBottom: 0
+        }
       }}
     >
       <Tabs.Screen

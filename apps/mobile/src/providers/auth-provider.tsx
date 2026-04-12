@@ -4,23 +4,23 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from "react";
 
 import {
+  GoogleAuthProvider,
   type User,
+  createUserWithEmailAndPassword,
   getFirebaseMobileAuth,
   onIdTokenChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
   signInWithCredential,
+  signInWithEmailAndPassword,
+  signOut
 } from "../lib/firebase";
 
+import { readPublicMobileEnv } from "@colonels-academy/config";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import { mobileApiClient } from "../lib/api";
-import { readPublicMobileEnv } from "@colonels-academy/config";
 
 const env = readPublicMobileEnv();
 
@@ -73,7 +73,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         } catch (err) {
           // Non-fatal — user is still authenticated via Firebase
           console.warn("Failed to sync user to Postgres:", err);
-        }      } else {
+        }
+      } else {
         setAccessToken(null);
       }
       setIsReady(true);
@@ -99,8 +100,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         try {
           setError(null);
           await signInWithEmailAndPassword(auth, email.trim(), password);
-        } catch (err: any) {
-          setError(err.message);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Sign in failed");
         }
       },
 
@@ -113,8 +114,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         try {
           setError(null);
           await createUserWithEmailAndPassword(auth, email.trim(), password);
-        } catch (err: any) {
-          setError(err.message);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Sign up failed");
         }
       },
 
@@ -132,17 +133,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
           if (!idToken) throw new Error("No ID token from Google");
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
-        } catch (err: any) {
-          if (err.code === statusCodes.SIGN_IN_CANCELLED) {
+        } catch (err) {
+          const e = err as { code?: string; message?: string };
+          if (e.code === statusCodes.SIGN_IN_CANCELLED) {
             // user cancelled — no error shown
-          } else if (err.code === statusCodes.IN_PROGRESS) {
+          } else if (e.code === statusCodes.IN_PROGRESS) {
             setError("Sign-in already in progress");
-          } else if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          } else if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
             setError("Google Play Services not available");
-          } else if (err.message?.includes("DEVELOPER_ERROR")) {
+          } else if (e.message?.includes("DEVELOPER_ERROR")) {
             setError("Google Sign-In is not configured correctly. Please use email/password.");
           } else {
-            setError(err.message ?? "Google Sign-In failed");
+            setError(e.message ?? "Google Sign-In failed");
           }
         }
       },
@@ -153,11 +155,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
           setError(null);
           await signOut(auth);
           // Also sign out from Google if they used Google Sign-In
-          try { await GoogleSignin.signOut(); } catch { /* not signed in via Google */ }
-        } catch (err: any) {
-          setError(err.message);
+          try {
+            await GoogleSignin.signOut();
+          } catch {
+            /* not signed in via Google */
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Sign out failed");
         }
-      },
+      }
     }),
     [accessToken, auth, error, isReady, user]
   );

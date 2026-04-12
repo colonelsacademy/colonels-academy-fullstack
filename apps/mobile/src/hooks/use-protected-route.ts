@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { useAuth } from "../providers/auth-provider";
 
 /**

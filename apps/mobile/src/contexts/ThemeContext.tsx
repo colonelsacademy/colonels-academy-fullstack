@@ -1,50 +1,50 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
-const THEME_KEY = 'app_theme_dark';
+const THEME_KEY = "app_theme_dark";
 
 // Light theme colors
 const LightColors = {
   background: {
-    primary: '#FFFFFF',
-    secondary: '#F9FAFB',
-    tertiary: '#F3F4F6',
+    primary: "#FFFFFF",
+    secondary: "#F9FAFB",
+    tertiary: "#F3F4F6"
   },
   text: {
-    primary: '#111827',
-    secondary: '#6B7280',
-    tertiary: '#9CA3AF',
+    primary: "#111827",
+    secondary: "#6B7280",
+    tertiary: "#9CA3AF"
   },
   border: {
-    primary: '#E5E7EB',
-    secondary: '#F3F4F6',
+    primary: "#E5E7EB",
+    secondary: "#F3F4F6"
   },
   accent: {
-    gold: '#D4AF37',
-    goldDark: '#B8941F',
-  },
+    gold: "#D4AF37",
+    goldDark: "#B8941F"
+  }
 };
 
 // Dark theme colors
 const DarkColors = {
   background: {
-    primary: '#121212',
-    secondary: '#1e1e1e',
-    tertiary: '#2a2a2a',
+    primary: "#121212",
+    secondary: "#1e1e1e",
+    tertiary: "#2a2a2a"
   },
   text: {
-    primary: '#F0F0F0',
-    secondary: '#A0A0A0',
-    tertiary: '#666666',
+    primary: "#F0F0F0",
+    secondary: "#A0A0A0",
+    tertiary: "#666666"
   },
   border: {
-    primary: 'rgba(255, 255, 255, 0.08)',
-    secondary: 'rgba(255, 255, 255, 0.05)',
+    primary: "rgba(255, 255, 255, 0.08)",
+    secondary: "rgba(255, 255, 255, 0.05)"
   },
   accent: {
-    gold: '#D4AF37',
-    goldDark: '#B8941F',
-  },
+    gold: "#D4AF37",
+    goldDark: "#B8941F"
+  }
 };
 
 type ThemeColors = typeof LightColors;
@@ -58,15 +58,15 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue>({
   isDark: false,
   toggleTheme: () => {},
-  colors: LightColors,
+  colors: LightColors
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(THEME_KEY).then(val => {
-      if (val === 'true') setIsDark(true);
+    AsyncStorage.getItem(THEME_KEY).then((val) => {
+      if (val === "true") setIsDark(true);
     });
   }, []);
 
