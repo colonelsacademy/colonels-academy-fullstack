@@ -112,9 +112,10 @@ export default function CourseDetailsScreen() {
   ];
 
   const handleEnrollNow = async () => {
-    const websiteUrl = `https://dev.thecolonelsacademy.com/course/${course.slug}`;
+    // Open the web checkout page — payment is handled on the website
+    // to avoid app store commission fees
+    const websiteUrl = `https://thecolonelsacademy.com/courses/${course.slug}?ref=mobile`;
 
-    // Check if URL can be opened
     const supported = await Linking.canOpenURL(websiteUrl);
 
     if (supported) {
@@ -282,9 +283,9 @@ export default function CourseDetailsScreen() {
       {/* Fixed Bottom Bar - Store Compliant */}
       <View style={styles.bottomBar}>
         <View style={styles.enrollInfo}>
-          <Text style={styles.enrollTitle}>Ready to Start Learning?</Text>
+          <Text style={styles.enrollTitle}>Purchase on Website</Text>
           <Text style={styles.enrollDescription}>
-            Create an account or sign in to access this course and start your journey.
+            Tap to open the course page and complete your purchase securely.
           </Text>
         </View>
         <TouchableOpacity style={styles.enrollButton} onPress={handleEnrollNow}>
