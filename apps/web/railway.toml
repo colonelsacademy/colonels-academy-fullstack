@@ -1,6 +1,7 @@
 [build]
 builder = "nixpacks"
 nixpacksConfigPath = "nixpacks.toml"
+watchPatterns = ["apps/web/**", "packages/**"]
 
 [deploy]
 startCommand = "cd /app && pnpm --filter @colonels-academy/web run start"
