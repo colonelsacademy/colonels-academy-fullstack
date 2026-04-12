@@ -42,7 +42,9 @@ export default function CourseAddToCart({
         const res = await fetch("/api/learning/enrollments", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
-          const enrolled = data.items?.some((e: { courseSlug: string }) => e.courseSlug === courseId);
+          const enrolled = data.items?.some(
+            (e: { courseSlug: string }) => e.courseSlug === courseId
+          );
           setIsEnrolled(enrolled);
         }
       } catch (error) {

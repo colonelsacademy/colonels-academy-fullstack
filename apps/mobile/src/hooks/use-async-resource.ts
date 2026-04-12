@@ -17,6 +17,7 @@ export function useAsyncResource<T>(
     loading: true
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: loader is intentionally excluded to prevent infinite loops
   useEffect(() => {
     let isCancelled = false;
 

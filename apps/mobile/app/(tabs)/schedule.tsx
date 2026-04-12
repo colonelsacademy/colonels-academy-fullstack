@@ -33,7 +33,20 @@ export default function ScheduleScreen() {
   const { isDark, colors: Colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [sessions, setSessions] = useState<{ id: string; topic: string; day: string; date: string; time: string; instructor: string; type: string; meetLink: string; isLive: boolean; courseSlug: string }[]>([]);
+  const [sessions, setSessions] = useState<
+    {
+      id: string;
+      topic: string;
+      day: string;
+      date: string;
+      time: string;
+      instructor: string;
+      type: string;
+      meetLink: string;
+      isLive: boolean;
+      courseSlug: string;
+    }[]
+  >([]);
   const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchSessions = useCallback(async () => {
@@ -325,7 +338,15 @@ export default function ScheduleScreen() {
     );
   }
 
-  const formatSession = (session: { id: string; title?: string; startsAt: string; endsAt: string; deliveryMode?: string; meetingUrl?: string; courseSlug?: string }) => {
+  const formatSession = (session: {
+    id: string;
+    title?: string;
+    startsAt: string;
+    endsAt: string;
+    deliveryMode?: string;
+    meetingUrl?: string;
+    courseSlug?: string;
+  }) => {
     const startDate = new Date(session.startsAt);
     const endDate = new Date(session.endsAt);
     return {

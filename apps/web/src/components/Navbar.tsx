@@ -26,7 +26,7 @@ import { useEffect, useRef, useState } from "react";
 
 type DropdownKey = "programs" | "resources" | null;
 
-const defaultPrograms = [
+const _defaultPrograms = [
   { name: "Nepal Army Programs", path: "/courses?category=army", icon: Shield },
   { name: "Nepal Police Programs", path: "/courses?category=police", icon: Shield },
   { name: "APF Programs", path: "/courses?category=apf", icon: Shield },

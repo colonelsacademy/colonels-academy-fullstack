@@ -1,41 +1,41 @@
-import { useState, useRef, useEffect } from "react";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { type Href, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  RefreshControl,
-  TextInput,
-  Dimensions,
+  Award,
+  Bell,
+  BookOpen,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Flame,
+  GraduationCap,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  Target,
+  Users,
+  X
+} from "lucide-react-native";
+import { useEffect, useRef, useState } from "react";
+import {
   Animated,
+  Dimensions,
   FlatList,
   Modal,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { Image } from "expo-image";
-import { StatusBar } from "expo-status-bar";
-import { type Href, useRouter } from "expo-router";
-import {
-  BookOpen,
-  Clock,
-  Star,
-  Search,
-  Award,
-  Users,
-  Target,
-  GraduationCap,
-  Bell,
-  ChevronRight,
-  Flame,
-  Sparkles,
-  CheckCircle,
-  SlidersHorizontal,
-  X,
-} from "lucide-react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import { useAsyncResource } from "../../src/hooks/use-async-resource";
 import { mobileApiClient } from "../../src/lib/api";
-import { useTheme } from "../../src/contexts/ThemeContext";
 
 const { width: W } = Dimensions.get("window");
 
@@ -56,19 +56,19 @@ const CATS = [
   { id: "all", label: "All", icon: Sparkles },
   { id: "army", label: "Army", color: "#00693E", icon: Award },
   { id: "police", label: "Police", color: "#1E40AF", icon: Target },
-  { id: "apf", label: "APF", color: "#D97706", icon: GraduationCap },
+  { id: "apf", label: "APF", color: "#D97706", icon: GraduationCap }
 ];
 
 const SORT_OPTIONS = [
   { id: "popular", label: "Popular", icon: Flame },
   { id: "new", label: "New", icon: Sparkles },
-  { id: "rating", label: "Top Rated", icon: Star },
+  { id: "rating", label: "Top Rated", icon: Star }
 ];
 
 export default function CoursesScreen() {
   const router = useRouter();
-    const { isDark, colors: Colors } = useTheme();
-  
+  const { isDark, colors: Colors } = useTheme();
+
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
@@ -88,21 +88,21 @@ export default function CoursesScreen() {
         Animated.timing(shimmerAnim, {
           toValue: 1,
           duration: 1500,
-          useNativeDriver: true,
+          useNativeDriver: true
         })
       ).start();
     }
   }, [imagesLoaded, shimmerAnim]);
 
-  const shimmerTranslate = shimmerAnim.interpolate({
+  const _shimmerTranslate = shimmerAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-400, 400],
+    outputRange: [-400, 400]
   });
 
   // Preload images for instant display
   useEffect(() => {
-    const imagesToPreload = DEFAULT_COURSES.map(c => c.heroImageUrl);
-    Promise.all(imagesToPreload.map(uri => Image.prefetch(uri)))
+    const imagesToPreload = DEFAULT_COURSES.map((c) => c.heroImageUrl);
+    Promise.all(imagesToPreload.map((uri) => Image.prefetch(uri)))
       .then(() => {
         setTimeout(() => setImagesLoaded(true), 300);
       })
@@ -121,53 +121,58 @@ export default function CoursesScreen() {
       slug: "nepal-army-staff-college",
       title: "Nepal Army Staff College - Course [2026]",
       track: "staff",
-      heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-army-staff-college.png?w=300&q=70",
+      heroImageUrl:
+        "https://uat.thecolonelsacademy.com/images/courses/nepal-army-staff-college.png?w=300&q=70",
       durationLabel: "60 Hours",
       lessonCount: 75,
       priceNpr: 8500,
       students: 2450,
       rating: 4.9,
-      featured: true,
+      featured: true
     },
     {
       slug: "nepal-police-inspector-cadet",
       title: "Nepal Police Inspector Cadet - Course [2026]",
       track: "police",
-      heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png?w=300&q=70",
+      heroImageUrl:
+        "https://uat.thecolonelsacademy.com/images/courses/nepal-police-inspector-cadet.png?w=300&q=70",
       durationLabel: "50 Hours",
       lessonCount: 65,
       priceNpr: 4500,
       students: 1800,
       rating: 4.8,
-      featured: true,
+      featured: true
     },
     {
       slug: "apf-inspector-cadet",
       title: "APF Inspector Cadet - Course [2026]",
       track: "apf",
-      heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/apf-inspector-cadet.png?w=300&q=70",
+      heroImageUrl:
+        "https://uat.thecolonelsacademy.com/images/courses/apf-inspector-cadet.png?w=300&q=70",
       durationLabel: "45 Hours",
       lessonCount: 55,
       priceNpr: 4500,
       students: 1200,
       rating: 4.7,
-      featured: true,
+      featured: true
     },
     {
       slug: "nepal-army-officer-cadet",
       title: "Nepal Army Officer Cadet - Course [2026]",
       track: "army",
-      heroImageUrl: "https://uat.thecolonelsacademy.com/images/courses/nepal-army-officer-cadet.png?w=300&q=70",
+      heroImageUrl:
+        "https://uat.thecolonelsacademy.com/images/courses/nepal-army-officer-cadet.png?w=300&q=70",
       durationLabel: "45 Hours",
       lessonCount: 50,
       priceNpr: 4500,
       students: 3200,
       rating: 4.9,
-      featured: true,
-    },
+      featured: true
+    }
   ];
 
-  const displayCourses: Course[] = coursesData.items.length > 0 ? coursesData.items : DEFAULT_COURSES;
+  const displayCourses: Course[] =
+    coursesData.items.length > 0 ? coursesData.items : DEFAULT_COURSES;
 
   // Filter courses
   let browseCourses = displayCourses;
@@ -179,16 +184,14 @@ export default function CoursesScreen() {
   }
   if (search) {
     const q = search.toLowerCase();
-    browseCourses = browseCourses.filter((c: Course) =>
-      c.title.toLowerCase().includes(q)
-    );
+    browseCourses = browseCourses.filter((c: Course) => c.title.toLowerCase().includes(q));
   }
 
   // Featured courses (top 3)
   const featuredCourses = displayCourses.slice(0, 3);
 
   // Sort courses
-  let sortedCourses = [...browseCourses];
+  const sortedCourses = [...browseCourses];
   if (sortBy === "popular") {
     sortedCourses.sort((a: Course, b: Course) => (b.students || 0) - (a.students || 0));
   } else if (sortBy === "new") {
@@ -205,7 +208,7 @@ export default function CoursesScreen() {
         const nextIndex = (prev + 1) % featuredCourses.length;
         carouselRef.current?.scrollToOffset({
           offset: nextIndex * W,
-          animated: true,
+          animated: true
         });
         return nextIndex;
       });
@@ -224,18 +227,18 @@ export default function CoursesScreen() {
       paddingHorizontal: 16,
       paddingTop: 60,
       paddingBottom: 12,
-      backgroundColor: Colors.background.primary,
+      backgroundColor: Colors.background.primary
     },
     headerLeft: { flex: 1 },
     headerTitle: {
       fontSize: 24,
       fontWeight: "700",
-      color: Colors.text.primary,
+      color: Colors.text.primary
     },
     headerSubtitle: {
       fontSize: 12,
       color: Colors.text.tertiary,
-      marginTop: 2,
+      marginTop: 2
     },
     bellBtn: {
       width: 40,
@@ -245,7 +248,7 @@ export default function CoursesScreen() {
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 1,
-      borderColor: Colors.border.primary,
+      borderColor: Colors.border.primary
     },
     // Search
     searchSection: {
@@ -254,7 +257,7 @@ export default function CoursesScreen() {
       gap: 12,
       paddingHorizontal: 16,
       paddingVertical: 16,
-      backgroundColor: Colors.background.primary,
+      backgroundColor: Colors.background.primary
     },
     searchWrap: {
       flex: 1,
@@ -266,7 +269,7 @@ export default function CoursesScreen() {
       paddingHorizontal: 16,
       paddingVertical: 12,
       borderWidth: 1.5,
-      borderColor: Colors.border.primary,
+      borderColor: Colors.border.primary
     },
     searchInput: { flex: 1, fontSize: 15, color: Colors.text.primary, padding: 0 },
     filterButton: {
@@ -277,14 +280,14 @@ export default function CoursesScreen() {
       alignItems: "center",
       justifyContent: "center",
       borderWidth: 1.5,
-      borderColor: Colors.border.primary,
+      borderColor: Colors.border.primary
     },
     // Featured
     featuredSection: {
       paddingVertical: 16,
       backgroundColor: Colors.background.primary,
       borderBottomWidth: 1,
-      borderBottomColor: Colors.border.primary,
+      borderBottomColor: Colors.border.primary
     },
     featuredCard: {
       height: 200,
@@ -294,7 +297,7 @@ export default function CoursesScreen() {
       shadowOffset: { width: 0, height: 8 },
       shadowOpacity: 0.35,
       shadowRadius: 24,
-      elevation: 10,
+      elevation: 10
     },
     featuredImage: { width: "100%", height: "100%" },
     featuredGradient: {
@@ -304,20 +307,20 @@ export default function CoursesScreen() {
       right: 0,
       paddingHorizontal: 16,
       paddingBottom: 16,
-      paddingTop: 32,
+      paddingTop: 32
     },
     featuredOverlay: {
       position: "absolute",
       bottom: 0,
       left: 0,
       right: 0,
-      height: "40%",
+      height: "40%"
     },
     featuredTextContainer: {
       backgroundColor: "rgba(0, 0, 0, 0.6)",
       paddingHorizontal: 16,
       paddingVertical: 12,
-      borderRadius: 24,
+      borderRadius: 24
     },
     featuredBadge: {
       position: "absolute",
@@ -329,13 +332,13 @@ export default function CoursesScreen() {
       backgroundColor: "rgba(212,175,55,0.95)",
       paddingHorizontal: 10,
       paddingVertical: 6,
-      borderRadius: 20,
+      borderRadius: 20
     },
     featuredBadgeText: {
       fontSize: 10,
       fontWeight: "900",
       color: "#0B1120",
-      letterSpacing: 0.5,
+      letterSpacing: 0.5
     },
     featuredMeta: { flexDirection: "row", alignItems: "center", gap: 16 },
     featuredMetaItem: { flexDirection: "row", alignItems: "center", gap: 4 },
@@ -349,16 +352,16 @@ export default function CoursesScreen() {
       height: 200,
       borderRadius: 24,
       backgroundColor: Colors.background.secondary,
-      overflow: "hidden",
+      overflow: "hidden"
     },
     skeletonBox: {
       backgroundColor: Colors.background.secondary,
-      overflow: "hidden",
+      overflow: "hidden"
     },
     skeletonText: {
       backgroundColor: Colors.background.secondary,
       borderRadius: 4,
-      overflow: "hidden",
+      overflow: "hidden"
     },
     skeletonShimmer: {
       position: "absolute",
@@ -366,14 +369,14 @@ export default function CoursesScreen() {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.5)",
+      backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.5)"
     },
     // Section Header
     sectionHeader: {
       paddingHorizontal: 16,
       paddingTop: 16,
       paddingBottom: 16,
-      backgroundColor: Colors.background.secondary,
+      backgroundColor: Colors.background.secondary
     },
     sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 4 },
     sectionIconBadge: {
@@ -382,7 +385,7 @@ export default function CoursesScreen() {
       borderRadius: 16,
       backgroundColor: "rgba(212, 175, 55, 0.15)",
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "center"
     },
     sectionTitle: { fontSize: 20, fontWeight: "700", color: Colors.text.primary },
     sectionSubtitle: { fontSize: 13, color: Colors.text.tertiary, marginTop: 2, marginLeft: 44 },
@@ -399,14 +402,14 @@ export default function CoursesScreen() {
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: isDark ? 0.3 : 0.12,
       shadowRadius: 16,
-      elevation: 8,
+      elevation: 8
     },
     courseHeader: { flexDirection: "row", minHeight: 140 },
     courseThumbnail: {
       width: 140,
       height: "100%",
       minHeight: 140,
-      backgroundColor: Colors.background.tertiary,
+      backgroundColor: Colors.background.tertiary
     },
     courseBody: { flex: 1, padding: 16, paddingLeft: 18, justifyContent: "space-between" },
     courseTopSection: { marginBottom: 8 },
@@ -414,7 +417,7 @@ export default function CoursesScreen() {
       flexDirection: "row",
       alignItems: "flex-start",
       justifyContent: "space-between",
-      marginBottom: 8,
+      marginBottom: 8
     },
     courseTitle: {
       flex: 1,
@@ -422,14 +425,14 @@ export default function CoursesScreen() {
       fontWeight: "700",
       color: Colors.text.primary,
       lineHeight: 20,
-      letterSpacing: -0.3,
+      letterSpacing: -0.3
     },
     courseBadgeBest: {
       paddingHorizontal: 6,
       paddingVertical: 3,
       borderRadius: 6,
       marginLeft: 6,
-      backgroundColor: "#D4AF37",
+      backgroundColor: "#D4AF37"
     },
     courseBadgeText: { fontSize: 8, fontWeight: "900", color: "#FFFFFF", letterSpacing: 0.5 },
     courseMeta: { flexDirection: "row", alignItems: "center", gap: 12 },
@@ -439,7 +442,7 @@ export default function CoursesScreen() {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginTop: 4,
+      marginTop: 4
     },
     courseDuration: { flexDirection: "row", alignItems: "center", gap: 6 },
     durationText: { fontSize: 13, fontWeight: "600", color: Colors.text.secondary },
@@ -450,7 +453,7 @@ export default function CoursesScreen() {
       borderRadius: 8,
       flexDirection: "row",
       alignItems: "center",
-      gap: 4,
+      gap: 4
     },
     viewDetailsBtnText: { fontSize: 12, fontWeight: "700", color: "#FFFFFF" },
     // Empty
@@ -461,7 +464,7 @@ export default function CoursesScreen() {
       color: Colors.text.primary,
       marginTop: 16,
       marginBottom: 8,
-      textAlign: "center",
+      textAlign: "center"
     },
     emptyDesc: { fontSize: 14, color: Colors.text.secondary, textAlign: "center", lineHeight: 22 },
     // Filter Modal
@@ -472,13 +475,13 @@ export default function CoursesScreen() {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: "rgba(0, 0, 0, 0.5)"
     },
     filterModal: {
       backgroundColor: Colors.background.primary,
       borderTopLeftRadius: 24,
       borderTopRightRadius: 24,
-      maxHeight: "80%",
+      maxHeight: "80%"
     },
     modalHeader: {
       flexDirection: "row",
@@ -488,7 +491,7 @@ export default function CoursesScreen() {
       paddingTop: 24,
       paddingBottom: 16,
       borderBottomWidth: 1,
-      borderBottomColor: Colors.border.primary,
+      borderBottomColor: Colors.border.primary
     },
     modalTitleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
     modalTitle: { fontSize: 22, fontWeight: "700", color: Colors.text.primary },
@@ -498,19 +501,19 @@ export default function CoursesScreen() {
       borderRadius: 20,
       backgroundColor: Colors.background.secondary,
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "center"
     },
     filterSection: {
       paddingHorizontal: 20,
       paddingVertical: 20,
       borderBottomWidth: 1,
-      borderBottomColor: Colors.border.primary,
+      borderBottomColor: Colors.border.primary
     },
     filterSectionTitle: {
       fontSize: 16,
       fontWeight: "700",
       color: Colors.text.primary,
-      marginBottom: 16,
+      marginBottom: 16
     },
     filterOptions: { gap: 12 },
     filterOptionWrapper: { width: "100%" },
@@ -523,7 +526,7 @@ export default function CoursesScreen() {
       borderRadius: 16,
       backgroundColor: Colors.background.secondary,
       borderWidth: 2,
-      borderColor: Colors.border.primary,
+      borderColor: Colors.border.primary
     },
     filterOptionText: { flex: 1, fontSize: 15, fontWeight: "600", color: Colors.text.primary },
     filterOptionTextActive: { color: "#FFFFFF", fontWeight: "700" },
@@ -534,7 +537,7 @@ export default function CoursesScreen() {
       paddingVertical: 20,
       paddingBottom: 32,
       borderTopWidth: 1,
-      borderTopColor: Colors.border.primary,
+      borderTopColor: Colors.border.primary
     },
     applyButton: {
       flexDirection: "row",
@@ -543,9 +546,9 @@ export default function CoursesScreen() {
       gap: 8,
       backgroundColor: "#1E40AF",
       paddingVertical: 16,
-      borderRadius: 16,
+      borderRadius: 16
     },
-    applyButtonText: { fontSize: 16, fontWeight: "700", color: "#FFFFFF" },
+    applyButtonText: { fontSize: 16, fontWeight: "700", color: "#FFFFFF" }
   });
 
   return (
@@ -588,10 +591,7 @@ export default function CoursesScreen() {
               placeholderTextColor={Colors.text.tertiary}
             />
           </View>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={() => setFilterModalVisible(true)}
-          >
+          <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
             <SlidersHorizontal size={20} color={Colors.text.primary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
@@ -618,15 +618,14 @@ export default function CoursesScreen() {
                   decelerationRate="fast"
                   scrollEventThrottle={16}
                   contentContainerStyle={{ paddingHorizontal: 0 }}
-                  onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                    { useNativeDriver: false }
-                  )}
+                  onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+                    useNativeDriver: false
+                  })}
                   onMomentumScrollEnd={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.x / W);
                     setFeaturedIndex(index);
                   }}
-                  getItemLayout={(data, index) => ({ length: W, offset: W * index, index })}
+                  getItemLayout={(_data, index) => ({ length: W, offset: W * index, index })}
                   keyExtractor={(item: Course) => item.slug}
                   renderItem={({ item: course }: { item: Course }) => (
                     <View style={{ width: W, paddingHorizontal: 16 }}>
@@ -666,7 +665,9 @@ export default function CoursesScreen() {
                                 </View>
                                 <View style={styles.featuredMetaItem}>
                                   <Clock size={16} color="rgba(255,255,255,0.9)" strokeWidth={2} />
-                                  <Text style={styles.featuredMetaText}>{course.durationLabel}</Text>
+                                  <Text style={styles.featuredMetaText}>
+                                    {course.durationLabel}
+                                  </Text>
                                 </View>
                               </View>
                             </View>
@@ -678,7 +679,11 @@ export default function CoursesScreen() {
                 />
                 <View style={styles.featuredDots}>
                   {featuredCourses.map((_: Course, i: number) => (
-                    <View key={`dot-${i}`} style={[styles.dot, i === featuredIndex && styles.dotActive]} />
+                    // biome-ignore lint/suspicious/noArrayIndexKey: dot index is stable
+                    <View
+                      key={`dot-${i}`}
+                      style={[styles.dot, i === featuredIndex && styles.dotActive]}
+                    />
                   ))}
                 </View>
               </>
@@ -707,15 +712,19 @@ export default function CoursesScreen() {
                   )}
                 </View>
                 <Text style={styles.sectionTitle}>
-                  {sortBy === "popular" ? "Popular Courses" : sortBy === "new" ? "New Courses" : "Top Rated"}
+                  {sortBy === "popular"
+                    ? "Popular Courses"
+                    : sortBy === "new"
+                      ? "New Courses"
+                      : "Top Rated"}
                 </Text>
               </View>
               <Text style={styles.sectionSubtitle}>
                 {sortBy === "popular"
                   ? "Most enrolled by students"
                   : sortBy === "new"
-                  ? "Recently added courses"
-                  : "Highest rated by learners"}
+                    ? "Recently added courses"
+                    : "Highest rated by learners"}
               </Text>
             </View>
 
@@ -729,7 +738,12 @@ export default function CoursesScreen() {
                       </View>
                       <View style={styles.courseBody}>
                         <View style={styles.courseTopSection}>
-                          <View style={[styles.skeletonText, { width: "90%", height: 16, marginBottom: 8 }]}>
+                          <View
+                            style={[
+                              styles.skeletonText,
+                              { width: "90%", height: 16, marginBottom: 8 }
+                            ]}
+                          >
                             <View style={styles.skeletonShimmer} />
                           </View>
                           <View style={[styles.skeletonText, { width: "60%", height: 12 }]}>
@@ -786,7 +800,9 @@ export default function CoursesScreen() {
                             </View>
                             <View style={styles.metaItem}>
                               <Users size={12} color={Colors.text.tertiary} strokeWidth={2} />
-                              <Text style={styles.metaText}>{((course.students ?? 0) / 1000).toFixed(1)}K</Text>
+                              <Text style={styles.metaText}>
+                                {((course.students ?? 0) / 1000).toFixed(1)}K
+                              </Text>
                             </View>
                           </View>
                         </View>
@@ -858,15 +874,33 @@ export default function CoursesScreen() {
                         onPress={() => setActiveCategory(cat.id)}
                         style={styles.filterOptionWrapper}
                       >
-                        <View style={[
-                          styles.filterOption,
-                          isActive && { backgroundColor: activeColor, borderColor: activeColor },
-                        ]}>
-                          <Icon size={20} color={isActive ? "#FFFFFF" : Colors.text.secondary} strokeWidth={2} />
-                          <Text style={[styles.filterOptionText, isActive && styles.filterOptionTextActive]}>
+                        <View
+                          style={[
+                            styles.filterOption,
+                            isActive && { backgroundColor: activeColor, borderColor: activeColor }
+                          ]}
+                        >
+                          <Icon
+                            size={20}
+                            color={isActive ? "#FFFFFF" : Colors.text.secondary}
+                            strokeWidth={2}
+                          />
+                          <Text
+                            style={[
+                              styles.filterOptionText,
+                              isActive && styles.filterOptionTextActive
+                            ]}
+                          >
                             {cat.label}
                           </Text>
-                          {isActive && <CheckCircle size={18} color="#FFFFFF" strokeWidth={2.5} fill="#FFFFFF" />}
+                          {isActive && (
+                            <CheckCircle
+                              size={18}
+                              color="#FFFFFF"
+                              strokeWidth={2.5}
+                              fill="#FFFFFF"
+                            />
+                          )}
                         </View>
                       </TouchableOpacity>
                     );
@@ -886,15 +920,28 @@ export default function CoursesScreen() {
                         onPress={() => setSortBy(opt.id as "popular" | "new" | "rating")}
                         style={styles.filterOptionWrapper}
                       >
-                        <View style={[
-                          styles.filterOption,
-                          isActive && { backgroundColor: "#D4AF37", borderColor: "#D4AF37" },
-                        ]}>
-                          <Icon size={20} color={isActive ? "#0B1120" : Colors.text.secondary} strokeWidth={2.5} />
+                        <View
+                          style={[
+                            styles.filterOption,
+                            isActive && { backgroundColor: "#D4AF37", borderColor: "#D4AF37" }
+                          ]}
+                        >
+                          <Icon
+                            size={20}
+                            color={isActive ? "#0B1120" : Colors.text.secondary}
+                            strokeWidth={2.5}
+                          />
                           <Text style={[styles.filterOptionText, isActive && { color: "#0B1120" }]}>
                             {opt.label}
                           </Text>
-                          {isActive && <CheckCircle size={18} color="#0B1120" strokeWidth={2.5} fill="#0B1120" />}
+                          {isActive && (
+                            <CheckCircle
+                              size={18}
+                              color="#0B1120"
+                              strokeWidth={2.5}
+                              fill="#0B1120"
+                            />
+                          )}
                         </View>
                       </TouchableOpacity>
                     );
@@ -904,7 +951,8 @@ export default function CoursesScreen() {
 
               <View style={styles.filterResultsPreview}>
                 <Text style={styles.filterResultsText}>
-                  {sortedCourses.length} {sortedCourses.length === 1 ? "course" : "courses"} match your filters
+                  {sortedCourses.length} {sortedCourses.length === 1 ? "course" : "courses"} match
+                  your filters
                 </Text>
               </View>
             </ScrollView>
@@ -924,4 +972,3 @@ export default function CoursesScreen() {
     </View>
   );
 }
-

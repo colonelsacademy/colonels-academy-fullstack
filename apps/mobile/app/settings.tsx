@@ -19,7 +19,7 @@ import {
   User,
   X
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   Alert,
   Linking,
@@ -140,8 +140,16 @@ export default function SettingsScreen() {
     onPress,
     iconBg,
     iconColor,
-    rightElement
-  }: any) => (
+    rightElement,
+  }: {
+    icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+    title: string;
+    subtitle: string;
+    onPress?: () => void;
+    iconBg: string;
+    iconColor: string;
+    rightElement?: ReactNode;
+  }) => (
     <TouchableOpacity onPress={onPress} style={styles.settingItem} activeOpacity={0.7}>
       <View style={styles.settingLeft}>
         <View style={[styles.settingIcon, { backgroundColor: iconBg }]}>

@@ -71,9 +71,13 @@ export default function HomeScreen() {
   );
   const [instructorModalVisible, setInstructorModalVisible] = useState(false);
 
-  const { data: _coursesData, loading: _loading } = useAsyncResource(() => mobileApiClient.getCourses(), [], {
-    items: []
-  });
+  const { data: _coursesData, loading: _loading } = useAsyncResource(
+    () => mobileApiClient.getCourses(),
+    [],
+    {
+      items: []
+    }
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
