@@ -3,4 +3,4 @@ builder = "nixpacks"
 buildCommand = "npm install -g corepack@0.31.0 && corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @colonels-academy/database run db:generate && pnpm --filter @colonels-academy/api run build"
 
 [deploy]
-startCommand = "cd /app && pnpm --filter @colonels-academy/database run db:push && node apps/api/dist/index.cjs"
+startCommand = "cd /app && pnpm --filter @colonels-academy/database run db:deploy && pnpm --filter @colonels-academy/database run db:seed && node apps/api/dist/index.cjs"
