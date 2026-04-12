@@ -802,11 +802,14 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
 
   // ── GET /v1/learning/live-sessions ─────────────────────────────────────────
   fastify.get("/live-sessions", async () => {
+    const now = new Date();
     const sessions = await fastify.prisma.liveSession.findMany({
-      where: { startsAt: { gt: new Date() } },
+      where: {
+        endsAt: { gte: now } // Show sessions that haven't ended yet (includes live sessions)
+      },
       include: { course: { select: { slug: true } } },
       orderBy: { startsAt: "asc" },
-      take: 10
+      take: 20
     });
 
     return {
@@ -817,6 +820,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
         startsAt: s.startsAt.toISOString(),
         endsAt: s.endsAt.toISOString(),
         deliveryMode: s.deliveryMode as "zoom" | "in-app" | "hybrid",
+        meetingUrl: s.meetingUrl ?? null,
         replayAvailable: Boolean(s.replayVideoAssetId)
       })),
       transport: "HTTP poll; add WebSockets only if chat/presence is required."
