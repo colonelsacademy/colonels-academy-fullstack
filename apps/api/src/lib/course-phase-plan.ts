@@ -38,7 +38,7 @@ function getPhasePlanConfig(courseSlug: string) {
   return {
     deliveryModel: "paced-hybrid" as const,
     liveClassCadence:
-      "3 live online classes per week supported by self-paced lessons, drills, mock exams, and DS review.",
+      "Live kickoff, twice-weekly instructor sessions, and optional mock-review clinics supported by self-paced lessons, drills, and DS review.",
     phases: staffCollegeCommandPhaseBlueprints,
     weeklySchedule: staffCollegeCommandWeeklySchedule
   };

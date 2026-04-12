@@ -1,13 +1,21 @@
-import type { ContentType, SubjectArea } from "@colonels-academy/contracts";
+import type {
+  ContentType,
+  LessonContent,
+  LessonLearningMode,
+  SubjectArea
+} from "@colonels-academy/contracts";
 
 type LessonAccessKind = "PREVIEW" | "STANDARD" | "LIVE_REPLAY" | "DOWNLOADABLE";
 
 type CurriculumLessonSeed = {
   title: string;
   contentType: ContentType;
+  phaseNumber?: number;
   synopsis?: string;
   durationMinutes?: number;
   accessKind?: LessonAccessKind;
+  learningMode?: LessonLearningMode;
+  lessonContent?: LessonContent;
   subjectArea?: SubjectArea;
   componentCode?: string;
   componentLabel?: string;
@@ -27,6 +35,7 @@ export type BuiltCurriculumLessonSeed = CurriculumLessonSeed & {
   position: number;
   synopsis: string;
   accessKind: LessonAccessKind;
+  learningMode: LessonLearningMode;
   durationMinutes?: number;
 };
 
@@ -75,6 +84,31 @@ const MILITARY_TECH_COMPONENT = {
   componentLabel: "Military Technology"
 } as const;
 
+const LEARNING_MODE_LABELS: Record<LessonLearningMode, string> = {
+  LESSON: "Self-paced",
+  PRACTICE: "Practice task",
+  QUIZ: "Quiz/Test",
+  LIVE: "Instructor-led",
+  FEEDBACK: "Feedback",
+  RESOURCE: "Resource"
+};
+
+function contentTypeForLearningMode(learningMode: LessonLearningMode): ContentType {
+  switch (learningMode) {
+    case "QUIZ":
+      return "QUIZ";
+    case "LIVE":
+      return "LIVE";
+    case "RESOURCE":
+      return "PDF";
+    case "LESSON":
+    case "PRACTICE":
+    case "FEEDBACK":
+    default:
+      return "TEXT";
+  }
+}
+
 function lesson(
   title: string,
   contentType: ContentType,
@@ -85,6 +119,17 @@ function lesson(
     contentType,
     ...overrides
   };
+}
+
+function hybridItem(
+  title: string,
+  learningMode: LessonLearningMode,
+  overrides: Omit<CurriculumLessonSeed, "title" | "contentType" | "learningMode"> = {}
+): CurriculumLessonSeed {
+  return lesson(title, contentTypeForLearningMode(learningMode), {
+    learningMode,
+    ...overrides
+  });
 }
 
 function tactics(
@@ -181,6 +226,30 @@ function defaultSynopsis(moduleTitle: string, lessonTitle: string, contentType: 
   }
 }
 
+function defaultLessonContent(
+  lessonTitle: string,
+  synopsis: string,
+  learningMode: LessonLearningMode
+): LessonContent {
+  return {
+    mode: "cue",
+    segments: [
+      {
+        text: synopsis,
+        durationMs: 5200
+      },
+      {
+        text: `Learning mode: ${LEARNING_MODE_LABELS[learningMode]}`,
+        durationMs: 3200
+      },
+      {
+        text: lessonTitle,
+        durationMs: 3200
+      }
+    ]
+  };
+}
+
 function defaultAccessKind(contentType: ContentType): LessonAccessKind {
   if (contentType === "PDF") {
     return "DOWNLOADABLE";
@@ -213,290 +282,395 @@ function defaultDurationMinutes(title: string, contentType: ContentType) {
   return 15;
 }
 
+const STAFF_COLLEGE_INTRO_CONTENT: LessonContent = {
+  mode: "reading",
+  blocks: [
+    {
+      type: "paragraph",
+      text: "Our platform is dedicated to supporting officers of the Nepalese Army in their preparation for the Command & Staff College Entrance Exam."
+    },
+    {
+      type: "paragraph",
+      text: "Vision: To empower officers with structured, comprehensive, and modern learning tools that enhance their readiness for the Command & Staff College entrance exam."
+    },
+    {
+      type: "paragraph",
+      text: "Mission: To provide accessible, flexible, and interactive study resources that combine individual effort, faculty guidance, and peer collaboration."
+    },
+    {
+      type: "heading",
+      text: "Objectives"
+    },
+    {
+      type: "bulletList",
+      items: [
+        "Equip officers with a clear understanding of exam requirements.",
+        "Provide structured study plans and timelines.",
+        "Facilitate practice through quizzes, mock exams, and feedback systems.",
+        "Foster confidence, discipline, and analytical skills essential for success."
+      ]
+    }
+  ]
+};
+
+const STAFF_COLLEGE_OVERVIEW_CONTENT: LessonContent = {
+  mode: "cue",
+  segments: [
+    {
+      text: "This platform offers a 9-10 month preparation program designed around the syllabus of the Command & Staff College Entrance Exam.",
+      durationMs: 5200
+    },
+    {
+      text: "Subjects Covered:",
+      durationMs: 2200
+    },
+    {
+      text: "Military Operations & Administration - Tactics & Administration - 100 Marks",
+      durationMs: 3600
+    },
+    {
+      text: "Contemporary Affairs - Current Affairs - 100 Marks",
+      durationMs: 3200
+    },
+    {
+      text: "Military History & Strategic Thoughts - Military History - 100 Marks",
+      durationMs: 3600
+    },
+    {
+      text: "Armed Conflicts Military Appreciation & Plans - Appreciation - 100 Marks",
+      durationMs: 3800
+    },
+    {
+      text: "Lecture Methodology - Lecturette - 100 Marks",
+      durationMs: 3200
+    }
+  ]
+};
+
 const staffCollegeCommandCurriculum: CurriculumModuleSeed[] = [
   {
     phaseNumber: 1,
-    title: "Tactics & Administration — Foundations",
-    subjectArea: "TACTICS_ADMIN",
+    title: "Program Orientation & Kickoff",
     lessons: [
-      tactics("Operation of War", "VIDEO"),
-      tactics("Basic Tactics — Patrolling, Raid, Ambush", "VIDEO", {
-        synopsis: "Video lesson with companion notes on patrolling, raids, and ambush drills."
+      hybridItem("Program Introduction", "LESSON", {
+        synopsis:
+          "Start with the program purpose, vision, mission, and learning objectives before moving into the subject areas.",
+        accessKind: "PREVIEW",
+        lessonContent: STAFF_COLLEGE_INTRO_CONTENT
       }),
+      hybridItem("Overview of the 9-10 Month Program", "LESSON", {
+        synopsis:
+          "A timed overview of the program duration, structure, and subject areas covered in the exam preparation track.",
+        accessKind: "PREVIEW",
+        lessonContent: STAFF_COLLEGE_OVERVIEW_CONTENT
+      }),
+      hybridItem("Exam Format & Subject Weighting", "LESSON"),
+      hybridItem("How the Standard Hybrid Model Works", "LESSON"),
+      hybridItem("Live Kickoff Class", "LIVE"),
+      hybridItem("Platform Walkthrough", "LESSON"),
+      hybridItem("Diagnostic Self-Assessment", "QUIZ", { durationMinutes: 45 }),
+      hybridItem("Study Expectations & Officer Discipline", "LESSON")
+    ]
+  },
+  {
+    phaseNumber: 1,
+    title: "Weekly Learning System",
+    lessons: [
+      hybridItem("Weekly Self-Paced Learning Routine", "LESSON"),
+      hybridItem("Weekly Practice & Submission Routine", "PRACTICE"),
+      hybridItem("Weekly Live Cadence Overview", "LESSON"),
+      hybridItem("Live Class 1: Concept Clinic", "LIVE"),
+      hybridItem("Live Class 2: Application & Feedback Lab", "LIVE"),
+      hybridItem("Optional Office Hour / Mock Review Clinic", "LIVE"),
+      hybridItem("How to Use Replays, Notes, and Action Items", "RESOURCE"),
+      hybridItem("Progress Tracking & Instructor Feedback Loop", "FEEDBACK")
+    ]
+  },
+  {
+    phaseNumber: 1,
+    title: "Military Operations & Administration",
+    subjectArea: "TACTICS_ADMIN",
+    lessons: [
+      tactics("Operations of War", "TEXT", { learningMode: "LESSON" }),
+      tactics("Basic Tactics: Patrolling, Raid, Ambush", "TEXT", { learningMode: "LESSON" }),
       tactics(
-        "Basic Arms — Infantry, Armor, Artillery, Air Defence, Engineer, Signal, Special Forces",
-        "VIDEO"
+        "Basic Arms: Infantry, Armor, Artillery, Air Defence, Engineer, Signal, Special Forces",
+        "TEXT",
+        { learningMode: "LESSON" }
       ),
-      tactics("Mountain & Jungle Warfare", "VIDEO"),
-      lesson("How to Prepare for Tactics & Admin", "TEXT"),
-      tactics("Tactics Fundamentals Quiz", "QUIZ")
+      tactics("Mountain & Jungle Warfare", "TEXT", { learningMode: "LESSON" }),
+      tactics("Counter Insurgency Operations", "TEXT", { learningMode: "LESSON" }),
+      tactics("Fighting in Built-up Areas", "TEXT", { learningMode: "LESSON" }),
+      tactics("Peacekeeping Operations", "TEXT", { learningMode: "LESSON" }),
+      tactics("Intelligence & Security", "TEXT", { learningMode: "LESSON" }),
+      administration("Administration in War & Peace", "TEXT", { learningMode: "LESSON" }),
+      administration("Training", "TEXT", { learningMode: "LESSON" }),
+      administration("Leadership & Man Management", "TEXT", { learningMode: "LESSON" }),
+      administration("Organization of the Nepali Army", "TEXT", { learningMode: "LESSON" }),
+      militaryLaw("Military Act, Laws, and Regulations", "TEXT", { learningMode: "LESSON" }),
+      administration("Logistic System in the Nepali Army", "TEXT", { learningMode: "LESSON" }),
+      hybridItem("Tactics/Admin Practice Drills", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "TACTICS_ADMIN"
+      }),
+      hybridItem("Tactics/Admin Topic Quiz", "QUIZ", {
+        phaseNumber: 2,
+        subjectArea: "TACTICS_ADMIN"
+      }),
+      hybridItem("Instructor Concept Clinic", "LIVE", {
+        phaseNumber: 2,
+        subjectArea: "TACTICS_ADMIN"
+      }),
+      hybridItem("Instructor Application & Feedback Lab", "FEEDBACK", {
+        phaseNumber: 3,
+        subjectArea: "TACTICS_ADMIN"
+      })
     ]
   },
   {
     phaseNumber: 1,
-    title: "Military History — Ancient to Modern",
-    subjectArea: "MILITARY_HISTORY_STRATEGY",
-    lessons: [
-      lesson("Introduction & Study Method", "TEXT"),
-      lesson("Ancient Warfare — Key Battles", "VIDEO"),
-      lesson("Nepali Military History — Anglo-Nepal War 1814", "VIDEO"),
-      lesson("Strategic Thinkers — Sun Tzu", "VIDEO"),
-      lesson("History Short-Answer Practice", "QUIZ")
-    ]
-  },
-  {
-    phaseNumber: 1,
-    title: "Appreciation Theory — Aim to Decision",
-    subjectArea: "APPRECIATION_PLANS",
-    lessons: [
-      lesson("Appreciation Steps Explained", "VIDEO"),
-      lesson("Appreciation Format — SMEAC Template", "PDF"),
-      lesson("Live: Appreciation Case Study Discussion", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 1,
-    title: "Oral Presentation — Introduction",
-    subjectArea: "LECTURETTE",
-    lessons: [
-      lesson("Public Speaking Techniques", "VIDEO"),
-      lesson("3-Part Structure — Intro, Body, Conclusion", "TEXT"),
-      lesson("Practice: 3-minute presentation", "QUIZ")
-    ]
-  },
-  {
-    phaseNumber: 2,
-    title: "Advanced Tactics",
-    subjectArea: "TACTICS_ADMIN",
-    componentCode: TACTICS_COMPONENT.componentCode,
-    componentLabel: TACTICS_COMPONENT.componentLabel,
-    lessons: [
-      tactics("Counter Insurgency Operations", "VIDEO"),
-      tactics("Fighting in Built-up Area", "VIDEO"),
-      tactics("Peacekeeping Operations — UN Mandates & Rules of Engagement", "VIDEO"),
-      tactics("Intelligence & Security", "VIDEO"),
-      tactics("Advanced Tactics Scenario Exercise", "QUIZ")
-    ]
-  },
-  {
-    phaseNumber: 2,
-    title: "Military Administration & Law",
-    subjectArea: "TACTICS_ADMIN",
-    lessons: [
-      administration("Administration in War & Peace", "VIDEO"),
-      administration("Training — Methods and Doctrine", "VIDEO"),
-      administration("Leadership & Man Management", "VIDEO"),
-      administration("Organization of Nepali Army", "PDF"),
-      militaryLaw("Military Act, Laws & Regulations", "TEXT"),
-      administration("Logistic System in Nepali Army", "VIDEO"),
-      lesson("Admin & Law Quiz", "QUIZ")
-    ]
-  },
-  {
-    phaseNumber: 2,
-    title: "20th Century Wars & Nepali Military History",
-    subjectArea: "MILITARY_HISTORY_STRATEGY",
-    lessons: [
-      lesson("World Wars — Key Turning Points", "VIDEO"),
-      lesson("Cold War & Modern Insurgencies", "VIDEO"),
-      lesson("Gurkha Campaigns & UN Peacekeeping History", "VIDEO"),
-      lesson("Strategic Thinkers — Clausewitz & Jomini", "VIDEO"),
-      lesson("Strategic Thinkers — Mao Zedong", "VIDEO"),
-      lesson("Live: Strategic Thinkers Discussion", "LIVE"),
-      lesson("History Essay Practice", "QUIZ")
-    ]
-  },
-  {
-    phaseNumber: 2,
-    title: "Appreciation Simulations",
-    subjectArea: "APPRECIATION_PLANS",
-    lessons: [
-      lesson("Platoon Attack — Appreciation Exercise", "QUIZ"),
-      lesson("Company Defense — Appreciation Exercise", "QUIZ"),
-      lesson("Live: Appreciation Workshop", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 2,
-    title: "Structured Presentations — 10 Minutes",
-    subjectArea: "LECTURETTE",
-    lessons: [
-      lesson("Delivering a 10-minute Lecturette", "VIDEO"),
-      lesson("Voice Modulation & Body Language", "TEXT"),
-      lesson("Live: Peer Feedback Presentation Class", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 2,
-    title: "Mock Exam I — All Subjects",
-    lessons: [lesson("Mock Exam I", "QUIZ", { durationMinutes: 180 })]
-  },
-  {
-    phaseNumber: 3,
-    title: "Tactics Essay Writing & Exam Technique",
-    subjectArea: "TACTICS_ADMIN",
-    lessons: [
-      tactics("Essay Writing for Tactics Questions", "TEXT"),
-      tactics("Tactical Scenario Essay Practice", "QUIZ"),
-      tactics("Live: Tactics Essay Review", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 3,
-    title: "Contemporary Affairs — System & Method",
+    title: "Contemporary Affairs & Military Technology",
     subjectArea: "CURRENT_AFFAIRS",
     lessons: [
-      lesson("How to Follow Current Affairs Daily", "TEXT"),
-      lesson("Structured Note-Making System", "TEXT"),
-      nationalAffairs("National Security & Defence — Key Topics", "VIDEO"),
-      regionalAffairs("Regional Affairs — South Asia, China, India", "VIDEO"),
-      internationalAffairs("Global Affairs — UN, NATO, Conflicts", "VIDEO"),
-      militaryTechnology("Military Technology Trends", "VIDEO"),
-      lesson("PEEL Essay Method for Current Affairs", "TEXT"),
-      lesson("Current Affairs Quiz", "QUIZ"),
-      lesson("Live: Current Affairs Briefing", "LIVE")
+      nationalAffairs("National Events", "TEXT", { learningMode: "LESSON" }),
+      regionalAffairs("Regional Events", "TEXT", { learningMode: "LESSON" }),
+      internationalAffairs("International Events", "TEXT", { learningMode: "LESSON" }),
+      militaryTechnology("Military Technology", "TEXT", { learningMode: "LESSON" }),
+      hybridItem("Current Affairs Note-Making System", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "CURRENT_AFFAIRS"
+      }),
+      hybridItem("Weekly Current Affairs Revision", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "CURRENT_AFFAIRS"
+      }),
+      hybridItem("Linking News to Nepal's Security Context", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "CURRENT_AFFAIRS"
+      }),
+      hybridItem("MCQ and Short Note Practice", "QUIZ", {
+        phaseNumber: 2,
+        subjectArea: "CURRENT_AFFAIRS"
+      }),
+      hybridItem("Analytical Essay Practice Using PEEL", "PRACTICE", {
+        phaseNumber: 3,
+        subjectArea: "CURRENT_AFFAIRS"
+      }),
+      hybridItem("Instructor Current Affairs Discussion", "LIVE", {
+        phaseNumber: 2,
+        subjectArea: "CURRENT_AFFAIRS"
+      }),
+      hybridItem("Current Affairs Essay Feedback", "FEEDBACK", {
+        phaseNumber: 3,
+        subjectArea: "CURRENT_AFFAIRS"
+      })
     ]
   },
   {
-    phaseNumber: 3,
-    title: "Military History — Comparative Essays",
+    phaseNumber: 1,
+    title: "Military History & Strategic Thought",
     subjectArea: "MILITARY_HISTORY_STRATEGY",
     lessons: [
-      lesson("Comparing Leadership Across Battles", "TEXT"),
-      lesson("Case Study: Battle of Nalapani (1814)", "VIDEO"),
-      lesson("Comparative Essay Practice", "QUIZ"),
-      lesson("Live: History Essay Workshop", "LIVE")
+      hybridItem("Ancient, Medieval, Modern, and Contemporary Military History", "LESSON", {
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Nepali Military History", "LESSON", {
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Global Wars and Turning Points", "LESSON", {
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Strategic Thinkers: Sun Tzu, Clausewitz, Jomini, Mao", "LESSON", {
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Battle and Campaign Case Studies", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Timelines, Maps, and Flashcards", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Military History Essay Practice", "PRACTICE", {
+        phaseNumber: 3,
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Strategic Thought Short Notes Quiz", "QUIZ", {
+        phaseNumber: 2,
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Instructor Military History Discussion", "LIVE", {
+        phaseNumber: 2,
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      }),
+      hybridItem("Instructor Essay Review Lab", "FEEDBACK", {
+        phaseNumber: 3,
+        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      })
     ]
   },
   {
-    phaseNumber: 3,
-    title: "Full-Length Appreciation Exercises",
+    phaseNumber: 1,
+    title: "Armed Conflicts, Military Appreciation & Plans",
     subjectArea: "APPRECIATION_PLANS",
     lessons: [
-      lesson("Full Appreciation — Written Exercise 1", "QUIZ"),
-      lesson("Full Plan — Written Exercise 2", "QUIZ"),
-      lesson("Military Plans Format — SMEAC Deep Dive", "VIDEO"),
-      lesson("Live: Appreciation Full Exercise Review", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 3,
-    title: "Formal Presentations with Q&A",
-    subjectArea: "LECTURETTE",
-    lessons: [
-      lesson("Handling Q&A After a Presentation", "VIDEO"),
-      lesson("Exam-Condition Presentation Practice", "TEXT"),
-      lesson("Live: Formal Presentation with Panel Q&A", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 3,
-    title: "Mock Exam II — All Subjects",
-    lessons: [lesson("Mock Exam II", "QUIZ", { durationMinutes: 180 })]
-  },
-  {
-    phaseNumber: 4,
-    title: "Weak Area Targeted Review",
-    lessons: [
-      tactics("Tactics Weak Area Review", "VIDEO", { subjectArea: "TACTICS_ADMIN" }),
-      lesson("Current Affairs Weak Area Review", "VIDEO", { subjectArea: "CURRENT_AFFAIRS" }),
-      lesson("History Weak Area Review", "VIDEO", {
-        subjectArea: "MILITARY_HISTORY_STRATEGY"
-      }),
-      lesson("Appreciation Weak Area Review", "VIDEO", { subjectArea: "APPRECIATION_PLANS" }),
-      lesson("Live: Faculty Weak Area Clinic", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 4,
-    title: "Mixed Format Practice — MCQ + Essays",
-    lessons: [
-      lesson("Mixed MCQ Drill — All Subjects", "QUIZ"),
-      lesson("Timed Essay Practice — All Subjects", "QUIZ"),
-      lesson("Live: Essay Marking Workshop", "LIVE")
-    ]
-  },
-  {
-    phaseNumber: 4,
-    title: "Presentation Rehearsals with Faculty",
-    subjectArea: "LECTURETTE",
-    lessons: [
-      lesson("Live: Faculty-Reviewed Presentation 1", "LIVE", { durationMinutes: 60 }),
-      lesson("Live: Faculty-Reviewed Presentation 2", "LIVE", { durationMinutes: 60 })
-    ]
-  },
-  {
-    phaseNumber: 5,
-    title: "Final Revision Before Simulation",
-    lessons: [
-      lesson("Revision: Tactics & Admin Summary Notes", "PDF", { subjectArea: "TACTICS_ADMIN" }),
-      lesson("Revision: Current Affairs Key Points", "PDF", { subjectArea: "CURRENT_AFFAIRS" }),
-      lesson("Revision: Military History Summary", "PDF", {
-        subjectArea: "MILITARY_HISTORY_STRATEGY"
-      }),
-      lesson("Revision: Appreciation Templates", "PDF", { subjectArea: "APPRECIATION_PLANS" }),
-      lesson("Revision: Oral Technique Cue Card", "PDF", { subjectArea: "LECTURETTE" })
-    ]
-  },
-  {
-    phaseNumber: 5,
-    title: "Mock Exam III — Full Simulation",
-    lessons: [lesson("Mock Exam III", "QUIZ", { durationMinutes: 180 })]
-  },
-  {
-    phaseNumber: 5,
-    title: "Post-Exam Faculty Review",
-    lessons: [
-      lesson("Live: Mock Exam III Debrief Session 1", "LIVE"),
-      lesson("Live: Mock Exam III Debrief Session 2", "LIVE"),
-      lesson("Individualized Feedback Report", "TEXT")
-    ]
-  },
-  {
-    phaseNumber: 5,
-    title: "Panel Presentation Evaluation",
-    subjectArea: "LECTURETTE",
-    lessons: [lesson("Live: Panel Presentation — Evaluated", "LIVE", { durationMinutes: 60 })]
-  },
-  {
-    phaseNumber: 6,
-    title: "Quick Revision — All Subjects",
-    lessons: [
-      lesson("Final Summary: Tactics & Admin", "PDF", { subjectArea: "TACTICS_ADMIN" }),
-      lesson("Final Summary: Current Affairs", "PDF", { subjectArea: "CURRENT_AFFAIRS" }),
-      lesson("Final Summary: Military History & Strategy", "PDF", {
-        subjectArea: "MILITARY_HISTORY_STRATEGY"
-      }),
-      lesson("Final Summary: Appreciation & Plans", "PDF", {
+      hybridItem("Military Appreciation Framework", "LESSON", {
         subjectArea: "APPRECIATION_PLANS"
       }),
-      lesson("Final Summary: Lecturette Technique", "PDF", { subjectArea: "LECTURETTE" }),
-      tactics("Daily Short Quiz — Tactics", "QUIZ", { subjectArea: "TACTICS_ADMIN" }),
-      lesson("Daily Short Quiz — Current Affairs", "QUIZ", { subjectArea: "CURRENT_AFFAIRS" }),
-      lesson("Daily Short Quiz — History", "QUIZ", {
-        subjectArea: "MILITARY_HISTORY_STRATEGY"
+      hybridItem("Aim, Factors, Courses of Action, Comparison, Decision", "LESSON", {
+        subjectArea: "APPRECIATION_PLANS"
       }),
-      lesson("Daily Short Quiz — Appreciation", "QUIZ", {
+      hybridItem("Terrain, Enemy, Own Forces, Time, and Logistics Analysis", "LESSON", {
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("Tactical Problem Solving", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("Map and Sketch Practice", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("SMEAC-Based Plan Writing", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("Appreciation Templates", "RESOURCE", { subjectArea: "APPRECIATION_PLANS" }),
+      hybridItem("Daily Appreciation Practice", "PRACTICE", {
+        phaseNumber: 3,
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("Appreciation Timed Exercise", "QUIZ", {
+        phaseNumber: 3,
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("Instructor Appreciation Walkthrough", "LIVE", {
+        phaseNumber: 2,
+        subjectArea: "APPRECIATION_PLANS"
+      }),
+      hybridItem("Instructor Plan Feedback Lab", "FEEDBACK", {
+        phaseNumber: 3,
         subjectArea: "APPRECIATION_PLANS"
       })
     ]
   },
   {
-    phaseNumber: 6,
-    title: "Exam Readiness",
+    phaseNumber: 1,
+    title: "Lecturette & Oral Presentation",
+    subjectArea: "LECTURETTE",
     lessons: [
-      lesson("Stress Management Techniques", "TEXT"),
-      lesson("Time Management in the Exam Hall", "TEXT"),
-      lesson("Exam Format Reference Card", "TEXT"),
-      lesson("Live: Final Q&A with Faculty", "LIVE")
+      hybridItem("Lecturette Format and Expectations", "LESSON", { subjectArea: "LECTURETTE" }),
+      hybridItem("Topic Familiarization", "LESSON", { subjectArea: "LECTURETTE" }),
+      hybridItem("Introduction, Body, Conclusion Structure", "LESSON", {
+        subjectArea: "LECTURETTE"
+      }),
+      hybridItem("Cue Card Method", "RESOURCE", { subjectArea: "LECTURETTE" }),
+      hybridItem("3-5 Minute Delivery Practice", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "LECTURETTE"
+      }),
+      hybridItem("Voice, Posture, Eye Contact, and Confidence", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "LECTURETTE"
+      }),
+      hybridItem("Recorded Lecturette Submissions", "PRACTICE", {
+        phaseNumber: 2,
+        subjectArea: "LECTURETTE"
+      }),
+      hybridItem("Peer Review", "FEEDBACK", {
+        phaseNumber: 2,
+        subjectArea: "LECTURETTE"
+      }),
+      hybridItem("Instructor Live Presentation Lab", "LIVE", {
+        phaseNumber: 2,
+        subjectArea: "LECTURETTE"
+      }),
+      hybridItem("Panel-Style Rehearsal", "FEEDBACK", {
+        phaseNumber: 3,
+        subjectArea: "LECTURETTE"
+      })
     ]
   },
   {
-    phaseNumber: 6,
-    title: "Final Self-Assessment + Counselling",
+    phaseNumber: 1,
+    title: "Study Skills, Writing & Exam Technique",
     lessons: [
-      lesson("Final Self-Assessment Quiz", "QUIZ", { durationMinutes: 45 }),
-      lesson("Live: 1-on-1 Counselling with DS", "LIVE", { durationMinutes: 45 })
+      hybridItem("Time Management", "LESSON"),
+      hybridItem("Active Recall and Spaced Repetition", "LESSON"),
+      hybridItem("Military-Style Answer Writing", "LESSON", { phaseNumber: 2 }),
+      hybridItem("Short Answer Structure", "PRACTICE", { phaseNumber: 2 }),
+      hybridItem("Essay Structure", "PRACTICE", { phaseNumber: 2 }),
+      hybridItem("PEEL Method", "PRACTICE", { phaseNumber: 3 }),
+      hybridItem("Diagram and Map Use", "PRACTICE", { phaseNumber: 2 }),
+      hybridItem("Revision Planning", "PRACTICE", { phaseNumber: 4 }),
+      hybridItem("Stress and Readiness Management", "LESSON", { phaseNumber: 6 }),
+      hybridItem("Instructor Exam Technique Clinic", "LIVE", { phaseNumber: 3 })
+    ]
+  },
+  {
+    phaseNumber: 1,
+    title: "Mock Tests & Performance Review",
+    lessons: [
+      hybridItem("Diagnostic Test", "QUIZ", { durationMinutes: 45 }),
+      hybridItem("Topic Quizzes", "QUIZ"),
+      hybridItem("Subject-Specific Tests", "QUIZ", { phaseNumber: 2 }),
+      hybridItem("Mock Exam I", "QUIZ", { phaseNumber: 2, durationMinutes: 180 }),
+      hybridItem("Mock Exam I Review Clinic", "LIVE", { phaseNumber: 2 }),
+      hybridItem("Mock Exam II", "QUIZ", { phaseNumber: 3, durationMinutes: 180 }),
+      hybridItem("Mock Exam II Review Clinic", "LIVE", { phaseNumber: 3 }),
+      hybridItem("Mock Exam III Full Simulation", "QUIZ", {
+        phaseNumber: 5,
+        durationMinutes: 180
+      }),
+      hybridItem("Panel Lecturette Evaluation", "LIVE", { phaseNumber: 5 }),
+      hybridItem("Final Readiness Self-Assessment", "QUIZ", {
+        phaseNumber: 6,
+        durationMinutes: 45
+      }),
+      hybridItem("Instructor Counselling & Weak-Area Plan", "FEEDBACK", { phaseNumber: 6 })
+    ]
+  },
+  {
+    phaseNumber: 1,
+    title: "9-Month Study Roadmap",
+    lessons: [
+      hybridItem("Months 1-2: Foundation Phase", "LESSON"),
+      hybridItem("Months 3-4: Development Phase", "LESSON"),
+      hybridItem("Months 5-6: Application Phase", "LESSON"),
+      hybridItem("Month 7: Consolidation Phase", "LESSON"),
+      hybridItem("Month 8: Simulation Phase", "LESSON"),
+      hybridItem("Month 9: Final Preparation Phase", "LESSON"),
+      hybridItem("Optional Month 10 Buffer", "LESSON"),
+      hybridItem("Key Milestones Recap", "RESOURCE")
+    ]
+  },
+  {
+    phaseNumber: 1,
+    title: "Resource Library",
+    lessons: [
+      hybridItem("Lecture Notes", "RESOURCE"),
+      hybridItem("Reading Lists", "RESOURCE"),
+      hybridItem("Doctrine References", "RESOURCE"),
+      hybridItem("Templates", "RESOURCE"),
+      hybridItem("Question Banks", "RESOURCE"),
+      hybridItem("Current Affairs Trackers", "RESOURCE"),
+      hybridItem("Appreciation Templates", "RESOURCE"),
+      hybridItem("Essay Templates", "RESOURCE"),
+      hybridItem("Lecturette Cue Card Templates", "RESOURCE"),
+      hybridItem("Mock Test Papers", "RESOURCE"),
+      hybridItem("Recorded Live Sessions", "RESOURCE")
+    ]
+  },
+  {
+    phaseNumber: 1,
+    title: "Administrative & Support",
+    lessons: [
+      hybridItem("Fee Structure and Installment Notes", "LESSON"),
+      hybridItem("Demo Class Access", "LESSON"),
+      hybridItem("Technical Support", "LESSON"),
+      hybridItem("Discussion Forum Guidelines", "LESSON"),
+      hybridItem("Mentorship and Counselling Support", "FEEDBACK", { phaseNumber: 4 }),
+      hybridItem("Final Preparation Instructions", "LESSON", { phaseNumber: 6 })
     ]
   }
 ];
@@ -513,10 +687,14 @@ export function buildStaffCollegeCommandCurriculumSeed(): BuiltCurriculumSeed {
       position: modulePosition,
       lessons: moduleSeed.lessons.map((lessonSeed) => {
         lessonPosition += 1;
+        const synopsis =
+          lessonSeed.synopsis ??
+          defaultSynopsis(moduleSeed.title, lessonSeed.title, lessonSeed.contentType);
+        const learningMode = lessonSeed.learningMode ?? "LESSON";
 
         return {
           ...lessonSeed,
-          phaseNumber: moduleSeed.phaseNumber,
+          phaseNumber: lessonSeed.phaseNumber ?? moduleSeed.phaseNumber,
           ...(moduleSeed.subjectArea && !lessonSeed.subjectArea
             ? { subjectArea: moduleSeed.subjectArea }
             : {}),
@@ -527,10 +705,12 @@ export function buildStaffCollegeCommandCurriculumSeed(): BuiltCurriculumSeed {
             ? { componentLabel: moduleSeed.componentLabel }
             : {}),
           position: lessonPosition,
-          synopsis:
-            lessonSeed.synopsis ??
-            defaultSynopsis(moduleSeed.title, lessonSeed.title, lessonSeed.contentType),
+          synopsis,
           accessKind: lessonSeed.accessKind ?? defaultAccessKind(lessonSeed.contentType),
+          learningMode,
+          lessonContent:
+            lessonSeed.lessonContent ??
+            defaultLessonContent(lessonSeed.title, synopsis, learningMode),
           durationMinutes:
             lessonSeed.durationMinutes ??
             defaultDurationMinutes(lessonSeed.title, lessonSeed.contentType)

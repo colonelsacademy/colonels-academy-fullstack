@@ -1,6 +1,7 @@
 export type CourseTrack = "army" | "police" | "apf" | "staff" | "mission";
 
 export type ContentType = "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT";
+export type LessonLearningMode = "LESSON" | "PRACTICE" | "QUIZ" | "LIVE" | "FEEDBACK" | "RESOURCE";
 
 export type SubjectArea =
   | "TACTICS_ADMIN"
@@ -178,10 +179,39 @@ export interface QuizQuestionDetail {
   id: string;
   question: string;
   options: QuizOption[];
-  correctOptionIndex: number;
+  correctOptionIndex?: number;
   explanation?: string;
   position: number;
 }
+
+export type LessonContentBlock =
+  | {
+      type: "heading";
+      text: string;
+    }
+  | {
+      type: "paragraph";
+      text: string;
+    }
+  | {
+      type: "bulletList";
+      items: string[];
+    };
+
+export interface LessonContentCueSegment {
+  text: string;
+  durationMs: number;
+}
+
+export type LessonContent =
+  | {
+      mode: "reading";
+      blocks: LessonContentBlock[];
+    }
+  | {
+      mode: "cue";
+      segments: LessonContentCueSegment[];
+    };
 
 export interface LessonDetail {
   id: string;
@@ -196,10 +226,12 @@ export interface LessonDetail {
   position: number;
   durationMinutes?: number;
   contentType: ContentType;
+  learningMode?: LessonLearningMode;
   accessKind: "PREVIEW" | "STANDARD" | "LIVE_REPLAY" | "DOWNLOADABLE";
   bunnyVideoId?: string;
   meetingUrl?: string;
   pdfUrl?: string;
+  lessonContent?: LessonContent;
   quizQuestions?: QuizQuestionDetail[];
   // ─── Iron Guard gating fields ───────────────────────────────────────────────
   prerequisiteId?: string;

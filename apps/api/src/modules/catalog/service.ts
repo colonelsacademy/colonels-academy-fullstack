@@ -10,6 +10,7 @@ import type {
 import {
   courseCatalog,
   instructors,
+  lessonContentSchema,
   resolveAssessmentComponent
 } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
@@ -43,6 +44,11 @@ async function loadInstructorRecords(prisma: DatabaseClient) {
 }
 
 type InstructorRecord = Awaited<ReturnType<typeof loadInstructorRecords>>[number];
+
+function parseLessonContent(value: unknown): LessonDetail["lessonContent"] {
+  const parsed = lessonContentSchema.safeParse(value);
+  return parsed.success ? parsed.data : undefined;
+}
 
 function mapCourseRecord(record: CourseRecord): CourseDetail {
   const fallback = courseCatalog.find((course) => course.slug === record.slug);
@@ -185,7 +191,17 @@ export async function getCourseLessons(
         lessons: {
           orderBy: { position: "asc" },
           include: {
-            prerequisite: { select: { title: true } }
+            prerequisite: { select: { title: true } },
+            quizQuestions: {
+              orderBy: { position: "asc" },
+              select: {
+                id: true,
+                question: true,
+                options: true,
+                explanation: true,
+                position: true
+              }
+            }
           }
         }
       }
@@ -195,7 +211,17 @@ export async function getCourseLessons(
       where: { courseId: course.id, moduleId: null },
       orderBy: { position: "asc" },
       include: {
-        prerequisite: { select: { title: true } }
+        prerequisite: { select: { title: true } },
+        quizQuestions: {
+          orderBy: { position: "asc" },
+          select: {
+            id: true,
+            question: true,
+            options: true,
+            explanation: true,
+            position: true
+          }
+        }
       }
     });
 
@@ -247,10 +273,19 @@ export async function getCourseLessons(
       position: number;
       durationMinutes?: number | null;
       contentType: string;
+      learningMode?: string | null;
       accessKind: string;
       bunnyVideoId?: string | null;
       meetingUrl?: string | null;
       pdfUrl?: string | null;
+      lessonContent?: unknown;
+      quizQuestions?: Array<{
+        id: string;
+        question: string;
+        options: unknown;
+        explanation?: string | null;
+        position: number;
+      }>;
       prerequisiteId?: string | null;
       prerequisite?: { title: string } | null;
     }): LessonDetail => {
@@ -299,6 +334,8 @@ export async function getCourseLessons(
 
       if (l.moduleId) lesson.moduleId = l.moduleId;
       if (l.phaseNumber) lesson.phaseNumber = l.phaseNumber;
+      if (l.learningMode)
+        lesson.learningMode = l.learningMode as NonNullable<LessonDetail["learningMode"]>;
       if (l.subjectArea) {
         lesson.subjectArea = l.subjectArea as NonNullable<LessonDetail["subjectArea"]>;
       }
@@ -309,6 +346,27 @@ export async function getCourseLessons(
       if (l.bunnyVideoId) lesson.bunnyVideoId = l.bunnyVideoId;
       if (l.meetingUrl) lesson.meetingUrl = l.meetingUrl;
       if (l.pdfUrl) lesson.pdfUrl = l.pdfUrl;
+      if (l.lessonContent) {
+        const lessonContent = parseLessonContent(l.lessonContent);
+        if (lessonContent) lesson.lessonContent = lessonContent;
+      }
+      if (l.quizQuestions?.length) {
+        lesson.quizQuestions = l.quizQuestions.map((question) => ({
+          id: question.id,
+          question: question.question,
+          options: Array.isArray(question.options)
+            ? question.options.filter(
+                (option): option is { text: string } =>
+                  typeof option === "object" &&
+                  option !== null &&
+                  "text" in option &&
+                  typeof (option as { text?: unknown }).text === "string"
+              )
+            : [],
+          ...(question.explanation ? { explanation: question.explanation } : {}),
+          position: question.position
+        }));
+      }
       if (l.prerequisiteId) lesson.prerequisiteId = l.prerequisiteId;
       if (unlockRequirement) lesson.unlockRequirement = unlockRequirement;
 

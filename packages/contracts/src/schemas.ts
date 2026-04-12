@@ -5,6 +5,14 @@ import { z } from "zod";
 export const courseTrackSchema = z.enum(["army", "police", "apf", "staff", "mission"]);
 
 export const contentTypeSchema = z.enum(["VIDEO", "PDF", "LIVE", "QUIZ", "TEXT"]);
+export const lessonLearningModeSchema = z.enum([
+  "LESSON",
+  "PRACTICE",
+  "QUIZ",
+  "LIVE",
+  "FEEDBACK",
+  "RESOURCE"
+]);
 
 export const subjectAreaSchema = z.enum([
   "TACTICS_ADMIN",
@@ -66,10 +74,41 @@ export const quizQuestionSchema = z.object({
   id: z.string(),
   question: z.string().min(1),
   options: z.array(quizOptionSchema).min(2).max(6),
-  correctOptionIndex: z.number().int().min(0),
+  correctOptionIndex: z.number().int().min(0).optional(),
   explanation: z.string().optional(),
   position: z.number().int().min(0)
 });
+
+export const lessonContentBlockSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("heading"),
+    text: z.string().min(1)
+  }),
+  z.object({
+    type: z.literal("paragraph"),
+    text: z.string().min(1)
+  }),
+  z.object({
+    type: z.literal("bulletList"),
+    items: z.array(z.string().min(1)).min(1)
+  })
+]);
+
+export const lessonContentCueSegmentSchema = z.object({
+  text: z.string().min(1),
+  durationMs: z.number().int().positive()
+});
+
+export const lessonContentSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("reading"),
+    blocks: z.array(lessonContentBlockSchema).min(1)
+  }),
+  z.object({
+    mode: z.literal("cue"),
+    segments: z.array(lessonContentCueSegmentSchema).min(1)
+  })
+]);
 
 // ─── Lesson ───────────────────────────────────────────────────────────────────
 
@@ -88,10 +127,12 @@ export const lessonDetailSchema = z.object({
   position: z.number().int().min(0),
   durationMinutes: z.number().int().positive().optional(),
   contentType: contentTypeSchema,
+  learningMode: lessonLearningModeSchema.optional(),
   accessKind: lessonAccessKindSchema,
   bunnyVideoId: z.string().optional(),
   meetingUrl: z.string().url().optional(),
   pdfUrl: z.string().url().optional(),
+  lessonContent: lessonContentSchema.optional(),
   quizQuestions: z.array(quizQuestionSchema).optional(),
   // ─── Iron Guard gating fields ───────────────────────────────────────────────
   prerequisiteId: z.string().optional(),

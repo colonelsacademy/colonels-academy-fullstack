@@ -42,6 +42,15 @@ enum ContentType {
   TEXT
 }
 
+enum LessonLearningMode {
+  LESSON
+  PRACTICE
+  QUIZ
+  LIVE
+  FEEDBACK
+  RESOURCE
+}
+
 enum SubjectArea {
   TACTICS_ADMIN
   CURRENT_AFFAIRS
@@ -223,11 +232,13 @@ model Lesson {
   position        Int
   durationMinutes Int?
   contentType     ContentType      @default(VIDEO)
+  learningMode    LessonLearningMode @default(LESSON)
   accessKind      LessonAccessKind @default(STANDARD)
   bunnyVideoId    String?
   videoAssetId    String?
   meetingUrl      String?
   pdfUrl          String?
+  lessonContent   Json?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)

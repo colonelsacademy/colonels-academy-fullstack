@@ -48,8 +48,8 @@ export const courseCatalog: CourseDetail[] = [
     description:
       "A flagship command-preparation program for experienced candidates targeting the Staff College pathway. It combines doctrine review, case-study breakdowns, command writing, and structured coaching.",
     level: "Advanced",
-    durationLabel: "6 months",
-    lessonCount: 102,
+    durationLabel: "9-10 months",
+    lessonCount: 122,
     priceNpr: 8500,
     originalPriceNpr: 12000,
     accentColor: "#5E6B3C",
@@ -58,18 +58,26 @@ export const courseCatalog: CourseDetail[] = [
     isComingSoon: false,
     format: "hybrid",
     liveSupport:
-      "3 live online classes per week: doctrine clinic, current-affairs briefing, and answer-writing review.",
+      "Live kickoff, twice-weekly instructor check-ins, and optional mock-review clinics during key preparation phases.",
     instructorSlugs: ["rajesh-thapa"],
     outcomeBullets: [
-      "Build staff-college answer structure with command clarity",
-      "Practice doctrinal interpretation under time pressure",
-      "Review high-value historical case studies"
+      "Follow a structured self-paced roadmap with weekly instructor accountability",
+      "Practice mock tests, appreciation exercises, essays, and lecturette submissions",
+      "Use instructor feedback to close weak areas before final readiness review"
     ],
     syllabus: [
-      "Operational art and campaign framing",
-      "Military history and command essays",
-      "Doctrine interpretation workshops",
-      "Timed staff writing and review"
+      "Program Orientation & Kickoff",
+      "Weekly Learning System",
+      "Military Operations & Administration",
+      "Contemporary Affairs & Military Technology",
+      "Military History & Strategic Thought",
+      "Armed Conflicts, Military Appreciation & Plans",
+      "Lecturette & Oral Presentation",
+      "Study Skills, Writing & Exam Technique",
+      "Mock Tests & Performance Review",
+      "9-Month Study Roadmap",
+      "Resource Library",
+      "Administrative & Support"
     ]
   },
   {
@@ -290,7 +298,7 @@ export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
       "Lecturette introduction and short delivery drills"
     ],
     liveSessionPattern:
-      "Three live classes per week focused on orientation, doctrine walkthroughs, and guided Q&A.",
+      "A live kickoff followed by twice-weekly instructor sessions focused on orientation, doctrine walkthroughs, and guided Q&A.",
     milestone: {
       id: "phase-1-self-assessment",
       title: "Self-Assessment Quiz",
@@ -323,7 +331,7 @@ export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
       "Structured lecturette delivery"
     ],
     liveSessionPattern:
-      "Three live classes per week focused on case studies, answer review, and faculty-guided discussion.",
+      "Twice-weekly instructor sessions focused on case studies, answer review, and faculty-guided discussion.",
     milestone: {
       id: "phase-2-mock-exam-1",
       title: "Mock Exam I",
@@ -361,7 +369,7 @@ export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
       "Formal presentation and Q&A handling"
     ],
     liveSessionPattern:
-      "Three live classes per week centered on faculty review, writing clinics, and full exercise debriefs.",
+      "Twice-weekly instructor sessions centered on faculty review, writing clinics, and exercise debriefs, with optional mock-review clinics.",
     milestone: {
       id: "phase-3-mock-exam-2",
       title: "Mock Exam II",
@@ -398,7 +406,7 @@ export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
       "Progress review and mentorship conversations"
     ],
     liveSessionPattern:
-      "Three live classes per week focused on remediation, faculty feedback, and progress review.",
+      "Twice-weekly instructor sessions focused on remediation, faculty feedback, and progress review.",
     milestone: {
       id: "phase-4-ds-approval",
       title: "DS Review and Approval",
@@ -428,7 +436,7 @@ export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
       "Individualized performance feedback"
     ],
     liveSessionPattern:
-      "Three live classes per week for simulation debriefs, strategy adjustments, and panel practice.",
+      "Twice-weekly instructor sessions for simulation debriefs, strategy adjustments, and panel practice, with optional review clinics.",
     milestone: {
       id: "phase-5-mock-exam-3",
       title: "Mock Exam III",
@@ -458,7 +466,7 @@ export const staffCollegeCommandPhaseBlueprints: CoursePhaseBlueprint[] = [
       "Final lecturette polish and counselling"
     ],
     liveSessionPattern:
-      "Three live classes per week for final Q&A, revision support, and readiness counselling.",
+      "Twice-weekly instructor sessions for final Q&A, revision support, and readiness counselling.",
     milestone: {
       id: "phase-6-final-readiness",
       title: "Final Readiness Check",

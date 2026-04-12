@@ -69,6 +69,48 @@ export function createClassroomSubmission(body: {
   });
 }
 
+export function attemptClassroomQuizQuestion(body: {
+  questionId: string;
+  selectedOptionIndex: number;
+  timeTakenMs?: number;
+  sessionId?: string;
+}) {
+  return requestJson<{
+    ok: true;
+    isCorrect: boolean;
+    explanation: string | null;
+    quizSessionId?: string;
+    mockExamProgress?: {
+      totalQuestions: number;
+      attemptedQuestions: number;
+      finished: boolean;
+    };
+  }>("/api/learning/quiz/attempt", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+}
+
+export function updateClassroomLessonProgress(
+  lessonId: string,
+  status: "IN_PROGRESS" | "COMPLETED"
+) {
+  return requestJson<{
+    ok: true;
+    lessonId: string;
+    status: "IN_PROGRESS" | "COMPLETED";
+  }>(`/api/learning/progress/${encodeURIComponent(lessonId)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status })
+  });
+}
+
 export async function uploadClassroomAsset(file: File, folder = "submissions/lecturettes") {
   const formData = new FormData();
   formData.append("file", file);

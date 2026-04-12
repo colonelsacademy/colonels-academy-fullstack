@@ -81,9 +81,20 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
     course.instructorSlugs.includes(i.slug)
   );
   const mainInstructor: InstructorProfile | undefined = courseFaculty[0];
+  const isHybridCourse = course.format === "hybrid";
   const discountPct = course.originalPriceNpr
     ? Math.round(((course.originalPriceNpr - course.priceNpr) / course.originalPriceNpr) * 100)
     : 0;
+  const contentSections =
+    course.syllabus.length > 0
+      ? course.syllabus.map((title) => ({
+          title,
+          detail: isHybridCourse ? "Guided Module" : "3 Lessons"
+        }))
+      : ["Section 1", "Section 2", "Section 3", "Section 4", "Section 5"].map((title) => ({
+          title,
+          detail: "3 Lessons"
+        }));
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans relative">
@@ -223,26 +234,25 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                 <div className="flex items-center justify-between p-4 bg-gray-50 text-xs text-gray-500 font-medium">
                   <span>
-                    {course.lessonCount} Lectures • {course.durationLabel} Total Length
+                    {isHybridCourse
+                      ? "Structured hybrid course flow"
+                      : `${course.lessonCount} Lectures • ${course.durationLabel} Total Length`}
                   </span>
                   <span className="text-blue-600 cursor-pointer hover:underline">
                     Expand all sections
                   </span>
                 </div>
-                {(course.syllabus.length > 0
-                  ? course.syllabus
-                  : ["Section 1", "Section 2", "Section 3", "Section 4", "Section 5"]
-                ).map((section) => (
-                  <div key={section} className="group">
+                {contentSections.map((section) => (
+                  <div key={section.title} className="group">
                     <button
                       type="button"
                       className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors text-left"
                     >
                       <div className="flex items-center gap-4">
                         <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                        <span className="font-bold text-[#0F1C15] text-sm">{section}</span>
+                        <span className="font-bold text-[#0F1C15] text-sm">{section.title}</span>
                       </div>
-                      <span className="text-xs text-gray-400 font-mono">3 Lectures • 45m</span>
+                      <span className="text-xs text-gray-400 font-mono">{section.detail}</span>
                     </button>
                   </div>
                 ))}

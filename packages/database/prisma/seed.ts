@@ -137,8 +137,10 @@ async function syncStaffCollegeCurriculum(courseId: string) {
           title: lessonSeed.title,
           synopsis: lessonSeed.synopsis,
           contentType: lessonSeed.contentType,
+          learningMode: lessonSeed.learningMode,
           accessKind: lessonSeed.accessKind,
           durationMinutes: lessonSeed.durationMinutes ?? null,
+          lessonContent: lessonSeed.lessonContent as unknown as Prisma.InputJsonValue,
           ...(lessonSeed.subjectArea
             ? { subjectArea: lessonSeed.subjectArea }
             : { subjectArea: null }),
@@ -157,7 +159,9 @@ async function syncStaffCollegeCurriculum(courseId: string) {
           title: lessonSeed.title,
           synopsis: lessonSeed.synopsis,
           contentType: lessonSeed.contentType,
+          learningMode: lessonSeed.learningMode,
           accessKind: lessonSeed.accessKind,
+          lessonContent: lessonSeed.lessonContent as unknown as Prisma.InputJsonValue,
           ...(lessonSeed.durationMinutes ? { durationMinutes: lessonSeed.durationMinutes } : {}),
           ...(lessonSeed.subjectArea ? { subjectArea: lessonSeed.subjectArea } : {}),
           ...(lessonSeed.componentCode ? { componentCode: lessonSeed.componentCode } : {}),
@@ -166,6 +170,24 @@ async function syncStaffCollegeCurriculum(courseId: string) {
       });
     }
   }
+
+  await prisma.lesson.deleteMany({
+    where: {
+      courseId,
+      position: {
+        gt: staffCollegeCurriculumSeed.lessonCount
+      }
+    }
+  });
+
+  await prisma.module.deleteMany({
+    where: {
+      courseId,
+      position: {
+        gt: staffCollegeCurriculumSeed.modules.length
+      }
+    }
+  });
 }
 
 async function main() {

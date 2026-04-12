@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type { FastifyPluginAsync } from "fastify";
 
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
@@ -252,8 +253,10 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         position: true,
         durationMinutes: true,
         contentType: true,
+        learningMode: true,
         accessKind: true,
         bunnyVideoId: true,
+        lessonContent: true,
         moduleId: true
       }
     });
@@ -271,6 +274,8 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       durationMinutes?: number;
       accessKind?: string;
       contentType?: string;
+      learningMode?: string;
+      lessonContent?: unknown;
     };
   }>("/courses/:slug/lessons", async (request, reply) => {
     const user = await requireAdmin(request, reply);
@@ -300,7 +305,18 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         durationMinutes: request.body.durationMinutes ?? null,
         contentType:
           (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
-        accessKind: (request.body.accessKind as "PREVIEW" | "STANDARD") ?? "STANDARD"
+        learningMode:
+          (request.body.learningMode as
+            | "LESSON"
+            | "PRACTICE"
+            | "QUIZ"
+            | "LIVE"
+            | "FEEDBACK"
+            | "RESOURCE") ?? "LESSON",
+        accessKind: (request.body.accessKind as "PREVIEW" | "STANDARD") ?? "STANDARD",
+        ...(request.body.lessonContent !== undefined
+          ? { lessonContent: request.body.lessonContent as Prisma.InputJsonValue }
+          : {})
       }
     });
 
@@ -322,7 +338,10 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       bunnyVideoId?: string;
       durationMinutes?: number;
       accessKind?: string;
+      contentType?: string;
+      learningMode?: string;
       position?: number;
+      lessonContent?: unknown;
     };
   }>("/lessons/:id", async (request, reply) => {
     const user = await requireAdmin(request, reply);
@@ -341,6 +360,25 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           : {}),
         ...(request.body.accessKind
           ? { accessKind: request.body.accessKind as "PREVIEW" | "STANDARD" }
+          : {}),
+        ...(request.body.contentType
+          ? {
+              contentType: request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT"
+            }
+          : {}),
+        ...(request.body.learningMode
+          ? {
+              learningMode: request.body.learningMode as
+                | "LESSON"
+                | "PRACTICE"
+                | "QUIZ"
+                | "LIVE"
+                | "FEEDBACK"
+                | "RESOURCE"
+            }
+          : {}),
+        ...(request.body.lessonContent !== undefined
+          ? { lessonContent: request.body.lessonContent as Prisma.InputJsonValue }
           : {}),
         ...(request.body.position !== undefined ? { position: request.body.position } : {})
       }

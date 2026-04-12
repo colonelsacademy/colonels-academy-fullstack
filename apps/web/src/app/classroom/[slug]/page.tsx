@@ -1,6 +1,6 @@
 "use client";
 
-import VideoPlayer from "@/components/ui/VideoPlayer";
+import LessonStageRenderer from "@/components/classroom/LessonStageRenderer";
 import { getCourseBySlug } from "@/lib/api";
 import {
   createClassroomSubmission,
@@ -9,13 +9,17 @@ import {
   getCourseSubmissionsForClassroom,
   heartbeatClassroomStudySession,
   startClassroomStudySession,
+  updateClassroomLessonProgress,
   uploadClassroomAsset
 } from "@/services/classroomService";
 import type {
   CourseDetail,
   LessonDetail,
+  LessonLearningMode,
   LessonSubmissionDetail,
-  ModuleDetail
+  ModuleDetail,
+  QuizQuestionDetail,
+  SubmissionType
 } from "@colonels-academy/contracts";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -45,15 +49,19 @@ type ClassroomLesson = {
   videoId?: string;
   meetingUrl?: string;
   pdfUrl?: string;
+  lessonContent?: LessonDetail["lessonContent"];
+  quizQuestions?: QuizQuestionDetail[];
   unlockRequirement?: string;
   phaseNumber?: number;
   subjectArea?: LessonDetail["subjectArea"];
+  learningMode?: LessonLearningMode;
 };
 
 type ClassroomModule = {
   id: string;
   title: string;
   lessons: ClassroomLesson[];
+  subjectArea?: LessonDetail["subjectArea"];
 };
 
 function formatDurationLabel(durationMinutes?: number) {
@@ -98,6 +106,42 @@ function formatSubjectArea(subjectArea?: LessonDetail["subjectArea"]) {
     .join(" ");
 }
 
+function formatLearningMode(mode: LessonLearningMode) {
+  switch (mode) {
+    case "PRACTICE":
+      return "Practice";
+    case "QUIZ":
+      return "Quiz";
+    case "LIVE":
+      return "Live";
+    case "FEEDBACK":
+      return "Feedback";
+    case "RESOURCE":
+      return "Resource";
+    case "LESSON":
+    default:
+      return "Lesson";
+  }
+}
+
+function formatLearningModeChipClassName(mode: LessonLearningMode) {
+  switch (mode) {
+    case "PRACTICE":
+      return "bg-orange-50 text-orange-700 ring-orange-200";
+    case "QUIZ":
+      return "bg-rose-50 text-rose-700 ring-rose-200";
+    case "LIVE":
+      return "bg-blue-50 text-blue-700 ring-blue-200";
+    case "FEEDBACK":
+      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+    case "RESOURCE":
+      return "bg-slate-100 text-slate-700 ring-slate-200";
+    case "LESSON":
+    default:
+      return "bg-amber-50 text-amber-700 ring-amber-200";
+  }
+}
+
 function mapLessonDetail(lesson: LessonDetail): ClassroomLesson {
   return {
     id: lesson.id,
@@ -111,9 +155,12 @@ function mapLessonDetail(lesson: LessonDetail): ClassroomLesson {
     ...(lesson.bunnyVideoId ? { videoId: lesson.bunnyVideoId } : {}),
     ...(lesson.meetingUrl ? { meetingUrl: lesson.meetingUrl } : {}),
     ...(lesson.pdfUrl ? { pdfUrl: lesson.pdfUrl } : {}),
+    ...(lesson.lessonContent ? { lessonContent: lesson.lessonContent } : {}),
+    ...(lesson.quizQuestions ? { quizQuestions: lesson.quizQuestions } : {}),
     ...(lesson.unlockRequirement ? { unlockRequirement: lesson.unlockRequirement } : {}),
     ...(lesson.phaseNumber ? { phaseNumber: lesson.phaseNumber } : {}),
-    ...(lesson.subjectArea ? { subjectArea: lesson.subjectArea } : {})
+    ...(lesson.subjectArea ? { subjectArea: lesson.subjectArea } : {}),
+    ...(lesson.learningMode ? { learningMode: lesson.learningMode } : {})
   };
 }
 
@@ -124,7 +171,8 @@ function buildCurriculum(
   const mappedModules = modules.map((module) => ({
     id: module.id,
     title: module.title,
-    lessons: module.lessons.map(mapLessonDetail)
+    lessons: module.lessons.map(mapLessonDetail),
+    ...(module.subjectArea ? { subjectArea: module.subjectArea } : {})
   }));
 
   if (unorganisedLessons.length === 0) {
@@ -137,76 +185,6 @@ function buildCurriculum(
       id: "unorganised-lessons",
       title: "Independent Lessons",
       lessons: unorganisedLessons.map(mapLessonDetail)
-    }
-  ];
-}
-
-function buildFallbackCurriculum(_course: CourseDetail): ClassroomModule[] {
-  return [
-    {
-      id: "fallback-orientation",
-      title: "Introduction & Orientation",
-      lessons: [
-        {
-          id: "fallback-l1",
-          title: "Lesson 1: Introduction & Orientation Part 1",
-          durationLabel: "16 min",
-          contentType: "VIDEO",
-          isLocked: false,
-          isPreview: true,
-          progressStatus: "NOT_STARTED",
-          synopsis: "A preview lesson while the live curriculum is being connected."
-        },
-        {
-          id: "fallback-l2",
-          title: "Lesson 2: Introduction & Orientation Part 2",
-          durationLabel: "17 min",
-          contentType: "VIDEO",
-          isLocked: false,
-          isPreview: true,
-          progressStatus: "NOT_STARTED",
-          synopsis: "A preview lesson while the live curriculum is being connected."
-        },
-        {
-          id: "fallback-l3",
-          title: "Lesson 3: Introduction & Orientation Part 3",
-          durationLabel: "18 min",
-          contentType: "VIDEO",
-          isLocked: true,
-          isPreview: false,
-          progressStatus: "NOT_STARTED",
-          synopsis: "Enroll and sign in to continue past the preview track.",
-          unlockRequirement: "Unlock the full course to access this lesson."
-        }
-      ]
-    },
-    {
-      id: "fallback-core-concepts",
-      title: "Core Concepts",
-      lessons: [
-        {
-          id: "fallback-l4",
-          title: "Core Concept 1",
-          durationLabel: "22 min",
-          contentType: "VIDEO",
-          isLocked: true,
-          isPreview: false,
-          progressStatus: "NOT_STARTED",
-          synopsis: "Locked in preview mode.",
-          unlockRequirement: "Unlock the full course to access this lesson."
-        },
-        {
-          id: "fallback-l5",
-          title: "Core Concept 2",
-          durationLabel: "18 min",
-          contentType: "PDF",
-          isLocked: true,
-          isPreview: false,
-          progressStatus: "NOT_STARTED",
-          synopsis: "Locked in preview mode.",
-          unlockRequirement: "Unlock the full course to access this lesson."
-        }
-      ]
     }
   ];
 }
@@ -240,7 +218,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
   const [openModules, setOpenModules] = useState<number[]>([0]);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview" | "qa" | "notes" | "resources">("overview");
-  const [curriculumMode, setCurriculumMode] = useState<"api" | "fallback">("fallback");
+  const [curriculumMode, setCurriculumMode] = useState<"api" | "unavailable">("unavailable");
   const [curriculumNote, setCurriculumNote] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<LessonSubmissionDetail[]>([]);
   const [submissionNotes, setSubmissionNotes] = useState("");
@@ -248,10 +226,17 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
   const [submissionBusy, setSubmissionBusy] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
+  const [progressBusy, setProgressBusy] = useState(false);
+  const [curriculumReloadToken, setCurriculumReloadToken] = useState(0);
   const [deviceSessionId] = useState(
     () => `web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
   );
   const sessionIdRef = useRef<string | null>(null);
+  const activeLessonIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    activeLessonIdRef.current = activeLesson?.id ?? null;
+  }, [activeLesson?.id]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -283,11 +268,18 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
           lessonResponse.modules,
           lessonResponse.unorganisedLessons
         );
-        const defaultLesson = pickDefaultLesson(nextCurriculum);
+        const renderedCurriculum = nextCurriculum;
+        const preservedLessonId = activeLessonIdRef.current;
+        const preservedLesson = preservedLessonId
+          ? (renderedCurriculum
+              .flatMap((module) => module.lessons)
+              .find((lesson) => lesson.id === preservedLessonId) ?? null)
+          : null;
+        const defaultLesson = preservedLesson ?? pickDefaultLesson(renderedCurriculum);
 
-        setCurriculum(nextCurriculum);
+        setCurriculum(renderedCurriculum);
         setActiveLesson(defaultLesson);
-        setOpenModules(findOpenModuleIndexes(nextCurriculum, defaultLesson?.id));
+        setOpenModules(findOpenModuleIndexes(renderedCurriculum, defaultLesson?.id));
         setCurriculumMode("api");
         setCurriculumNote(null);
       } catch (error) {
@@ -295,15 +287,14 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
           return;
         }
 
-        console.error("Failed to load classroom curriculum, using fallback:", error);
-        const nextCurriculum = buildFallbackCurriculum(nextCourse);
-        const defaultLesson = pickDefaultLesson(nextCurriculum);
-
-        setCurriculum(nextCurriculum);
-        setActiveLesson(defaultLesson);
-        setOpenModules(findOpenModuleIndexes(nextCurriculum, defaultLesson?.id));
-        setCurriculumMode("fallback");
-        setCurriculumNote("Classroom is using fallback content while the live curriculum syncs.");
+        console.error("Failed to load classroom curriculum:", error);
+        setCurriculum([]);
+        setActiveLesson(null);
+        setOpenModules([]);
+        setCurriculumMode("unavailable");
+        setCurriculumNote(
+          "Classroom content is temporarily unavailable. Please refresh in a moment."
+        );
       }
     }
 
@@ -312,7 +303,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
     return () => {
       isCancelled = true;
     };
-  }, [slug]);
+  }, [slug, curriculumReloadToken]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -363,6 +354,13 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
       setActiveLesson(pickDefaultLesson(curriculum));
     }
   }, [curriculum, activeLesson]);
+
+  useEffect(() => {
+    setSubmissionNotes("");
+    setSubmissionFile(null);
+    setSubmissionError(null);
+    setSubmissionMessage(null);
+  }, [activeLesson?.id]);
 
   useEffect(() => {
     const handlePageHide = () => {
@@ -470,15 +468,8 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
     module.lessons.some((lesson) => lesson.isLocked)
   );
   const lessonSubject = formatSubjectArea(activeLesson?.subjectArea);
-  const supportsLecturetteSubmission =
-    activeLesson?.subjectArea === "LECTURETTE" && !activeLesson.isLocked;
   const latestLessonSubmission = activeLesson
-    ? submissions.find(
-        (submission) =>
-          submission.lessonId === activeLesson.id ||
-          (submission.subjectArea === activeLesson.subjectArea &&
-            submission.phaseNumber === activeLesson.phaseNumber)
-      )
+    ? submissions.find((submission) => submission.lessonId === activeLesson.id)
     : null;
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -497,6 +488,13 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
       return;
     }
 
+    let submissionType: SubmissionType = "ESSAY";
+    if (activeLesson.subjectArea === "LECTURETTE") {
+      submissionType = "LECTURETTE";
+    } else if (activeLesson.subjectArea === "APPRECIATION_PLANS") {
+      submissionType = "APPRECIATION_PLAN";
+    }
+
     setSubmissionBusy(true);
     setSubmissionError(null);
     setSubmissionMessage(null);
@@ -512,7 +510,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
       const response = await createClassroomSubmission({
         courseSlug: course.slug,
         lessonId: activeLesson.id,
-        submissionType: "LECTURETTE",
+        submissionType,
         title: activeLesson.title,
         ...(activeLesson.phaseNumber ? { phaseNumber: activeLesson.phaseNumber } : {}),
         ...(activeLesson.subjectArea ? { subjectArea: activeLesson.subjectArea } : {}),
@@ -531,6 +529,38 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
       setSubmissionError(error instanceof Error ? error.message : "Unable to submit lecturette.");
     } finally {
       setSubmissionBusy(false);
+    }
+  };
+
+  const handleMarkLessonComplete = async () => {
+    if (!activeLesson || activeLesson.isLocked) {
+      return;
+    }
+
+    setProgressBusy(true);
+    setSubmissionError(null);
+    setSubmissionMessage(null);
+    try {
+      await updateClassroomLessonProgress(activeLesson.id, "COMPLETED");
+
+      setCurriculum((current) =>
+        current.map((module) => ({
+          ...module,
+          lessons: module.lessons.map((lesson) =>
+            lesson.id === activeLesson.id ? { ...lesson, progressStatus: "COMPLETED" } : lesson
+          )
+        }))
+      );
+      setActiveLesson((current) =>
+        current ? { ...current, progressStatus: "COMPLETED" } : current
+      );
+      setCurriculumReloadToken((current) => current + 1);
+    } catch (error) {
+      setSubmissionError(
+        error instanceof Error ? error.message : "Unable to update lesson progress."
+      );
+    } finally {
+      setProgressBusy(false);
     }
   };
 
@@ -555,11 +585,22 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
       <div className="flex flex-1 overflow-hidden">
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <div className="bg-black">
-            <div className="mx-auto max-w-6xl">
-              <VideoPlayer
-                {...(activeLesson?.videoId ? { videoId: activeLesson.videoId } : {})}
+            <div className="w-full">
+              <LessonStageRenderer
+                courseTitle={course.title}
                 {...(course.heroImageUrl ? { poster: course.heroImageUrl } : {})}
-                autoplay={false}
+                lesson={activeLesson}
+                latestSubmission={latestLessonSubmission}
+                submissionNotes={submissionNotes}
+                submissionFile={submissionFile}
+                submissionBusy={submissionBusy}
+                submissionError={submissionError}
+                submissionMessage={submissionMessage}
+                progressBusy={progressBusy}
+                onSubmissionNotesChange={setSubmissionNotes}
+                onSubmissionFileChange={setSubmissionFile}
+                onSubmitSubmission={() => void handleLecturetteSubmission()}
+                onMarkComplete={() => void handleMarkLessonComplete()}
               />
             </div>
           </div>
@@ -645,87 +686,6 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
                     </div>
                   ) : null}
 
-                  {supportsLecturetteSubmission ? (
-                    <div className="space-y-4 rounded-xl border border-[#D4AF37]/30 bg-[#fff9e8] p-5">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#8b6a13]">
-                          Lecturette Review
-                        </p>
-                        <h3 className="mt-2 text-lg font-bold text-gray-900">
-                          Submit your recorded presentation
-                        </h3>
-                        <p className="mt-1 text-sm leading-relaxed text-gray-700">
-                          Upload a recording and any preparation notes so DS can review body
-                          language, structure, and delivery quality for this lecturette lesson.
-                        </p>
-                      </div>
-
-                      {latestLessonSubmission ? (
-                        <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
-                          <p className="font-bold text-gray-900">
-                            Latest status: {latestLessonSubmission.status.replaceAll("_", " ")}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            Submitted on{" "}
-                            {new Date(latestLessonSubmission.submittedAt).toLocaleString()}
-                          </p>
-                          {latestLessonSubmission.assetUrl ? (
-                            <a
-                              href={latestLessonSubmission.assetUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="mt-2 inline-flex text-sm font-bold text-blue-600 hover:underline"
-                            >
-                              Open uploaded recording
-                            </a>
-                          ) : null}
-                          {latestLessonSubmission.reviewNotes ? (
-                            <p className="mt-3 rounded bg-slate-50 p-3 text-sm text-slate-700">
-                              {latestLessonSubmission.reviewNotes}
-                            </p>
-                          ) : null}
-                          {latestLessonSubmission.score !== undefined &&
-                          latestLessonSubmission.maxScore !== undefined ? (
-                            <p className="mt-2 font-medium text-gray-800">
-                              Score: {latestLessonSubmission.score}/
-                              {latestLessonSubmission.maxScore}
-                            </p>
-                          ) : null}
-                        </div>
-                      ) : null}
-
-                      <div className="space-y-3">
-                        <textarea
-                          value={submissionNotes}
-                          onChange={(event) => setSubmissionNotes(event.target.value)}
-                          rows={4}
-                          placeholder="Add any presentation notes or context for DS review."
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
-                        />
-                        <input
-                          type="file"
-                          accept="video/*,audio/*"
-                          onChange={(event) => setSubmissionFile(event.target.files?.[0] ?? null)}
-                          className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-[#D4AF37] file:px-4 file:py-2 file:text-sm file:font-bold file:text-[#0B1120]"
-                        />
-                        {submissionError ? (
-                          <p className="text-sm text-red-700">{submissionError}</p>
-                        ) : null}
-                        {submissionMessage ? (
-                          <p className="text-sm text-green-700">{submissionMessage}</p>
-                        ) : null}
-                        <button
-                          type="button"
-                          onClick={() => void handleLecturetteSubmission()}
-                          disabled={submissionBusy || (!submissionFile && !submissionNotes.trim())}
-                          className="inline-flex items-center justify-center rounded-md bg-[#0B1120] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#19263b] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {submissionBusy ? "Submitting..." : "Submit For Review"}
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-
                   <div>
                     <h3 className="mb-3 text-lg font-bold">What you&apos;ll learn</h3>
                     <ul className="grid gap-3 md:grid-cols-2">
@@ -807,19 +767,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
                     </a>
                   ) : null}
 
-                  {supportsLecturetteSubmission ? (
-                    <div className="rounded-lg border border-[#D4AF37]/30 bg-[#fff9e8] p-4">
-                      <p className="font-bold text-gray-900">Lecturette submission is enabled</p>
-                      <p className="mt-1 text-sm text-gray-700">
-                        Use the Overview tab to upload your presentation recording and send it to DS
-                        for rubric-based review.
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {!activeLesson?.pdfUrl &&
-                  !activeLesson?.meetingUrl &&
-                  !supportsLecturetteSubmission ? (
+                  {!activeLesson?.pdfUrl && !activeLesson?.meetingUrl ? (
                     <div className="py-12 text-center text-gray-500">
                       <p className="font-medium">No lesson resources attached yet.</p>
                       <p className="text-sm">Downloadable notes and live links will appear here.</p>
@@ -847,17 +795,33 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
               <div key={module.id} className="border-b border-gray-100">
                 <button
                   type="button"
-                  onClick={() => toggleModule(moduleIndex)}
+                  onClick={() => {
+                    if (module.lessons.length === 0) {
+                      return;
+                    }
+
+                    toggleModule(moduleIndex);
+                  }}
                   className="w-full bg-gray-50/50 p-4 text-left transition-colors hover:bg-gray-100/50"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-bold text-gray-900">{module.title}</h3>
                       <p className="mt-0.5 text-[10px] font-medium text-gray-500">
-                        {module.lessons.length} Lessons
+                        {module.lessons.length > 0
+                          ? `${module.lessons.length} ${
+                              module.lessons.some((lesson) => lesson.learningMode)
+                                ? module.lessons.length === 1
+                                  ? "Item"
+                                  : "Items"
+                                : module.lessons.length === 1
+                                  ? "Lesson"
+                                  : "Lessons"
+                            }`
+                          : "Guide Section"}
                       </p>
                     </div>
-                    {openModules.includes(moduleIndex) ? (
+                    {module.lessons.length === 0 ? null : openModules.includes(moduleIndex) ? (
                       <ChevronUp className="h-4 w-4 text-gray-400" />
                     ) : (
                       <ChevronDown className="h-4 w-4 text-gray-400" />
@@ -922,6 +886,15 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
                                   <span className="text-[10px] text-gray-400">
                                     {lesson.durationLabel}
                                   </span>
+                                  {lesson.learningMode ? (
+                                    <span
+                                      className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ring-1 ${formatLearningModeChipClassName(
+                                        lesson.learningMode
+                                      )}`}
+                                    >
+                                      {formatLearningMode(lesson.learningMode)}
+                                    </span>
+                                  ) : null}
                                   {lesson.isPreview ? (
                                     <span className="rounded bg-green-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-600">
                                       Preview
