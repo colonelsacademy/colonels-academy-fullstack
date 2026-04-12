@@ -69,7 +69,9 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
   const offsetRef = useRef(0);
   const cueViewportRef = useRef<HTMLDivElement | null>(null);
   const cueMeasureItemRefs = useRef<Array<HTMLParagraphElement | null>>([]);
-  const [offset, setOffset] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const scrubberRef = useRef<HTMLInputElement | null>(null);
+  const activeCueIndexRef = useRef(0);
   const [maxOffset, setMaxOffset] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<(typeof SPEED_OPTIONS)[number]>(1);
@@ -92,11 +94,14 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
 
       const nextMaxOffset = Math.max(innerContent.scrollHeight - viewport.clientHeight, 0);
       setMaxOffset(nextMaxOffset);
-      setOffset((current) => {
-        const clamped = Math.min(current, nextMaxOffset);
-        offsetRef.current = clamped;
-        return clamped;
-      });
+      const clamped = Math.min(offsetRef.current, nextMaxOffset);
+      offsetRef.current = clamped;
+      if (contentRef.current) {
+        contentRef.current.style.transform = `translateY(-${clamped}px)`;
+      }
+      const clampedPct = nextMaxOffset > 0 ? (clamped / nextMaxOffset) * 100 : 0;
+      if (progressBarRef.current) progressBarRef.current.style.width = `${clampedPct}%`;
+      if (scrubberRef.current) scrubberRef.current.value = String(Math.round(clamped));
     }
 
     const measureFrame = window.requestAnimationFrame(measure);
@@ -169,13 +174,16 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: content is a trigger — resets playback state when lesson content changes
   useEffect(() => {
-    setOffset(0);
     offsetRef.current = 0;
     setIsPlaying(false);
     lastTimestampRef.current = null;
     cueElapsedRef.current = 0;
+    activeCueIndexRef.current = 0;
     setCueElapsedMs(0);
     setCuePages([]);
+    if (contentRef.current) contentRef.current.style.transform = "";
+    if (progressBarRef.current) progressBarRef.current.style.width = "";
+    if (scrubberRef.current) scrubberRef.current.value = "0";
   }, [content]);
 
   useEffect(() => {
@@ -200,7 +208,12 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
         );
 
         offsetRef.current = nextOffset;
-        setOffset(nextOffset);
+        if (contentRef.current) {
+          contentRef.current.style.transform = `translateY(-${nextOffset}px)`;
+        }
+        const pct = maxOffset > 0 ? (nextOffset / maxOffset) * 100 : 0;
+        if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
+        if (scrubberRef.current) scrubberRef.current.value = String(Math.round(nextOffset));
 
         if (nextOffset >= maxOffset) {
           setIsPlaying(false);
@@ -216,7 +229,28 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
           totalDurationMs
         );
         cueElapsedRef.current = nextElapsedMs;
-        setCueElapsedMs(nextElapsedMs);
+
+        // Compute the active segment index in the tick to avoid per-frame state updates
+        let newActiveIndex = 0;
+        let runningTotal = 0;
+        for (let i = 0; i < content.segments.length; i += 1) {
+          runningTotal += content.segments[i]!.durationMs;
+          if (nextElapsedMs < runningTotal) {
+            newActiveIndex = i;
+            break;
+          }
+          newActiveIndex = Math.min(i, content.segments.length - 1);
+        }
+
+        const cuePct = totalDurationMs > 0 ? (nextElapsedMs / totalDurationMs) * 100 : 0;
+        if (progressBarRef.current) progressBarRef.current.style.width = `${cuePct}%`;
+        if (scrubberRef.current) scrubberRef.current.value = String(Math.round(nextElapsedMs));
+
+        // Only trigger a React re-render when the visible segment changes
+        if (newActiveIndex !== activeCueIndexRef.current) {
+          activeCueIndexRef.current = newActiveIndex;
+          setCueElapsedMs(nextElapsedMs);
+        }
 
         if (nextElapsedMs >= totalDurationMs) {
           setIsPlaying(false);
@@ -242,14 +276,6 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
     content.mode === "cue"
       ? content.segments.reduce((sum, segment) => sum + segment.durationMs, 0)
       : 0;
-  const progressPercent =
-    content.mode === "reading"
-      ? maxOffset > 0
-        ? (offset / maxOffset) * 100
-        : 0
-      : totalCueDurationMs > 0
-        ? (cueElapsedMs / totalCueDurationMs) * 100
-        : 0;
 
   let activeCueIndex = 0;
   if (content.mode === "cue") {
@@ -281,21 +307,29 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
 
   const resetPlayback = () => {
     setIsPlaying(false);
-    setOffset(0);
     offsetRef.current = 0;
     cueElapsedRef.current = 0;
+    activeCueIndexRef.current = 0;
     setCueElapsedMs(0);
+    if (contentRef.current) contentRef.current.style.transform = "";
+    if (progressBarRef.current) progressBarRef.current.style.width = "";
+    if (scrubberRef.current) scrubberRef.current.value = "0";
   };
 
   const handlePlay = () => {
     if (content.mode === "reading") {
-      if (offset >= maxOffset && maxOffset > 0) {
-        setOffset(0);
+      if (offsetRef.current >= maxOffset && maxOffset > 0) {
         offsetRef.current = 0;
+        if (contentRef.current) contentRef.current.style.transform = "";
+        if (progressBarRef.current) progressBarRef.current.style.width = "";
+        if (scrubberRef.current) scrubberRef.current.value = "0";
       }
-    } else if (cueElapsedMs >= totalCueDurationMs && totalCueDurationMs > 0) {
+    } else if (cueElapsedRef.current >= totalCueDurationMs && totalCueDurationMs > 0) {
       cueElapsedRef.current = 0;
+      activeCueIndexRef.current = 0;
       setCueElapsedMs(0);
+      if (progressBarRef.current) progressBarRef.current.style.width = "";
+      if (scrubberRef.current) scrubberRef.current.value = "0";
     }
     setIsPlaying(true);
   };
@@ -318,7 +352,7 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
               type="button"
               onClick={handlePlay}
               className="absolute inset-0 z-20 flex items-center justify-center bg-black/5 transition hover:bg-black/10"
-              aria-label={offset > 0 ? "Resume text playback" : "Start text playback"}
+              aria-label={offsetRef.current > 0 ? "Resume text playback" : "Start text playback"}
             >
               <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#16161f] text-white shadow-xl transition hover:scale-105">
                 <Play className="ml-1 h-10 w-10 fill-current" />
@@ -328,11 +362,7 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
 
           {content.mode === "reading" ? (
             <div ref={viewportRef} className="relative h-full overflow-hidden">
-              <div
-                ref={contentRef}
-                className="space-y-6 will-change-transform md:space-y-7"
-                style={{ transform: `translateY(-${offset}px)` }}
-              >
+              <div ref={contentRef} className="space-y-6 will-change-transform md:space-y-7">
                 {content.blocks.map((block, index) => renderBlock(block, index))}
               </div>
             </div>
@@ -400,8 +430,8 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
         <div className="border-t-4 border-sky-400 bg-white/80 px-6 py-3 backdrop-blur-sm md:px-10">
           <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
             <div
+              ref={progressBarRef}
               className="h-full rounded-full bg-sky-500 transition-[width]"
-              style={{ width: `${progressPercent}%` }}
             />
           </div>
 
@@ -457,21 +487,37 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
 
             <div className="min-w-0 flex-1 md:max-w-sm">
               <input
+                ref={scrubberRef}
                 type="range"
                 min={0}
                 max={Math.max(content.mode === "reading" ? maxOffset : totalCueDurationMs, 1)}
                 step={1}
-                value={Math.min(
-                  content.mode === "reading" ? offset : cueElapsedMs,
-                  Math.max(content.mode === "reading" ? maxOffset : totalCueDurationMs, 1)
-                )}
+                defaultValue={0}
                 onChange={(event) => {
                   const nextValue = Number(event.target.value);
                   if (content.mode === "reading") {
-                    setOffset(nextValue);
                     offsetRef.current = nextValue;
+                    if (contentRef.current) {
+                      contentRef.current.style.transform = `translateY(-${nextValue}px)`;
+                    }
+                    const pct = maxOffset > 0 ? (nextValue / maxOffset) * 100 : 0;
+                    if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
                   } else {
                     cueElapsedRef.current = nextValue;
+                    // Sync active segment index so tick doesn't re-render on the next frame
+                    let newIndex = 0;
+                    let rt = 0;
+                    for (let i = 0; i < content.segments.length; i += 1) {
+                      rt += content.segments[i]!.durationMs;
+                      if (nextValue < rt) {
+                        newIndex = i;
+                        break;
+                      }
+                      newIndex = Math.min(i, content.segments.length - 1);
+                    }
+                    activeCueIndexRef.current = newIndex;
+                    const pct = totalCueDurationMs > 0 ? (nextValue / totalCueDurationMs) * 100 : 0;
+                    if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
                     setCueElapsedMs(nextValue);
                   }
                 }}
