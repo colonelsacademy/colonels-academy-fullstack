@@ -1,4 +1,4 @@
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import Redis from "ioredis";
 
 import { defaultJobOptions, loadWorkerEnv, queueNames } from "@colonels-academy/config";
@@ -6,6 +6,7 @@ import type {
   NotificationJob,
   ProgressRecalcJob,
   QuizAttemptJob,
+  StudySessionReconcileJob,
   VideoSyncJob
 } from "@colonels-academy/contracts";
 import { db } from "@colonels-academy/database";
@@ -13,7 +14,12 @@ import { db } from "@colonels-academy/database";
 import { handleNotification } from "./jobs/notifications";
 import { handleProgressRecalc } from "./jobs/progress-recalc";
 import { handleQuizMastery } from "./jobs/quiz-mastery";
+import { handleStudySessionReconcile } from "./jobs/study-session-reconcile";
 import { handleVideoSync } from "./jobs/video-sync";
+
+const STUDY_SESSION_RECONCILE_EVERY_MS = 5 * 60_000;
+const STUDY_SESSION_STALE_AFTER_MS = 5 * 60_000;
+const STUDY_SESSION_RECONCILE_BATCH_SIZE = 200;
 
 function logWorker(level: "info" | "error", event: string, metadata: Record<string, unknown> = {}) {
   const payload = {
@@ -104,6 +110,48 @@ async function start() {
     }
   );
 
+  const studySessionReconcileWorker = new Worker<StudySessionReconcileJob>(
+    queueNames.studySessionReconcile,
+    async (job) => {
+      logWorker("info", "study-session-reconcile.started", {
+        jobId: job.id,
+        staleAfterMs: job.data.staleAfterMs ?? STUDY_SESSION_STALE_AFTER_MS,
+        batchSize: job.data.batchSize ?? STUDY_SESSION_RECONCILE_BATCH_SIZE
+      });
+      return handleStudySessionReconcile(job);
+    },
+    {
+      connection,
+      concurrency: 1
+    }
+  );
+
+  const studySessionReconcileQueue = new Queue<StudySessionReconcileJob>(
+    queueNames.studySessionReconcile,
+    {
+      connection,
+      defaultJobOptions
+    }
+  );
+
+  await studySessionReconcileQueue.upsertJobScheduler(
+    "study-session-reconcile-scheduler",
+    {
+      every: STUDY_SESSION_RECONCILE_EVERY_MS
+    },
+    {
+      name: "study-session-reconcile",
+      data: {
+        staleAfterMs: STUDY_SESSION_STALE_AFTER_MS,
+        batchSize: STUDY_SESSION_RECONCILE_BATCH_SIZE
+      },
+      opts: {
+        removeOnComplete: defaultJobOptions.removeOnComplete,
+        removeOnFail: defaultJobOptions.removeOnFail
+      }
+    }
+  );
+
   async function close(signal: string) {
     logWorker("info", "worker.shutdown", {
       signal
@@ -112,7 +160,9 @@ async function start() {
       videoSyncWorker.close(),
       notificationWorker.close(),
       progressRecalcWorker.close(),
-      quizMasteryWorker.close()
+      quizMasteryWorker.close(),
+      studySessionReconcileWorker.close(),
+      studySessionReconcileQueue.close()
     ]);
     await connection.quit().catch(() => {
       connection.disconnect();
@@ -133,7 +183,9 @@ async function start() {
     videoSyncWorker.waitUntilReady(),
     notificationWorker.waitUntilReady(),
     progressRecalcWorker.waitUntilReady(),
-    quizMasteryWorker.waitUntilReady()
+    quizMasteryWorker.waitUntilReady(),
+    studySessionReconcileWorker.waitUntilReady(),
+    studySessionReconcileQueue.waitUntilReady()
   ]);
 
   videoSyncWorker.on("completed", (job) => {
@@ -165,6 +217,14 @@ async function start() {
       courseId: job.data.courseId,
       questionId: job.data.questionId,
       jobId: job.id
+    });
+  });
+
+  studySessionReconcileWorker.on("completed", (job) => {
+    logWorker("info", "study-session-reconcile.completed", {
+      jobId: job.id,
+      staleAfterMs: job.data.staleAfterMs ?? STUDY_SESSION_STALE_AFTER_MS,
+      batchSize: job.data.batchSize ?? STUDY_SESSION_RECONCILE_BATCH_SIZE
     });
   });
 
@@ -204,13 +264,23 @@ async function start() {
     });
   });
 
+  studySessionReconcileWorker.on("failed", (job, error) => {
+    logWorker("error", "study-session-reconcile.failed", {
+      error: error.message,
+      jobId: job?.id,
+      staleAfterMs: job?.data.staleAfterMs ?? STUDY_SESSION_STALE_AFTER_MS,
+      batchSize: job?.data.batchSize ?? STUDY_SESSION_RECONCILE_BATCH_SIZE
+    });
+  });
+
   logWorker("info", "worker.ready", {
     concurrency: env.WORKER_CONCURRENCY,
     queues: [
       queueNames.videoSync,
       queueNames.notifications,
       queueNames.progressRecalc,
-      queueNames.quizMastery
+      queueNames.quizMastery,
+      queueNames.studySessionReconcile
     ],
     retryAttempts: defaultJobOptions.attempts
   });
