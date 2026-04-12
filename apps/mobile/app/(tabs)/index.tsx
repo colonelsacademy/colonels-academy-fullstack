@@ -85,7 +85,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const userName = user?.email?.split("@")[0] || "Cadet";
+  const userName = user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "Cadet";
 
   const openInstructorModal = (instructor: (typeof INSTRUCTORS)[0]) => {
     setSelectedInstructor(instructor);

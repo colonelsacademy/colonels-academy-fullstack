@@ -160,6 +160,29 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       return response;
     }
   );
+
+  // ── POST /v1/auth/mobile-sync ──────────────────────────────────────────────
+  // Mobile-only endpoint: accepts Bearer token, syncs user to Postgres.
+  // No CSRF required since mobile apps can't use cookie-based CSRF.
+  fastify.post(
+    "/mobile-sync",
+    {
+      config: {
+        rateLimit: {
+          max: 30,
+          timeWindow: "1 minute"
+        }
+      }
+    },
+    async (request, reply) => {
+      reply.header("cache-control", "no-store");
+
+      const authUser = await fastify.requireAuth(request);
+      await syncUserWithPostgres(fastify.prisma, authUser, request.log);
+
+      return { ok: true, uid: authUser.uid };
+    }
+  );
 };
 
 export default authRoutes;

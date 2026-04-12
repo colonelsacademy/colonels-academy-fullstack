@@ -122,7 +122,7 @@ export default function SettingsScreen() {
   };
 
   const handleEditProfile = () => {
-    Alert.alert("Edit Profile", "Profile editing feature coming soon!");
+    router.push("/edit-profile" as any);
   };
 
   const handleChangePassword = () => {

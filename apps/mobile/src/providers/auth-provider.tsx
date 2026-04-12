@@ -20,7 +20,6 @@ import {
 
 import { readPublicMobileEnv } from "@colonels-academy/config";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
-import { mobileApiClient } from "../lib/api";
 
 const env = readPublicMobileEnv();
 
@@ -66,10 +65,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (nextUser) {
         const idToken = await nextUser.getIdToken();
         setAccessToken(idToken);
-        // Sync user to Postgres via API (creates user record if not exists)
+        // Sync user to Postgres via API using Bearer token (mobile doesn't use session cookies)
         try {
-          const csrfRes = await mobileApiClient.getCsrfToken();
-          await mobileApiClient.loginWithIdToken(idToken, csrfRes.csrfToken);
+          await fetch(`${env.EXPO_PUBLIC_API_BASE_URL}/v1/auth/mobile-sync`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${idToken}`,
+              "Content-Type": "application/json",
+            },
+          });
         } catch (err) {
           // Non-fatal — user is still authenticated via Firebase
           console.warn("Failed to sync user to Postgres:", err);
