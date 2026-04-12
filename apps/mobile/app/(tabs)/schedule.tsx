@@ -1,4 +1,4 @@
-import { type LiveSessionPreview } from "@colonels-academy/contracts";
+import type { LiveSessionPreview } from "@colonels-academy/contracts";
 import { router, useFocusEffect } from "expo-router";
 
 // Extend LiveSessionPreview with meetingUrl which the API returns but the type omits
