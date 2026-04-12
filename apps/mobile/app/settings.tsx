@@ -140,7 +140,7 @@ export default function SettingsScreen() {
     onPress,
     iconBg,
     iconColor,
-    rightElement,
+    rightElement
   }: {
     icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
     title: string;

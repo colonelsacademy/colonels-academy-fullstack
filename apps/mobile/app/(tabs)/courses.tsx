@@ -678,10 +678,9 @@ export default function CoursesScreen() {
                   )}
                 />
                 <View style={styles.featuredDots}>
-                  {featuredCourses.map((_: Course, i: number) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: dot index is stable
+                  {featuredCourses.map((course: Course, i: number) => (
                     <View
-                      key={`dot-${i}`}
+                      key={course.slug}
                       style={[styles.dot, i === featuredIndex && styles.dotActive]}
                     />
                   ))}
