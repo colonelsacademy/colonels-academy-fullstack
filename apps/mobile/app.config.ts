@@ -15,9 +15,45 @@ const config: ExpoConfig = {
     supportsTablet: true
   },
   android: {
-    package: "com.colonelsacademy.mobile"
+    package: "com.colonelsacademymobile",
+    googleServicesFile: "./google-services.json",
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "com.colonelsacademy.mobile"
+          }
+        ],
+        category: ["BROWSABLE", "DEFAULT"]
+      }
+    ]
   },
-  plugins: ["expo-router"]
+  plugins: ["expo-router", "expo-web-browser", "@react-native-google-signin/google-signin"],
+  extra: {
+    eas: {
+      projectId: "680e43a0-85c0-46d0-9de2-3b8a605b1453"
+    },
+    // Firebase configuration for standalone builds
+    EXPO_PUBLIC_API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.1.73:4000",
+    EXPO_PUBLIC_FIREBASE_API_KEY:
+      process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyAHLoeOfDtsAVNiNHunVNPT-ZZk4B9ECbY",
+    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN:
+      process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "colonels-academy-dev.firebaseapp.com",
+    EXPO_PUBLIC_FIREBASE_PROJECT_ID:
+      process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "colonels-academy-dev",
+    EXPO_PUBLIC_FIREBASE_APP_ID:
+      process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:996779913784:web:306e0c7395a2511c03eccd",
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+      "996779913784-9ag3q34hf9s9l6sjdj7l0a152sjrk0ba.apps.googleusercontent.com",
+    EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
+      "996779913784-lln7b2fpcbbr21052bsel09m7kaqfdhn.apps.googleusercontent.com",
+    EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID || "NEED_TO_CREATE_THIS"
+  }
 };
 
 export default config;

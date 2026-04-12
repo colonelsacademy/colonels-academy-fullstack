@@ -34,7 +34,7 @@ export function middleware(request: NextRequest) {
     if (next?.startsWith("/") && !next.startsWith("//")) {
       return NextResponse.redirect(new URL(next, request.url));
     }
-    return NextResponse.redirect(new URL("/my-learning", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
