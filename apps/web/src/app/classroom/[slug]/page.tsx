@@ -118,7 +118,6 @@ function formatLearningMode(mode: LessonLearningMode) {
       return "Feedback";
     case "RESOURCE":
       return "Resource";
-    case "LESSON":
     default:
       return "Lesson";
   }
@@ -136,7 +135,6 @@ function formatLearningModeChipClassName(mode: LessonLearningMode) {
       return "bg-emerald-50 text-emerald-700 ring-emerald-200";
     case "RESOURCE":
       return "bg-slate-100 text-slate-700 ring-slate-200";
-    case "LESSON":
     default:
       return "bg-amber-50 text-amber-700 ring-amber-200";
   }
@@ -238,6 +236,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
     activeLessonIdRef.current = activeLesson?.id ?? null;
   }, [activeLesson?.id]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: curriculumReloadToken is an intentional re-fetch trigger, not consumed inside the effect
   useEffect(() => {
     let isCancelled = false;
 
@@ -355,6 +354,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
     }
   }, [curriculum, activeLesson]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: activeLesson?.id is a trigger — resets form when lesson changes
   useEffect(() => {
     setSubmissionNotes("");
     setSubmissionFile(null);

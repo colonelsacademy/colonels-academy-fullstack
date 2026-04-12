@@ -22,8 +22,8 @@ import {
   ShieldCheck
 } from "lucide-react";
 
-import TextLessonStage from "./TextLessonStage";
 import VideoPlayer from "../ui/VideoPlayer";
+import TextLessonStage from "./TextLessonStage";
 
 type StageLesson = {
   id: string;
@@ -545,6 +545,7 @@ function QuizLessonStage({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const questionStartedAtRef = useRef(Date.now());
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lesson.id is a trigger — resets quiz state when lesson changes
   useEffect(() => {
     setCurrentIndex(0);
     setSelectedOption(null);

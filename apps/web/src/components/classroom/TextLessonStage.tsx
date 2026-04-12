@@ -49,7 +49,6 @@ function renderBlock(block: LessonContentBlock, index: number) {
           ))}
         </ul>
       );
-    case "paragraph":
     default:
       return (
         <p
@@ -107,7 +106,7 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
       window.cancelAnimationFrame(measureFrame);
       window.removeEventListener("resize", measure);
     };
-  }, [content, title]);
+  }, [content]);
 
   useEffect(() => {
     function measureCuePages() {
@@ -166,8 +165,9 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
       window.cancelAnimationFrame(measureFrame);
       window.removeEventListener("resize", measureCuePages);
     };
-  }, [content, title]);
+  }, [content]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: content is a trigger — resets playback state when lesson content changes
   useEffect(() => {
     setOffset(0);
     offsetRef.current = 0;
@@ -176,7 +176,7 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
     cueElapsedRef.current = 0;
     setCueElapsedMs(0);
     setCuePages([]);
-  }, [content, title]);
+  }, [content]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -345,7 +345,7 @@ export default function TextLessonStage({ title, courseTitle, content }: TextLes
                 <div className="mx-auto flex max-w-[72rem] flex-col gap-6 px-2">
                   {content.segments.map((segment, index) => (
                     <p
-                      key={`measure-${index}`}
+                      key={`measure-${segment.text}`}
                       ref={(element) => {
                         cueMeasureItemRefs.current[index] = element;
                       }}

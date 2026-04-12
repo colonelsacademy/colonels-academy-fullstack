@@ -101,9 +101,6 @@ function contentTypeForLearningMode(learningMode: LessonLearningMode): ContentTy
       return "LIVE";
     case "RESOURCE":
       return "PDF";
-    case "LESSON":
-    case "PRACTICE":
-    case "FEEDBACK":
     default:
       return "TEXT";
   }
