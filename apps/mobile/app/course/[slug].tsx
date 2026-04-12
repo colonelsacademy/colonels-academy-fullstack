@@ -236,7 +236,7 @@ export default function CourseDetailsScreen() {
           {/* Curriculum */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Course Curriculum</Text>
-            {curriculum.map((module) => (
+            {curriculum.map((module, moduleIndex) => (
               <View key={module.title} style={styles.module}>
                 <TouchableOpacity
                   style={styles.moduleHeader}

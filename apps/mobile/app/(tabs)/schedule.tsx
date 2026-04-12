@@ -1,4 +1,8 @@
+import { type LiveSessionPreview } from "@colonels-academy/contracts";
 import { router, useFocusEffect } from "expo-router";
+
+// Extend LiveSessionPreview with meetingUrl which the API returns but the type omits
+type LiveSessionWithMeetingUrl = LiveSessionPreview & { meetingUrl?: string };
 import { StatusBar } from "expo-status-bar";
 import {
   Bell,
@@ -33,20 +37,7 @@ export default function ScheduleScreen() {
   const { isDark, colors: Colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [sessions, setSessions] = useState<
-    {
-      id: string;
-      topic: string;
-      day: string;
-      date: string;
-      time: string;
-      instructor: string;
-      type: string;
-      meetLink: string;
-      isLive: boolean;
-      courseSlug: string;
-    }[]
-  >([]);
+  const [sessions, setSessions] = useState<LiveSessionWithMeetingUrl[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchSessions = useCallback(async () => {
@@ -338,15 +329,7 @@ export default function ScheduleScreen() {
     );
   }
 
-  const formatSession = (session: {
-    id: string;
-    title?: string;
-    startsAt: string;
-    endsAt: string;
-    deliveryMode?: string;
-    meetingUrl?: string;
-    courseSlug?: string;
-  }) => {
+  const formatSession = (session: LiveSessionWithMeetingUrl) => {
     const startDate = new Date(session.startsAt);
     const endDate = new Date(session.endsAt);
     return {

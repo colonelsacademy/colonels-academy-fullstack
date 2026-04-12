@@ -722,7 +722,7 @@ export default function HomeScreen() {
                     { date: "Magh 30", label: "Apply" },
                     { date: "Falgun 15", label: "Written" },
                     { date: "Chaitra 20", label: "Physical" }
-                  ].map((item) => (
+                  ].map((item, i) => (
                     <View key={item.label} style={styles.timelineItem}>
                       <View style={styles.timelineIconWrapper}>
                         <View style={styles.timelineIconGlow} />
@@ -732,7 +732,7 @@ export default function HomeScreen() {
                       </View>
                       <Text style={styles.timelineDate}>{item.date}</Text>
                       <Text style={styles.timelineLabel}>{item.label}</Text>
-                      {idx < 2 && <View style={styles.timelineConnector} />}
+                      {i < 2 && <View style={styles.timelineConnector} />}
                     </View>
                   ))}
                 </View>
