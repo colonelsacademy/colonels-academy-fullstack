@@ -1,3 +1,4 @@
+import { readPublicMobileEnv } from "@colonels-academy/config";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { updateProfile } from "firebase/auth";
@@ -13,11 +14,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useTheme } from "../src/contexts/ThemeContext";
 import { useAuth } from "../src/providers/auth-provider";
-import { readPublicMobileEnv } from "@colonels-academy/config";
 
 const env = readPublicMobileEnv();
 
@@ -40,7 +40,7 @@ export default function EditProfileScreen() {
       paddingBottom: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border.primary,
-      backgroundColor: colors.background.primary,
+      backgroundColor: colors.background.primary
     },
     backButton: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: "700", color: colors.text.primary },
@@ -56,7 +56,7 @@ export default function EditProfileScreen() {
       justifyContent: "center",
       borderWidth: 3,
       borderColor: isDark ? "rgba(255,255,255,0.1)" : "#FFFFFF",
-      marginBottom: 8,
+      marginBottom: 8
     },
     avatarHint: { fontSize: 12, color: colors.text.tertiary },
     form: { width: "100%" },
@@ -65,7 +65,7 @@ export default function EditProfileScreen() {
       fontSize: 14,
       fontWeight: "600",
       color: colors.text.secondary,
-      marginBottom: 8,
+      marginBottom: 8
     },
     inputContainer: {
       flexDirection: "row",
@@ -75,11 +75,11 @@ export default function EditProfileScreen() {
       borderWidth: 1.5,
       borderColor: colors.border.primary,
       paddingHorizontal: 16,
-      height: 56,
+      height: 56
     },
     inputDisabled: {
       backgroundColor: isDark ? "rgba(255,255,255,0.03)" : "#F3F4F6",
-      opacity: 0.7,
+      opacity: 0.7
     },
     inputIcon: { marginRight: 12 },
     input: { flex: 1, fontSize: 16, color: colors.text.primary, padding: 0 },
@@ -93,10 +93,10 @@ export default function EditProfileScreen() {
       borderRadius: 12,
       height: 56,
       marginTop: 32,
-      gap: 8,
+      gap: 8
     },
     saveButtonDisabled: { opacity: 0.6 },
-    saveButtonText: { color: "#0B1120", fontSize: 16, fontWeight: "700" },
+    saveButtonText: { color: "#0B1120", fontSize: 16, fontWeight: "700" }
   });
 
   const handleSave = async () => {
@@ -122,12 +122,12 @@ export default function EditProfileScreen() {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
+          "Content-Type": "application/json"
+        }
       });
 
       Alert.alert("Success", "Profile updated successfully!", [
-        { text: "OK", onPress: () => router.back() },
+        { text: "OK", onPress: () => router.back() }
       ]);
     } catch (err) {
       console.error("Error updating profile:", err);

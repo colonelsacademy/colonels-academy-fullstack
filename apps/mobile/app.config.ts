@@ -47,7 +47,9 @@ const config: ExpoConfig = {
       projectId: "680e43a0-85c0-46d0-9de2-3b8a605b1453"
     },
     // Firebase configuration for standalone builds
-    EXPO_PUBLIC_API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || "https://colonels-academyapi-production.up.railway.app",
+    EXPO_PUBLIC_API_BASE_URL:
+      process.env.EXPO_PUBLIC_API_BASE_URL ||
+      "https://colonels-academyapi-production.up.railway.app",
     EXPO_PUBLIC_FIREBASE_API_KEY:
       process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyAHLoeOfDtsAVNiNHunVNPT-ZZk4B9ECbY",
     EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN:

@@ -122,7 +122,7 @@ export default function SettingsScreen() {
   };
 
   const handleEditProfile = () => {
-    router.push("/edit-profile" as any);
+    router.push("/edit-profile");
   };
 
   const handleChangePassword = () => {
