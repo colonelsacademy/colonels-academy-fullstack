@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file=../../.env src/index.ts",
-    "build": "tsup --config tsup.config.ts",
+    "build": "pnpm --filter @colonels-academy/database run db:generate && pnpm --filter @colonels-academy/database run db:deploy && tsup --config tsup.config.ts",
     "start": "node dist/index.cjs",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
