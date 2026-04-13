@@ -17,12 +17,11 @@ cmds = [
 [phases.build]
 dependsOn = ["install"]
 cmds = [
-  "cd /app && pnpm --filter @colonels-academy/database run db:generate",
   "cd /app && pnpm --filter @colonels-academy/web run build"
 ]
 
 [start]
-cmd = "cd /app && pnpm --filter @colonels-academy/web run start"
+cmd = "cd /app && pnpm --filter @colonels-academy/database run db:deploy && pnpm --filter @colonels-academy/database run db:seed --skip-generate && pnpm --filter @colonels-academy/web run start"
 
 [variables]
 NIXPACKS_NO_MUSL = "1"

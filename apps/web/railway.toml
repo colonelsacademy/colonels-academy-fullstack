@@ -4,4 +4,4 @@ nixpacksConfigPath = "nixpacks.toml"
 watchPatterns = ["apps/web/**", "packages/**"]
 
 [deploy]
-startCommand = "cd /app && pnpm --filter @colonels-academy/web run start"
+startCommand = "cd /app && pnpm --filter @colonels-academy/database run db:deploy && pnpm --filter @colonels-academy/database run db:seed --skip-generate && pnpm --filter @colonels-academy/web run start"

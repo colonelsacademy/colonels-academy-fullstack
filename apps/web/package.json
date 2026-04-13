@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm --filter @colonels-academy/database run db:generate && pnpm --filter @colonels-academy/database run db:deploy && next build",
+    "build": "pnpm --filter @colonels-academy/database run db:generate && next build",
     "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
