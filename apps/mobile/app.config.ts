@@ -13,7 +13,17 @@ const config: ExpoConfig = {
   },
   ios: {
     bundleIdentifier: "com.colonelsacademy.mobile",
-    supportsTablet: true
+    supportsTablet: true,
+    googleServicesFile: "./GoogleService-Info.plist",
+    infoPlist: {
+      CFBundleURLTypes: [
+        {
+          CFBundleURLSchemes: [
+            "com.googleusercontent.apps.996779913784-iv0j5b15951sgu0dl73hkhbv0rjj39qr"
+          ]
+        }
+      ]
+    }
   },
   android: {
     package: "com.colonelsacademymobile",
@@ -52,6 +62,9 @@ const config: ExpoConfig = {
     EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID:
       process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
       "996779913784-lln7b2fpcbbr21052bsel09m7kaqfdhn.apps.googleusercontent.com",
+    EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID:
+      process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+      "996779913784-iv0j5b15951sgu0dl73hkhbv0rjj39qr.apps.googleusercontent.com",
     EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID:
       process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID || "NEED_TO_CREATE_THIS"
   }

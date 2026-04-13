@@ -39,8 +39,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 // Configure Google Sign-In once at module level
 const webClientId = env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const iosClientId = env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 if (webClientId) {
-  GoogleSignin.configure({ webClientId, offlineAccess: false });
+  GoogleSignin.configure({
+    webClientId,
+    ...(iosClientId ? { iosClientId } : {}),
+    offlineAccess: false,
+  });
   // Clear any stale Google session on startup to prevent DEVELOPER_ERROR on load
   GoogleSignin.signOut().catch(() => {});
 }
