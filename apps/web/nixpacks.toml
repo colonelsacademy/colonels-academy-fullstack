@@ -17,7 +17,6 @@ cmds = [
 [phases.build]
 dependsOn = ["install"]
 cmds = [
-  "cd /app && pnpm --filter @colonels-academy/database run db:generate",
   "cd /app && pnpm --filter @colonels-academy/web run build"
 ]
 

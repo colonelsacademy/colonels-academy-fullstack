@@ -407,6 +407,7 @@ interface Lesson {
   position: number;
   durationMinutes: number | null;
   contentType: string;
+  learningMode: string;
   accessKind: string;
   bunnyVideoId: string | null;
   moduleId: string | null;
@@ -547,7 +548,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
     bunnyVideoId: "",
     durationMinutes: "",
     accessKind: "STANDARD",
-    contentType: "VIDEO"
+    contentType: "VIDEO",
+    learningMode: "LESSON"
   });
 
   const load = useCallback(async () => {
@@ -572,7 +574,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       bunnyVideoId: "",
       durationMinutes: "",
       accessKind: "STANDARD",
-      contentType: "VIDEO"
+      contentType: "VIDEO",
+      learningMode: "LESSON"
     });
     setEditingId(null);
     setShowForm(false);
@@ -587,7 +590,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       bunnyVideoId: l.bunnyVideoId ?? "",
       durationMinutes: l.durationMinutes ? String(l.durationMinutes) : "",
       accessKind: l.accessKind,
-      contentType: l.contentType
+      contentType: l.contentType,
+      learningMode: l.learningMode ?? "LESSON"
     });
     setShowForm(true);
   };
@@ -605,7 +609,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       bunnyVideoId: form.bunnyVideoId || undefined,
       durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined,
       accessKind: form.accessKind,
-      contentType: form.contentType
+      contentType: form.contentType,
+      learningMode: form.learningMode
     };
     try {
       if (editingId) {
@@ -719,7 +724,21 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                 { value: "VIDEO", label: "Video" },
                 { value: "PDF", label: "PDF" },
                 { value: "LIVE", label: "Live Class" },
+                { value: "QUIZ", label: "Quiz" },
                 { value: "TEXT", label: "Text" }
+              ]}
+            />
+            <SelectField
+              label="Learning Mode"
+              value={form.learningMode}
+              onChange={(v) => setForm((p) => ({ ...p, learningMode: v }))}
+              options={[
+                { value: "LESSON", label: "Lesson" },
+                { value: "PRACTICE", label: "Practice" },
+                { value: "QUIZ", label: "Quiz/Test" },
+                { value: "LIVE", label: "Live" },
+                { value: "FEEDBACK", label: "Feedback" },
+                { value: "RESOURCE", label: "Resource" }
               ]}
             />
             <SelectField
@@ -779,6 +798,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                 </div>
                 <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400">
                   <span className="uppercase">{l.contentType}</span>
+                  <span className="uppercase">{l.learningMode ?? "LESSON"}</span>
                   {l.durationMinutes && <span>{l.durationMinutes} min</span>}
                   {l.bunnyVideoId ? (
                     <span className="text-emerald-600 font-medium">

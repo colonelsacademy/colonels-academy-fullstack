@@ -8,6 +8,7 @@ interface VideoPlayerProps {
   videoId?: string | undefined;
   poster?: string | undefined;
   autoplay?: boolean | undefined;
+  className?: string | undefined;
 }
 
 const BUNNY_LIBRARY_ID = "596237";
@@ -88,7 +89,7 @@ const CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
 };
 
 // ─── Main VideoPlayer ─────────────────────────────────────────────────────────
-const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProps) => {
+const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(autoplay);
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [prevVideoId, setPrevVideoId] = useState(videoId);
@@ -113,7 +114,9 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProp
   if (isBunny && videoId && BUNNY_LIBRARY_ID) {
     const iframeUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=${isPlaying}&loop=false&muted=false&preload=true&responsive=true`;
     return (
-      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl group">
+      <div
+        className={`relative w-full aspect-video bg-black overflow-hidden group ${className ?? "rounded-xl shadow-2xl"}`}
+      >
         {!isPlaying ? (
           <ThumbnailOverlay poster={poster} onPlay={handleStartPlayback} />
         ) : (
@@ -136,7 +139,9 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProp
   // YouTube
   if (isYouTube && videoId) {
     return (
-      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl group">
+      <div
+        className={`relative w-full aspect-video bg-black overflow-hidden group ${className ?? "rounded-xl shadow-2xl"}`}
+      >
         {!isPlaying ? (
           <ThumbnailOverlay poster={poster} onPlay={handleStartPlayback} />
         ) : (
@@ -158,7 +163,9 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProp
   // Direct URL
   if (isDirectUrl && videoId) {
     return (
-      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
+      <div
+        className={`relative w-full aspect-video bg-black overflow-hidden ${className ?? "rounded-xl shadow-2xl"}`}
+      >
         <video src={videoId} poster={poster} className="w-full h-full" controls autoPlay={autoplay}>
           <track kind="captions" />
         </video>
@@ -168,7 +175,9 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false }: VideoPlayerProp
 
   // Fallback - just show thumbnail
   return (
-    <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl group">
+    <div
+      className={`relative w-full aspect-video bg-black overflow-hidden group ${className ?? "rounded-xl shadow-2xl"}`}
+    >
       <ThumbnailOverlay poster={poster} onPlay={() => {}} />
     </div>
   );

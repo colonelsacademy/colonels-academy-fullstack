@@ -15,8 +15,12 @@
     "db:status": "prisma migrate status",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:seed:direct": "tsx ./prisma/seed.ts",
     "db:studio": "prisma studio",
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "prisma": {
+    "seed": "tsx ./prisma/seed.ts"
   },
   "dependencies": {
     "@colonels-academy/contracts": "workspace:*",
@@ -28,8 +32,5 @@
     "prisma": "^6.19.3",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }

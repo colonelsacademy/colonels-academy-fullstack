@@ -26,14 +26,6 @@ import { useEffect, useRef, useState } from "react";
 
 type DropdownKey = "programs" | "resources" | null;
 
-const _defaultPrograms = [
-  { name: "Nepal Army Programs", path: "/courses?category=army", icon: Shield },
-  { name: "Nepal Police Programs", path: "/courses?category=police", icon: Shield },
-  { name: "APF Programs", path: "/courses?category=apf", icon: Shield },
-  { name: "Staff College Prep", path: "/courses?category=staff", icon: Shield },
-  { name: "Mission Prep", path: "/courses?category=mission", icon: Shield }
-];
-
 const academyResources = [
   { name: "Study Materials", path: "/study-materials", icon: BookOpen },
   { name: "Previous Papers", path: "/previous-papers", icon: FileText },
