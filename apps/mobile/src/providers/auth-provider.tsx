@@ -44,7 +44,7 @@ if (webClientId) {
   GoogleSignin.configure({
     webClientId,
     ...(iosClientId ? { iosClientId } : {}),
-    offlineAccess: false,
+    offlineAccess: false
   });
   // Clear any stale Google session on startup to prevent DEVELOPER_ERROR on load
   GoogleSignin.signOut().catch(() => {});
@@ -75,9 +75,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
           await fetch(`${env.EXPO_PUBLIC_API_BASE_URL}/v1/auth/mobile-sync`, {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${idToken}`,
-              "Content-Type": "application/json",
-            },
+              Authorization: `Bearer ${idToken}`,
+              "Content-Type": "application/json"
+            }
           });
         } catch (err) {
           // Non-fatal — user is still authenticated via Firebase
