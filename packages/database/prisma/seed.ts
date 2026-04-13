@@ -193,6 +193,8 @@ async function syncStaffCollegeCurriculum(courseId: string) {
 async function main() {
   const instructorIdsBySlug = new Map<string, string>();
 
+  console.log("📚 Starting seed process...");
+
   for (const instructor of instructors) {
     const record = await prisma.instructor.upsert({
       where: { slug: instructor.slug },
@@ -219,6 +221,7 @@ async function main() {
   }
 
   for (const course of courseCatalog) {
+    console.log(`  📖 Processing course: ${course.slug}...`);
     const record = await prisma.course.upsert({
       where: { slug: course.slug },
       update: {
@@ -386,7 +389,8 @@ async function main() {
     });
   }
 
-  console.log("✅ Seed completed successfully.");
+  const courseCount = await prisma.course.count();
+  console.log(`✅ Seed completed successfully. Courses in DB: ${courseCount}`);
 }
 
 main()
