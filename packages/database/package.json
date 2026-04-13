@@ -18,6 +18,9 @@
     "db:studio": "prisma studio",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
+  "prisma": {
+    "seed": "tsx ./prisma/seed.ts"
+  },
   "dependencies": {
     "@colonels-academy/contracts": "workspace:*",
     "@prisma/client": "^6.19.3"
