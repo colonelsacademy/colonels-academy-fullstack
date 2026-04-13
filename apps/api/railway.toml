@@ -5,3 +5,4 @@ watchPatterns = ["apps/api/**", "packages/**"]
 
 [deploy]
 startCommand = "cd /app && pnpm --filter @colonels-academy/database run db:push && pnpm --filter @colonels-academy/database run db:seed && node apps/api/dist/index.cjs"
+
