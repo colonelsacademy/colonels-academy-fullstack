@@ -13,7 +13,7 @@ const PROTECTED_ROUTES = [
 // Routes that are only for unauthenticated users
 const AUTH_ROUTES = ["/login"];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { nextUrl, cookies } = request;
   const sessionToken = cookies.get("ca_session")?.value;
 
@@ -29,12 +29,29 @@ export function middleware(request: NextRequest) {
 
   // 2. If trying to access an auth route (like /login) with an active session
   if (isAuthRoute && sessionToken) {
-    // Check if there's a 'next' parameter to redirect to
-    const next = nextUrl.searchParams.get("next");
-    if (next?.startsWith("/") && !next.startsWith("//")) {
-      return NextResponse.redirect(new URL(next, request.url));
+    // Validate the session by checking with the API
+    try {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+      const sessionRes = await fetch(`${apiBaseUrl}/v1/auth/session`, {
+        headers: {
+          Cookie: `ca_session=${sessionToken}`
+        }
+      });
+
+      if (sessionRes.ok) {
+        const sessionData = await sessionRes.json();
+        // Only redirect if session is actually valid
+        if (sessionData.authenticated) {
+          const next = nextUrl.searchParams.get("next");
+          if (next?.startsWith("/") && !next.startsWith("//")) {
+            return NextResponse.redirect(new URL(next, request.url));
+          }
+          return NextResponse.redirect(new URL("/", request.url));
+        }
+      }
+    } catch {
+      // If session validation fails, allow access to login page
     }
-    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
