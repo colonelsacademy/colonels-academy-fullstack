@@ -19,9 +19,12 @@ import {
 } from "../lib/firebase";
 
 import { readPublicMobileEnv } from "@colonels-academy/config";
+import Constants from "expo-constants";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 
 const env = readPublicMobileEnv();
+const extra = Constants.expoConfig?.extra ?? {};
+const apiBaseUrl = extra.EXPO_PUBLIC_API_BASE_URL || env.EXPO_PUBLIC_API_BASE_URL;
 
 interface AuthContextValue {
   accessToken: string | null;
@@ -38,8 +41,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 // Configure Google Sign-In once at module level
-const webClientId = env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-const iosClientId = env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const webClientId = extra.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const iosClientId = extra.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 if (webClientId) {
   GoogleSignin.configure({
     webClientId,
@@ -72,7 +75,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setAccessToken(idToken);
         // Sync user to Postgres via API using Bearer token (mobile doesn't use session cookies)
         try {
-          await fetch(`${env.EXPO_PUBLIC_API_BASE_URL}/v1/auth/mobile-sync`, {
+          await fetch(`${apiBaseUrl}/v1/auth/mobile-sync`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${idToken}`,

@@ -1,4 +1,5 @@
 import { readPublicMobileEnv } from "@colonels-academy/config";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { updateProfile } from "firebase/auth";
@@ -20,6 +21,8 @@ import { useTheme } from "../src/contexts/ThemeContext";
 import { useAuth } from "../src/providers/auth-provider";
 
 const env = readPublicMobileEnv();
+const extra = Constants.expoConfig?.extra ?? {};
+const apiBaseUrl = extra.EXPO_PUBLIC_API_BASE_URL || env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function EditProfileScreen() {
   const { user, accessToken } = useAuth();
@@ -118,7 +121,7 @@ export default function EditProfileScreen() {
       await user.getIdToken(true);
 
       // Sync updated name to Postgres
-      await fetch(`${env.EXPO_PUBLIC_API_BASE_URL}/v1/auth/mobile-sync`, {
+      await fetch(`${apiBaseUrl}/v1/auth/mobile-sync`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,

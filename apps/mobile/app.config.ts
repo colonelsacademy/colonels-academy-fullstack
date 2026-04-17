@@ -44,7 +44,7 @@ const config: ExpoConfig = {
   plugins: ["expo-router", "expo-web-browser", "@react-native-google-signin/google-signin"],
   extra: {
     eas: {
-      projectId: "680e43a0-85c0-46d0-9de2-3b8a605b1453"
+      projectId: "97465248-d682-420c-b0d0-f979b6e501b0"
     },
     // Firebase configuration for standalone builds
     EXPO_PUBLIC_API_BASE_URL:
