@@ -67,6 +67,7 @@ function LoginForm() {
       router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
+    } finally {
       setLoading(false);
     }
   }
@@ -108,6 +109,7 @@ function LoginForm() {
       } else {
         setError(firebaseErr.message || "Authentication failed. Please try again.");
       }
+    } finally {
       setLoading(false);
     }
   }
