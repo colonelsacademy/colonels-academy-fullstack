@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 
 import { getCoursePhasePlan } from "../../lib/course-phase-plan";
+import { getCachedUserId } from "../../lib/user-cache";
 import { getCourseBySlug, getCourseLessons, listCourses, listInstructors } from "./service";
 
 const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/courses", async (request) => {
-    const items = await listCourses(fastify.prisma, request.log);
+    // ✅ OPTIMIZED: Pass cache manager to service
+    const items = await listCourses(fastify.prisma, fastify.cache, request.log);
 
     return {
       items
@@ -13,7 +15,13 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get<{ Params: { slug: string } }>("/courses/:slug", async (request, reply) => {
-    const course = await getCourseBySlug(fastify.prisma, request.log, request.params.slug);
+    // ✅ OPTIMIZED: Pass cache manager to service
+    const course = await getCourseBySlug(
+      fastify.prisma,
+      fastify.cache,
+      request.log,
+      request.params.slug
+    );
 
     if (!course) {
       return reply.notFound("Course not found.");
@@ -25,14 +33,10 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/lessons", async (request, reply) => {
     const { user: authUser } = await fastify.authenticateRequest(request);
 
-    // Fetch DB user ID to check enrollment/progress
+    // ✅ OPTIMIZED: Use cached user lookup
     let dbUserId: string | undefined;
     if (authUser) {
-      const dbUser = await fastify.prisma.user.findUnique({
-        where: { firebaseUid: authUser.uid },
-        select: { id: true }
-      });
-      dbUserId = dbUser?.id;
+      dbUserId = await getCachedUserId(fastify, authUser);
     }
 
     const response = await getCourseLessons(
@@ -53,13 +57,10 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/phases", async (request, reply) => {
     const { user: authUser } = await fastify.authenticateRequest(request);
 
+    // ✅ OPTIMIZED: Use cached user lookup
     let dbUserId: string | undefined;
     if (authUser) {
-      const dbUser = await fastify.prisma.user.findUnique({
-        where: { firebaseUid: authUser.uid },
-        select: { id: true }
-      });
-      dbUserId = dbUser?.id;
+      dbUserId = await getCachedUserId(fastify, authUser);
     }
 
     const response = await getCoursePhasePlan(
@@ -78,7 +79,8 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get("/instructors", async (request) => {
-    const items = await listInstructors(fastify.prisma, request.log);
+    // ✅ OPTIMIZED: Pass cache manager to service
+    const items = await listInstructors(fastify.prisma, fastify.cache, request.log);
 
     return {
       items

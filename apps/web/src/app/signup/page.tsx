@@ -36,7 +36,7 @@ const GoogleIcon = () => (
 
 function safeNextPath(next: string | null): string {
   if (!next || !next.startsWith("/") || next.startsWith("//")) {
-    return "/dashboard";
+    return "/my-learning";
   }
   return next;
 }
@@ -91,6 +91,7 @@ function SignupForm() {
       router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-up failed.");
+    } finally {
       setLoading(false);
     }
   }

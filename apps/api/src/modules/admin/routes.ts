@@ -76,8 +76,12 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       const updated = await fastify.prisma.user.update({
         where: { id: request.params.id },
         data: { role: newRole as "STUDENT" | "INSTRUCTOR" | "DS" | "ADMIN" },
-        select: { id: true, email: true, role: true }
+        select: { id: true, email: true, role: true, firebaseUid: true }
       });
+
+      // ✅ OPTIMIZED: Invalidate user cache when role changes
+      await fastify.cache.del(`user:${updated.firebaseUid}`);
+      fastify.log.info({ userId: updated.id, newRole }, "User cache invalidated after role change");
 
       return updated;
     }
@@ -144,6 +148,10 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       }
     });
 
+    // ✅ OPTIMIZED: Invalidate course list cache
+    await fastify.cache.del("courses:list");
+    fastify.log.info({ slug: course.slug }, "Course list cache invalidated after creation");
+
     return course;
   });
 
@@ -159,6 +167,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         data: request.body
       });
 
+      // ✅ OPTIMIZED: Invalidate course caches
+      await fastify.cache.del(
+        `course:${request.params.slug}`,
+        "courses:list"
+      );
+      fastify.log.info({ slug: request.params.slug }, "Course cache invalidated");
+
       return course;
     }
   );
@@ -169,6 +184,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     if (!user) return;
 
     await fastify.prisma.course.delete({ where: { slug: request.params.slug } });
+
+    // ✅ OPTIMIZED: Invalidate course caches
+    await fastify.cache.del(
+      `course:${request.params.slug}`,
+      "courses:list"
+    );
+    fastify.log.info({ slug: request.params.slug }, "Course cache invalidated after deletion");
+
     return { ok: true };
   });
 

@@ -11,6 +11,7 @@ import {
   useTransform
 } from "framer-motion";
 import { BadgeCheck, BookOpen, Clock, Layers, Lock, Play, ShoppingCart, Star } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -101,7 +102,15 @@ const TiltCard = ({
 // ─────────────────────────────────────────────
 // Course Card — exact match to old app design
 // ─────────────────────────────────────────────
-function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
+function CourseCard({
+  course,
+  index = 0,
+  isEnrolled = false
+}: {
+  course: Course;
+  index?: number;
+  isEnrolled?: boolean;
+}) {
   const router = useRouter();
   const { addItem, items } = useCart();
   const [mounted, setMounted] = useState(false);
@@ -129,12 +138,15 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
           {/* Thumbnail */}
           <div className="relative aspect-video w-full overflow-hidden bg-gray-900 flex-shrink-0">
             {course.thumbnail ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={course.thumbnail}
                 alt={course.title}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                quality={75}
                 loading={index < 4 ? "eager" : "lazy"}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                unoptimized
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
@@ -233,6 +245,8 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
                     <span className="px-3 py-1 bg-amber-100 text-amber-800 text-[12px] font-bold rounded-full border border-amber-200">
                       Coming Soon
                     </span>
+                  ) : isEnrolled ? (
+                    <span className="text-[12px] font-bold text-emerald-600">Enrolled</span>
                   ) : (
                     <>
                       <span className="text-[17px] font-bold text-[#1c1d1f]">
@@ -252,7 +266,9 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!inCart) {
+                      if (isEnrolled) {
+                        router.push(`/courses/${course.id}/learn`);
+                      } else if (!inCart) {
                         addItem({
                           id: course.id,
                           title: course.title,
@@ -266,13 +282,24 @@ function CourseCard({ course, index = 0 }: { course: Course; index?: number }) {
                       }
                     }}
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 shrink-0 active:scale-[0.97] shadow-sm ${
-                      inCart
+                      isEnrolled
                         ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        : "bg-[#1c1d1f] hover:bg-black text-white"
+                        : inCart
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                          : "bg-[#1c1d1f] hover:bg-black text-white"
                     }`}
                   >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                    {inCart ? "In Cart" : "Buy"}
+                    {isEnrolled ? (
+                      <>
+                        <Play className="w-3.5 h-3.5" />
+                        Continue
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        {inCart ? "In Cart" : "Buy"}
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -405,7 +432,7 @@ interface CourseGridProps {
   highPriorityCount?: number;
 }
 
-export const CourseGrid = ({ courses }: CourseGridProps) => {
+export const CourseGrid = ({ courses, enrolledCourseIds }: CourseGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-fluid-md px-2 sm:px-4 perspective-1000">
       <AnimatePresence initial={false} mode="popLayout">
@@ -425,7 +452,12 @@ export const CourseGrid = ({ courses }: CourseGridProps) => {
           </motion.div>
         ) : (
           courses.map((course, index) => (
-            <CourseCard key={course.id} course={course} index={index} />
+            <CourseCard
+              key={course.id}
+              course={course}
+              index={index}
+              isEnrolled={enrolledCourseIds?.has(course.id) ?? false}
+            />
           ))
         )}
       </AnimatePresence>

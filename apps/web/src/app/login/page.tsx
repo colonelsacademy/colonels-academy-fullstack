@@ -64,6 +64,21 @@ function LoginForm() {
       const { user } = await signInWithPopup(auth, provider);
       const token = await user.getIdToken();
       await login(token);
+      
+      // Check if trying to access admin route
+      if (next.startsWith("/admin")) {
+        // Fetch user role to verify admin access
+        const sessionRes = await fetch("/api/auth/session");
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData.user?.role !== "admin") {
+            // Not an admin, redirect to my-learning instead
+            router.push("/my-learning");
+            return;
+          }
+        }
+      }
+      
       router.push(next);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
@@ -90,6 +105,21 @@ function LoginForm() {
         const token = await res.user.getIdToken();
         await login(token);
       }
+      
+      // Check if trying to access admin route
+      if (next.startsWith("/admin")) {
+        // Fetch user role to verify admin access
+        const sessionRes = await fetch("/api/auth/session");
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData.user?.role !== "admin") {
+            // Not an admin, redirect to my-learning instead
+            router.push("/my-learning");
+            return;
+          }
+        }
+      }
+      
       router.push(next);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };

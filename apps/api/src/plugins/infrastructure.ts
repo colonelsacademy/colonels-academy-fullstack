@@ -9,6 +9,8 @@ import type {
   VideoSyncJob
 } from "@colonels-academy/contracts";
 
+import { CacheManager } from "../lib/cache";
+
 export interface QueueRegistry {
   videoSync: Queue<VideoSyncJob>;
   notifications: Queue<NotificationJob>;
@@ -27,6 +29,7 @@ declare module "fastify" {
     redis: Redis | null;
     queues: QueueRegistry | null;
     bunny: BunnyConfig;
+    cache: CacheManager;
   }
 }
 
@@ -77,6 +80,17 @@ export default fp(async (fastify) => {
   fastify.decorate("redis", redis);
   fastify.decorate("queues", queues);
   fastify.decorate("bunny", bunny);
+
+  // Initialize cache manager
+  const cache = new CacheManager(redis, fastify.log);
+  fastify.decorate("cache", cache);
+
+  // Log cache availability
+  if (cache.isAvailable()) {
+    fastify.log.info("Redis cache enabled");
+  } else {
+    fastify.log.warn("Redis cache disabled - performance will be degraded");
+  }
 
   fastify.addHook("onClose", async () => {
     if (queues) {

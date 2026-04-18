@@ -28,6 +28,7 @@ import {
   listPhaseMockExamLessonIds
 } from "../../lib/mock-exam";
 import { StudySessionError, startStudySession, updateStudySession } from "../../lib/study-session";
+import { getCachedUserId } from "../../lib/user-cache";
 
 // ── Params / Body types ───────────────────────────────────────────────────────
 
@@ -104,17 +105,11 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/enrollments", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    const dbUser = await fastify.prisma.user.findUnique({
-      where: { firebaseUid: authUser.uid },
-      select: { id: true }
-    });
-
-    if (!dbUser) {
-      return reply.notFound("User not found in database.");
-    }
+    // ✅ OPTIMIZED: Use cached user lookup instead of database query
+    const userId = await getCachedUserId(fastify, authUser);
 
     const enrollments = await fastify.prisma.enrollment.findMany({
-      where: { userId: dbUser.id, status: "ACTIVE" },
+      where: { userId, status: "ACTIVE" },
       include: {
         course: {
           select: {
@@ -133,7 +128,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
     const completedCounts = await fastify.prisma.userProgress.groupBy({
       by: ["courseId"],
       where: {
-        userId: dbUser.id,
+        userId,
         status: "COMPLETED",
         courseId: { in: enrollments.map((e) => e.courseId) }
       },

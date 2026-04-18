@@ -1,5 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 
+import { getCachedUserId } from "../../lib/user-cache";
+
 type CreateOrderBody = {
   Body: {
     items: Array<{ courseSlug: string }>;
@@ -15,12 +17,8 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<CreateOrderBody>("/", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    const dbUser = await fastify.prisma.user.findUnique({
-      where: { firebaseUid: authUser.uid },
-      select: { id: true }
-    });
-
-    if (!dbUser) return reply.notFound("User not found in database.");
+    // ✅ OPTIMIZED: Use cached user lookup
+    const userId = await getCachedUserId(fastify, authUser);
 
     const { items, provider } = request.body;
     if (!items?.length) return reply.badRequest("No items in order.");
@@ -38,7 +36,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
     // Check for existing active enrollments
     const existingEnrollments = await fastify.prisma.enrollment.findMany({
       where: {
-        userId: dbUser.id,
+        userId,
         courseId: { in: courses.map((c) => c.id) },
         status: "ACTIVE"
       },
@@ -56,7 +54,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
 
     const order = await fastify.prisma.purchaseOrder.create({
       data: {
-        userId: dbUser.id,
+        userId,  // ✅ Fixed: Use userId directly
         status: "PENDING_PAYMENT",
         totalNpr,
         provider,

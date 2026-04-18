@@ -66,8 +66,9 @@ const GatewayHero = () => {
             priority
             fill
             sizes="100vw"
-            quality={76}
+            quality={75}
             className="object-cover object-right-top"
+            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent sm:via-white/60" />
         </div>

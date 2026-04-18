@@ -7,6 +7,7 @@ import type {
 import type { FastifyPluginAsync } from "fastify";
 
 import type { AuthUser } from "../../plugins/auth";
+import { getCachedUser } from "../../lib/user-cache";
 import { syncUserWithPostgres } from "./user-sync";
 
 function toSessionUser(authUser: AuthUser): AuthSessionUser {
@@ -59,12 +60,14 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
       // Enrich role from Postgres so admin users see their role correctly
       if (authResult.user) {
-        const dbUser = await fastify.prisma.user.findUnique({
-          where: { firebaseUid: authResult.user.uid },
-          select: { role: true }
-        });
-        if (dbUser?.role) {
-          authResult.user.role = dbUser.role.toLowerCase();
+        try {
+          const cachedUser = await getCachedUser(fastify, authResult.user.uid);
+          if (cachedUser?.role) {
+            authResult.user.role = cachedUser.role.toLowerCase();
+          }
+        } catch (error) {
+          // If user not found in cache/db, continue without role
+          fastify.log.warn({ uid: authResult.user.uid, error }, "Failed to get user role");
         }
       }
 
