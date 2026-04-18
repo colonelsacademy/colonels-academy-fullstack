@@ -17,6 +17,11 @@
 
 **Monetization Strategy**:
 ```
+FREE Introduction Module (Always Accessible):
+- Module 0: Introduction, Vision, Mission & Course Overview
+- Content: Vision/Mission, Objectives, Learning Outcomes, Course Structure
+- Purpose: Help officers understand the program before purchasing
+
 Individual Chapters (Pay-as-you-go):
 - Chapter 1: Military Operations & Administration - NPR 5,000
 - Chapter 2: Contemporary Affairs - NPR 3,500  
@@ -51,6 +56,9 @@ Premium Bundle (Best Value):
 
 ### **Section Title**: "Choose Your Path to Success"
 
+**Above the comparison table**: 
+"✅ **Free Introduction Module** - Learn about the course, vision, mission, and objectives before you buy!"
+
 **Visual Layout**: Three-column comparison table with clear value proposition
 
 ```
@@ -61,6 +69,7 @@ Premium Bundle (Best Value):
 │ NPR 20,000 Total     │  │ NPR 18,000           │  │ NPR 25,000           │
 │ (Buy separately)     │  │ Save NPR 2,000       │  │ Save NPR 7,000       │
 ├──────────────────────┤  ├──────────────────────┤  ├──────────────────────┤
+│ ✓ Free Introduction  │  │ ✓ Free Introduction  │  │ ✓ Free Introduction  │
 │ ✓ 5 Chapters         │  │ ✓ All 5 Chapters     │  │ ✓ All 5 Chapters     │
 │ ✓ Video Lessons      │  │ ✓ Video Lessons      │  │ ✓ Video Lessons      │
 │ ✓ Quizzes            │  │ ✓ Quizzes            │  │ ✓ Quizzes            │
@@ -74,6 +83,7 @@ Premium Bundle (Best Value):
 │                      │  │                      │  │ ✓ Performance Report │
 ├──────────────────────┤  ├──────────────────────┤  ├──────────────────────┤
 │ [Buy Chapters]       │  │ [Get Bundle] 🔥      │  │ [Get Premium] ⭐     │
+│ [Try Free Intro]     │  │ [Try Free Intro]     │  │ [Try Free Intro]     │
 └──────────────────────┘  └──────────────────────┘  └──────────────────────┘
 ```
 
@@ -168,6 +178,51 @@ Premium Bundle (Best Value):
 ---
 
 ## 1. Course Overview (From course-content.md)
+
+### **FREE Introduction Section** 🆓
+
+**Always Unlocked - No Purchase Required**
+
+This introductory section is completely free and accessible to all users to help them understand the course structure and make informed purchase decisions.
+
+#### **1. Introduction, Vision, Mission, and Objectives**
+
+**Our Platform**: Dedicated to supporting officers of the Nepalese Army in their preparation for the Army Command & Staff Course Entrance Exam.
+
+**Vision**: To empower officers with structured, comprehensive, and modern learning tools that enhance their readiness for the Army Command & Staff Course entrance exam.
+
+**Mission**: To provide accessible, flexible, and interactive study resources that combine individual effort, faculty guidance, and peer collaboration.
+
+**Objectives**:
+- Equip officers with a clear understanding of exam requirements
+- Provide structured study plans and timelines
+- Facilitate practice through quizzes, mock exams, and feedback systems
+- Foster confidence, discipline, and analytical skills essential for success
+
+#### **2. Overview Description**
+
+This platform offers a 6-month preparation program designed around the syllabus of the Army Command & Staff Course Entrance Exam.
+
+**Subjects Covered**:
+- **Military Operations & Administration** – Tactics & Administration - 100 Marks
+- **Contemporary Affairs** - Current Affairs – 100 Marks
+- **Military History & Strategic Thoughts** - Military History – 100 Marks
+- **Armed Conflicts Military Appreciation & Plans** - Appreciation - 100 Marks
+- **Lecture Methodology** - Lecturette - 100 Marks
+
+**Learning Outcomes**:
+- Develop analytical and decision-making skills
+- Strengthen knowledge of military history, law, and technology
+- Enhance oral communication and presentation skills
+- Build confidence in exam-taking strategies
+
+**Content Structure**:
+- **Free Introduction**: Vision, mission, course overview (always accessible)
+- **Chapter 1-5**: Paid content with individual or bundle purchase options
+- **Sequential Learning**: Complete previous lessons to unlock next
+- **Comprehensive Assessment**: Mock exams and progress tracking
+
+---
 
 ### Course Details
 - **Title**: Army Command & Staff Course Entrance Exam Preparation Platform - 2083
