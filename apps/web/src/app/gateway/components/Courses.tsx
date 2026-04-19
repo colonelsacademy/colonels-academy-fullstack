@@ -347,9 +347,11 @@ export const CourseSection = ({
 // ─────────────────────────────────────────────
 interface CourseFilterProps {
   activeCategory: Category;
+  /** Page hub for category query updates (defaults to home `/`). */
+  basePath?: string;
 }
 
-export const CourseFilter = ({ activeCategory }: CourseFilterProps) => {
+export const CourseFilter = ({ activeCategory, basePath = "/" }: CourseFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -358,7 +360,15 @@ export const CourseFilter = ({ activeCategory }: CourseFilterProps) => {
     if (cat === "all") params.delete("category");
     else params.set("category", cat);
     const queryString = params.toString();
-    router.push(queryString ? `/?${queryString}` : "/", { scroll: false });
+    const href =
+      basePath === "/"
+        ? queryString
+          ? `/?${queryString}`
+          : "/"
+        : queryString
+          ? `${basePath}?${queryString}`
+          : basePath;
+    router.push(href, { scroll: false });
   };
 
   return (

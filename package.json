@@ -23,6 +23,7 @@
     "db:studio": "pnpm --filter @colonels-academy/database run db:studio",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
+    "firebase:emulators": "firebase emulators:start --only auth",
     "biome:check": "biome check .",
     "biome:format": "biome format --write .",
     "prepare": "node -e \"console.log('Skipping git hooks setup on Windows for now.')\""
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "dotenv": "^16.5.0",
+    "firebase-tools": "^14.0.0",
     "turbo": "^2.5.3"
   }
 }

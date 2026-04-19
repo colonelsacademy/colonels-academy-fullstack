@@ -4,11 +4,9 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useCart } from "@/contexts/CartContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BookMarked,
   BookOpen,
   ChevronDown,
   CreditCard,
-  FileText,
   Lock,
   LogOut,
   Menu,
@@ -23,14 +21,6 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-
-type DropdownKey = "programs" | "resources" | null;
-
-const academyResources = [
-  { name: "Study Materials", path: "/study-materials", icon: BookOpen },
-  { name: "Previous Papers", path: "/previous-papers", icon: FileText },
-  { name: "Training Manuals", path: "/training-manuals", icon: BookMarked }
-];
 
 const AcademyLogo = () => (
   <div className="flex items-center gap-4 select-none">
@@ -48,83 +38,6 @@ const AcademyLogo = () => (
   </div>
 );
 
-const Dropdown = ({
-  label,
-  items,
-  width,
-  id,
-  activeId,
-  setActiveId
-}: {
-  label: string;
-  items: { name: string; path: string; icon: React.ElementType }[];
-  width: string;
-  id: DropdownKey;
-  activeId: DropdownKey;
-  setActiveId: (id: DropdownKey) => void;
-}) => {
-  const isOpen = activeId === id;
-
-  return (
-    <div className="relative flex items-center h-full">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setActiveId(isOpen ? null : id);
-        }}
-        className={`group flex items-center gap-1.5 px-3 py-2 focus:outline-none rounded-lg transition-all ${isOpen ? "bg-white/10" : "hover:bg-white/5"}`}
-        aria-expanded={isOpen}
-        aria-haspopup="true"
-      >
-        <span
-          className={`font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] transition-colors duration-300 ${isOpen ? "text-[#D4AF37]" : "text-white/90 group-hover:text-[#D4AF37]"}`}
-        >
-          {label}
-        </span>
-        <ChevronDown
-          className={`w-3 h-3 transition-all duration-300 ${isOpen ? "rotate-180 text-[#D4AF37]" : "text-white/50 group-hover:text-[#D4AF37]"}`}
-        />
-      </button>
-
-      <motion.div
-        initial="closed"
-        animate={isOpen ? "open" : "closed"}
-        variants={{
-          closed: { opacity: 0, y: 10, pointerEvents: "none" as const, scale: 0.95 },
-          open: { opacity: 1, y: 0, pointerEvents: "auto" as const, scale: 1 }
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        role="menu"
-        className={`absolute top-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 pt-2 ${width} z-[100]`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100 transform -translate-y-1/2" />
-        <div className="bg-white border border-gray-100 rounded-xl shadow-2xl py-3 relative z-10 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#D4AF37] to-[#F4CA30]" />
-          {items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                href={item.path}
-                className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 group transition-all border-b border-gray-50 last:border-0"
-              >
-                <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-[#D4AF37]/10 transition-colors">
-                  <Icon className="w-4 h-4 text-gray-400 group-hover:text-[#D4AF37] transition-colors" />
-                </div>
-                <span className="block font-['Rajdhani'] font-bold uppercase tracking-wider text-sm text-gray-800 group-hover:text-[#0F1C15]">
-                  {item.name}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </motion.div>
-    </div>
-  );
-};
-
 const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -132,7 +45,6 @@ const Navbar = () => {
   const { itemCount, items, removeItem, total } = useCart();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -150,12 +62,6 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      // Don't close dropdown if clicking inside a dropdown button or menu
-      const target = e.target as HTMLElement;
-      if (target.closest('[aria-haspopup="true"]') || target.closest('[role="menu"]')) {
-        return;
-      }
-      setActiveDropdown(null);
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
       }
@@ -167,7 +73,6 @@ const Navbar = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: setState setters are stable
   useEffect(() => {
     setIsMenuOpen(false);
-    setActiveDropdown(null);
     setIsCartOpen(false);
   }, [pathname]);
 
@@ -190,10 +95,10 @@ const Navbar = () => {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8 h-full overflow-visible">
             <Link
-              href="/#mentors"
+              href="/staff-college"
               className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
             >
-              Directing Staff
+              Staff College
             </Link>
             <Link
               href="/courses"
@@ -201,14 +106,12 @@ const Navbar = () => {
             >
               Courses
             </Link>
-            <Dropdown
-              id="resources"
-              label="Resources"
-              items={academyResources}
-              width="w-72"
-              activeId={activeDropdown}
-              setActiveId={setActiveDropdown}
-            />
+            <Link
+              href="/#mentors"
+              className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
+            >
+              Instructors
+            </Link>
           </div>
 
           {/* Right actions */}
@@ -338,32 +241,25 @@ const Navbar = () => {
             className="md:hidden bg-[#0F1C15] border-b border-white/10 px-6 py-4 flex flex-col gap-4 sticky top-20 z-40 overflow-hidden"
           >
             <Link
+              href="/staff-college"
+              onClick={() => setIsMenuOpen(false)}
+              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
+            >
+              Staff College
+            </Link>
+            <Link
               href="/courses"
               onClick={() => setIsMenuOpen(false)}
               className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
             >
-              Course Catalog
+              Courses
             </Link>
             <Link
               href="/#mentors"
               onClick={() => setIsMenuOpen(false)}
               className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
             >
-              Directing Staff
-            </Link>
-            <Link
-              href="/study-materials"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
-            >
-              Study Materials
-            </Link>
-            <Link
-              href="/previous-papers"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white hover:text-[#D4AF37] font-bold py-2 border-b border-white/5"
-            >
-              Previous Papers
+              Instructors
             </Link>
             {authenticated && user ? (
               <div className="flex flex-col gap-2 mt-2">

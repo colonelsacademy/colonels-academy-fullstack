@@ -5,8 +5,10 @@ import { getFirebaseClientAuth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   updateProfile
 } from "firebase/auth";
 import { ArrowRight, Shield } from "lucide-react";
@@ -47,6 +49,44 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function finalizeRedirectSignIn() {
+      const auth = getFirebaseClientAuth();
+      if (!auth) {
+        return;
+      }
+
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result?.user || cancelled) {
+          return;
+        }
+
+        const token = await result.user.getIdToken();
+        if (cancelled) {
+          return;
+        }
+        await login(token);
+        if (!cancelled) {
+          router.push(next);
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          const firebaseErr = err as { code?: string; message?: string };
+          setError(firebaseErr.message || "Google sign-in failed. Please try again.");
+        }
+      }
+    }
+
+    void finalizeRedirectSignIn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [login, next, router]);
+
   const resetForm = () => {
     setError(null);
     setEmail("");
@@ -66,7 +106,18 @@ function LoginForm() {
       await login(token);
       router.push(next);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign-in failed.");
+      const firebaseErr = err as { code?: string; message?: string };
+      if (firebaseErr.code === "auth/popup-blocked") {
+        const auth = getFirebaseClientAuth();
+        if (!auth) {
+          setError("Firebase is not configured.");
+          return;
+        }
+        const provider = new GoogleAuthProvider();
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      setError(firebaseErr.message || "Sign-in failed.");
     } finally {
       setLoading(false);
     }
