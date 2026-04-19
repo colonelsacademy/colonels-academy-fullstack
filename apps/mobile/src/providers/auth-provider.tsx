@@ -19,8 +19,8 @@ import {
 } from "../lib/firebase";
 
 import { readPublicMobileEnv } from "@colonels-academy/config";
-import Constants from "expo-constants";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
+import Constants from "expo-constants";
 
 const env = readPublicMobileEnv();
 const extra = Constants.expoConfig?.extra ?? {};
