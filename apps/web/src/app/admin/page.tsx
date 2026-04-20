@@ -475,13 +475,48 @@ function BunnyVideoPicker({
 
       {open && (
         <div className="mt-2 border border-gray-200 rounded-lg bg-white shadow-lg max-h-64 overflow-hidden flex flex-col">
-          <div className="p-2 border-b border-gray-100">
+          <div className="p-2 border-b border-gray-100 space-y-2">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search videos..."
               className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
             />
+            <div className="text-xs text-gray-500">Or paste video ID manually:</div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Paste Bunny video ID..."
+                className="flex-1 px-3 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const id = e.currentTarget.value.trim();
+                    if (id) {
+                      onChange(id, '', 0);
+                      setOpen(false);
+                      e.currentTarget.value = '';
+                    }
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  const id = input.value.trim();
+                  console.log('Manual video ID input:', id);
+                  if (id) {
+                    console.log('Calling onChange with:', { id, title: '', duration: 0 });
+                    onChange(id, '', 0);
+                    setOpen(false);
+                    input.value = '';
+                  }
+                }}
+                className="px-3 py-1.5 bg-[#D4AF37] text-[#0F1C15] text-xs font-bold rounded hover:bg-[#c9a227]"
+              >
+                Add
+              </button>
+            </div>
           </div>
           <div className="overflow-y-auto flex-1">
             {filtered.length === 0 ? (
@@ -612,6 +647,10 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       contentType: form.contentType,
       learningMode: form.learningMode
     };
+
+    // Debug: Log what we're sending
+    console.log('Submitting lesson update:', { editingId, payload });
+
     try {
       if (editingId) {
         const res = await fetch(`/api/admin/lessons/${editingId}`, {
@@ -619,7 +658,9 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error((await res.json()).message);
+        const data = await res.json();
+        console.log('Update response:', data);
+        if (!res.ok) throw new Error(data.message);
       } else {
         const res = await fetch(`/api/admin/courses/${courseSlug}/lessons`, {
           method: "POST",
@@ -699,14 +740,19 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
             <div className="col-span-2">
               <BunnyVideoPicker
                 value={form.bunnyVideoId}
-                onChange={(id, title, duration) =>
-                  setForm((p) => ({
-                    ...p,
-                    bunnyVideoId: id,
-                    title: p.title || title,
-                    durationMinutes: String(duration)
-                  }))
-                }
+                onChange={(id, title, duration) => {
+                  console.log('BunnyVideoPicker onChange called:', { id, title, duration });
+                  setForm((p) => {
+                    const newForm = {
+                      ...p,
+                      bunnyVideoId: id,
+                      title: p.title || title || 'Untitled Lesson',
+                      durationMinutes: duration > 0 ? String(duration) : p.durationMinutes
+                    };
+                    console.log('Updated form state:', newForm);
+                    return newForm;
+                  });
+                }}
               />
             </div>
             <InputField

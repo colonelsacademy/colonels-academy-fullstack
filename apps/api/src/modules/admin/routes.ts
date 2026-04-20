@@ -370,42 +370,52 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
+    const body = request.body || {};
+
+    // Debug: Log the raw request body
+    fastify.log.info({ 
+      lessonId: request.params.id, 
+      rawBody: body,
+      bunnyVideoId: body.bunnyVideoId,
+      bunnyVideoIdType: typeof body.bunnyVideoId,
+      bunnyVideoIdUndefined: body.bunnyVideoId === undefined
+    }, "PATCH lesson - raw request body");
+
+    // Build update data object explicitly
+    const updateData: any = {};
+
+    if (body.title) updateData.title = body.title;
+    if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
+    if (body.bunnyVideoId !== undefined) {
+      updateData.bunnyVideoId = body.bunnyVideoId || null;
+    }
+    if (body.durationMinutes !== undefined) updateData.durationMinutes = body.durationMinutes;
+    if (body.accessKind) updateData.accessKind = body.accessKind;
+    if (body.contentType) updateData.contentType = body.contentType;
+    if (body.learningMode) updateData.learningMode = body.learningMode;
+    if (body.position !== undefined) updateData.position = body.position;
+    if (body.lessonContent !== undefined) {
+      updateData.lessonContent = body.lessonContent as Prisma.InputJsonValue;
+    }
+
+    // Debug logging
+    fastify.log.info({ 
+      lessonId: request.params.id, 
+      updateData,
+      bodyBunnyVideoId: body.bunnyVideoId
+    }, "Updating lesson");
+
     const lesson = await fastify.prisma.lesson.update({
       where: { id: request.params.id },
-      data: {
-        ...(request.body.title ? { title: request.body.title } : {}),
-        ...(request.body.synopsis !== undefined ? { synopsis: request.body.synopsis } : {}),
-        ...(request.body.bunnyVideoId !== undefined
-          ? { bunnyVideoId: request.body.bunnyVideoId || null }
-          : {}),
-        ...(request.body.durationMinutes !== undefined
-          ? { durationMinutes: request.body.durationMinutes }
-          : {}),
-        ...(request.body.accessKind
-          ? { accessKind: request.body.accessKind as "PREVIEW" | "STANDARD" }
-          : {}),
-        ...(request.body.contentType
-          ? {
-              contentType: request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT"
-            }
-          : {}),
-        ...(request.body.learningMode
-          ? {
-              learningMode: request.body.learningMode as
-                | "LESSON"
-                | "PRACTICE"
-                | "QUIZ"
-                | "LIVE"
-                | "FEEDBACK"
-                | "RESOURCE"
-            }
-          : {}),
-        ...(request.body.lessonContent !== undefined
-          ? { lessonContent: request.body.lessonContent as Prisma.InputJsonValue }
-          : {}),
-        ...(request.body.position !== undefined ? { position: request.body.position } : {})
-      }
+      data: updateData
     });
+
+    // Debug: Log what was actually saved
+    fastify.log.info({ 
+      lessonId: lesson.id, 
+      savedBunnyVideoId: lesson.bunnyVideoId,
+      requestedBunnyVideoId: body.bunnyVideoId
+    }, "Lesson updated successfully");
 
     return lesson;
   });
@@ -430,6 +440,48 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     return { ok: true };
+  });
+
+  // ── GET /v1/admin/bunny-videos ─────────────────────────────────────────────
+  fastify.get("/bunny-videos", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    const apiKey = process.env.BUNNY_STREAM_API_KEY;
+    const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID;
+
+    if (!apiKey || !libraryId) {
+      return reply.internalServerError(
+        "Bunny Stream API key or library ID not configured. Please set BUNNY_STREAM_API_KEY and BUNNY_STREAM_LIBRARY_ID in environment variables."
+      );
+    }
+
+    try {
+      const response = await fetch(
+        `https://video.bunnycdn.com/library/${libraryId}/videos?page=1&itemsPerPage=100&orderBy=date`,
+        {
+          headers: {
+            AccessKey: apiKey,
+            accept: "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        fastify.log.error(
+          { status: response.status, error: errorText },
+          "Bunny Stream API error"
+        );
+        return reply.internalServerError(`Bunny Stream API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      fastify.log.error({ error }, "Failed to fetch Bunny videos");
+      return reply.internalServerError("Failed to fetch videos from Bunny Stream");
+    }
   });
 };
 

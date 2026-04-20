@@ -91,18 +91,15 @@ const CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
 // ─── Main VideoPlayer ─────────────────────────────────────────────────────────
 const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(autoplay);
-  const [isCountingDown, setIsCountingDown] = useState(false);
   const [prevVideoId, setPrevVideoId] = useState(videoId);
 
   if (videoId !== prevVideoId) {
     setPrevVideoId(videoId);
     setIsPlaying(autoplay);
-    setIsCountingDown(false);
   }
 
   const handleStartPlayback = () => {
     setIsPlaying(true);
-    setIsCountingDown(true);
   };
 
   const isBunny =
@@ -120,17 +117,15 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
         {!isPlaying ? (
           <ThumbnailOverlay poster={poster} onPlay={handleStartPlayback} />
         ) : (
-          <>
-            <iframe
-              src={iframeUrl}
-              loading="eager"
-              title="Course Video"
-              className="w-full h-full border-0 absolute top-0 left-0"
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-            />
-            {isCountingDown && <CountdownIntro onFinish={() => setIsCountingDown(false)} />}
-          </>
+          <iframe
+            key={videoId}
+            src={iframeUrl}
+            loading="eager"
+            title="Course Video"
+            className="w-full h-full border-0 absolute top-0 left-0"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+          />
         )}
       </div>
     );
@@ -145,16 +140,14 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
         {!isPlaying ? (
           <ThumbnailOverlay poster={poster} onPlay={handleStartPlayback} />
         ) : (
-          <>
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`}
-              title="Course Video"
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-            {isCountingDown && <CountdownIntro onFinish={() => setIsCountingDown(false)} />}
-          </>
+          <iframe
+            key={videoId}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`}
+            title="Course Video"
+            className="w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
         )}
       </div>
     );

@@ -1,25 +1,26 @@
-import { API_BASE_URL } from "@/lib/apiClient";
-import { NextResponse } from "next/server";
+import { proxyFastifyRequest } from "@/app/api/_lib/fastify-proxy";
+import type { NextRequest } from "next/server";
 
-export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const { slug } = await params;
-  const cookie = request.headers.get("cookie");
-  const res = await fetch(`${API_BASE_URL}/v1/admin/courses/${slug}/lessons`, {
-    headers: { ...(cookie ? { cookie } : {}) }
-  });
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
+  return proxyFastifyRequest(
+    request,
+    `/v1/admin/courses/${encodeURIComponent(slug)}/lessons`,
+    { method: "GET" }
+  );
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const { slug } = await params;
-  const cookie = request.headers.get("cookie");
-  const body = await request.json();
-  const res = await fetch(`${API_BASE_URL}/v1/admin/courses/${slug}/lessons`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
+  return proxyFastifyRequest(
+    request,
+    `/v1/admin/courses/${encodeURIComponent(slug)}/lessons`,
+    { method: "POST" }
+  );
 }
