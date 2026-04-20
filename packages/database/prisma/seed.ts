@@ -9,6 +9,7 @@ import {
   upcomingSessions
 } from "@colonels-academy/contracts";
 
+import { seedArmyCommandStaff2083 } from "./seeds/army-command-staff-2083-curriculum";
 import { buildStaffCollegeCommandCurriculumSeed } from "./staff-college-command-curriculum";
 
 const prisma = new PrismaClient();
@@ -391,8 +392,15 @@ async function main() {
 
   const courseCount = await prisma.course.count();
   console.log(`✅ Seed completed successfully. Courses in DB: ${courseCount}`);
-}
 
+  console.log("\n🎖️  Seeding Army Command & Staff Course 2083...");
+  try {
+    await seedArmyCommandStaff2083(prisma);
+  } catch (error) {
+    console.error("❌ Error seeding Army course:", error);
+    throw error;
+  }
+}
 main()
   .then(async () => {
     await prisma.$disconnect();

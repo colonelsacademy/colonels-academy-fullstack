@@ -15,6 +15,8 @@ import {
 } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
 
+import { CacheKeys, CacheTTL } from "../../lib/cache";
+import type { CacheManager } from "../../lib/cache";
 import { isPhaseUnlocked, resolveCoursePhaseAccess } from "../../lib/course-phase-plan";
 
 async function loadCourseRecords(prisma: DatabaseClient) {
@@ -53,7 +55,7 @@ function parseLessonContent(value: unknown): LessonDetail["lessonContent"] {
 function mapCourseRecord(record: CourseRecord): CourseDetail {
   const fallback = courseCatalog.find((course) => course.slug === record.slug);
 
-  return {
+  const baseDetail: CourseDetail = {
     slug: record.slug,
     title: record.title,
     track: (record.track as CourseDetail["track"]) ?? "army",
@@ -73,9 +75,14 @@ function mapCourseRecord(record: CourseRecord): CourseDetail {
     ),
     outcomeBullets: fallback?.outcomeBullets ?? [],
     syllabus: fallback?.syllabus ?? [],
-    ...(record.originalPriceNpr !== null ? { originalPriceNpr: record.originalPriceNpr } : {}),
-    heroImageUrl: getAssetUrl(record.heroImageUrl ?? fallback?.heroImageUrl ?? "")
+    heroImageUrl: record.heroImageUrl ? getAssetUrl(record.heroImageUrl) : ""
   };
+
+  if (record.originalPriceNpr !== null) {
+    baseDetail.originalPriceNpr = record.originalPriceNpr;
+  }
+
+  return baseDetail;
 }
 
 function mapInstructorRecord(record: InstructorRecord): InstructorProfile {
@@ -93,8 +100,18 @@ function mapInstructorRecord(record: InstructorRecord): InstructorProfile {
 
 export async function listCourses(
   prisma: DatabaseClient,
+  cache: CacheManager,
   log: FastifyBaseLogger
 ): Promise<CourseDetail[]> {
+  const cacheKey = CacheKeys.courseList();
+
+  // ✅ OPTIMIZED: Try cache first
+  const cached = await cache.get<CourseDetail[]>(cacheKey);
+  if (cached) {
+    log.debug("Serving course list from cache");
+    return cached;
+  }
+
   try {
     const records = await loadCourseRecords(prisma);
 
@@ -102,7 +119,13 @@ export async function listCourses(
       return courseCatalog;
     }
 
-    return records.map(mapCourseRecord);
+    const courses = records.map(mapCourseRecord);
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, courses, CacheTTL.COURSE_LIST);
+    log.debug("Course list cached");
+
+    return courses;
   } catch (error) {
     log.error(
       { err: error },
@@ -114,10 +137,19 @@ export async function listCourses(
 
 export async function getCourseBySlug(
   prisma: DatabaseClient,
+  cache: CacheManager,
   log: FastifyBaseLogger,
   slug: string
 ): Promise<CourseDetail | null> {
   const fallback = courseCatalog.find((course) => course.slug === slug) ?? null;
+  const cacheKey = CacheKeys.course(slug);
+
+  // ✅ OPTIMIZED: Try cache first
+  const cached = await cache.get<CourseDetail>(cacheKey);
+  if (cached) {
+    log.debug({ slug }, "Serving course from cache");
+    return cached;
+  }
 
   try {
     const record = await prisma.course.findUnique({
@@ -134,7 +166,15 @@ export async function getCourseBySlug(
       }
     });
 
-    return record ? mapCourseRecord(record) : fallback;
+    const course = record ? mapCourseRecord(record) : fallback;
+
+    // Cache for 5 minutes
+    if (course) {
+      await cache.set(cacheKey, course, CacheTTL.COURSE);
+      log.debug({ slug }, "Course cached");
+    }
+
+    return course;
   } catch (error) {
     log.error(
       { err: error, slug },
@@ -146,8 +186,18 @@ export async function getCourseBySlug(
 
 export async function listInstructors(
   prisma: DatabaseClient,
+  cache: CacheManager,
   log: FastifyBaseLogger
 ): Promise<InstructorProfile[]> {
+  const cacheKey = CacheKeys.instructorList();
+
+  // ✅ OPTIMIZED: Try cache first
+  const cached = await cache.get<InstructorProfile[]>(cacheKey);
+  if (cached) {
+    log.debug("Serving instructor list from cache");
+    return cached;
+  }
+
   try {
     const records = await loadInstructorRecords(prisma);
 
@@ -155,7 +205,13 @@ export async function listInstructors(
       return instructors;
     }
 
-    return records.map(mapInstructorRecord);
+    const instructorList = records.map(mapInstructorRecord);
+
+    // Cache for 10 minutes
+    await cache.set(cacheKey, instructorList, CacheTTL.INSTRUCTOR_LIST);
+    log.debug("Instructor list cached");
+
+    return instructorList;
   } catch (error) {
     log.error(
       { err: error },
@@ -179,6 +235,8 @@ export async function getCourseLessons(
     });
 
     if (!course) return null;
+
+    log.info({ courseId: course.id, courseSlug: course.slug }, "Fetching lessons for course");
 
     // Fetch modules and lessons
     const modules = await prisma.module.findMany({
@@ -206,6 +264,8 @@ export async function getCourseLessons(
         }
       }
     });
+
+    log.info({ moduleCount: modules.length, courseId: course.id }, "Fetched modules");
 
     const unorganisedLessons = await prisma.lesson.findMany({
       where: { courseId: course.id, moduleId: null },

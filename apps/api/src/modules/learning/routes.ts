@@ -28,6 +28,7 @@ import {
   listPhaseMockExamLessonIds
 } from "../../lib/mock-exam";
 import { StudySessionError, startStudySession, updateStudySession } from "../../lib/study-session";
+import { getCachedUserId } from "../../lib/user-cache";
 
 // ── Params / Body types ───────────────────────────────────────────────────────
 
@@ -101,20 +102,14 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
   }
 
   // ── GET /v1/learning/enrollments ───────────────────────────────────────────
-  fastify.get("/enrollments", async (request, reply) => {
+  fastify.get("/enrollments", async (request, _reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    const dbUser = await fastify.prisma.user.findUnique({
-      where: { firebaseUid: authUser.uid },
-      select: { id: true }
-    });
-
-    if (!dbUser) {
-      return reply.notFound("User not found in database.");
-    }
+    // ✅ OPTIMIZED: Use cached user lookup instead of database query
+    const userId = await getCachedUserId(fastify, authUser);
 
     const enrollments = await fastify.prisma.enrollment.findMany({
-      where: { userId: dbUser.id, status: "ACTIVE" },
+      where: { userId, status: "ACTIVE" },
       include: {
         course: {
           select: {
@@ -133,7 +128,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
     const completedCounts = await fastify.prisma.userProgress.groupBy({
       by: ["courseId"],
       where: {
-        userId: dbUser.id,
+        userId,
         status: "COMPLETED",
         courseId: { in: enrollments.map((e) => e.courseId) }
       },
@@ -826,6 +821,653 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
       transport: "HTTP poll; add WebSockets only if chat/presence is required."
     };
   });
+
+  // ── GET /v1/learning/chapters/purchase-status ──────────────────────────────
+  fastify.get<{ Querystring: { courseSlug: string } }>(
+    "/chapters/purchase-status",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+      const userId = await getCachedUserId(fastify, authUser);
+
+      const { courseSlug } = request.query;
+
+      if (!courseSlug) {
+        return reply.badRequest("courseSlug is required");
+      }
+
+      // Get course
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: courseSlug },
+        select: { id: true }
+      });
+
+      if (!course) {
+        return reply.notFound("Course not found");
+      }
+
+      // Get user's chapter purchases
+      const chapterPurchases = await fastify.prisma.chapterPurchase.findMany({
+        where: {
+          userId,
+          courseId: course.id,
+          paymentStatus: "COMPLETED"
+        },
+        include: {
+          module: {
+            select: {
+              id: true,
+              chapterNumber: true,
+              title: true
+            }
+          }
+        }
+      });
+
+      // Get user's bundle purchases
+      const bundlePurchases = await fastify.prisma.bundlePurchase.findMany({
+        where: {
+          userId,
+          courseId: course.id,
+          paymentStatus: "COMPLETED"
+        },
+        include: {
+          bundleOffer: {
+            select: {
+              bundleType: true,
+              includedChapters: true
+            }
+          }
+        }
+      });
+
+      // Get chapter progress
+      const chapterProgress = await fastify.prisma.chapterProgress.findMany({
+        where: {
+          userId,
+          courseId: course.id
+        }
+      });
+
+      // Determine which chapters are unlocked
+      const purchasedChapters = new Set<number>();
+
+      // Add individually purchased chapters
+      for (const purchase of chapterPurchases) {
+        if (purchase.module.chapterNumber) {
+          purchasedChapters.add(purchase.module.chapterNumber);
+        }
+      }
+
+      // Add bundle-purchased chapters
+      for (const purchase of bundlePurchases) {
+        const chapters = purchase.bundleOffer.includedChapters as number[];
+        for (const ch of chapters) {
+          purchasedChapters.add(ch);
+        }
+      }
+
+      // Build response
+      return {
+        hasBundlePurchase: bundlePurchases.length > 0,
+        bundleType: bundlePurchases[0]?.bundleOffer.bundleType || null,
+        purchasedChapters: Array.from(purchasedChapters).sort(),
+        chapterProgress: chapterProgress.map((progress) => ({
+          chapterNumber: progress.chapterNumber,
+          completionPercentage: progress.completionPercentage,
+          isCompleted: progress.isChapterCompleted,
+          lessonsCompleted: progress.lessonsCompleted,
+          totalLessons: progress.totalLessons
+        }))
+      };
+    }
+  );
+
+  // ── GET /v1/learning/chapters/status ───────────────────────────────────────
+  fastify.get<{ Querystring: { courseSlug: string } }>(
+    "/chapters/status",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+      const userId = await getCachedUserId(fastify, authUser);
+
+      const { courseSlug } = request.query;
+
+      if (!courseSlug) {
+        return reply.badRequest("courseSlug is required");
+      }
+
+      // Get course
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: courseSlug },
+        select: { id: true, title: true }
+      });
+
+      if (!course) {
+        return reply.notFound("Course not found");
+      }
+
+      // Get all modules (chapters)
+      const modules = await fastify.prisma.module.findMany({
+        where: { courseId: course.id },
+        orderBy: { chapterNumber: "asc" },
+        select: {
+          id: true,
+          chapterNumber: true,
+          title: true,
+          isLocked: true,
+          isFreeIntro: true,
+          chapterPrice: true
+        }
+      });
+
+      // Get user's purchases
+      const chapterPurchases = await fastify.prisma.chapterPurchase.findMany({
+        where: {
+          userId,
+          courseId: course.id,
+          paymentStatus: "COMPLETED"
+        },
+        select: {
+          moduleId: true
+        }
+      });
+
+      const bundlePurchases = await fastify.prisma.bundlePurchase.findMany({
+        where: {
+          userId,
+          courseId: course.id,
+          paymentStatus: "COMPLETED"
+        },
+        select: {
+          bundleOffer: {
+            select: {
+              includedChapters: true
+            }
+          }
+        }
+      });
+
+      // Get chapter progress
+      const chapterProgress = await fastify.prisma.chapterProgress.findMany({
+        where: {
+          userId,
+          courseId: course.id
+        }
+      });
+
+      // Build purchased chapters set
+      const purchasedModuleIds = new Set(chapterPurchases.map((p) => p.moduleId));
+      const purchasedChapters = new Set<number>();
+
+      for (const bp of bundlePurchases) {
+        const chapters = bp.bundleOffer.includedChapters as number[];
+        for (const ch of chapters) {
+          purchasedChapters.add(ch);
+        }
+      }
+
+      // Build progress map
+      const progressMap = new Map(chapterProgress.map((cp) => [cp.chapterNumber, cp]));
+
+      // Determine unlock status for each chapter
+      const chapterStatuses = modules
+        .map((module, index) => {
+          const chapterNum = module.chapterNumber;
+          if (!chapterNum) {
+            return null;
+          }
+          const progress = progressMap.get(chapterNum);
+          const isPurchased =
+            purchasedModuleIds.has(module.id) || purchasedChapters.has(chapterNum);
+          const isFreeIntro = module.isFreeIntro;
+
+          let unlockStatus = "LOCKED";
+          let unlockReason = "";
+          let canUnlock = false;
+
+          if (isFreeIntro) {
+            unlockStatus = "UNLOCKED";
+            unlockReason = "Free introduction module";
+          } else if (!isPurchased) {
+            unlockStatus = "LOCKED";
+            unlockReason = "Not purchased";
+            canUnlock = true;
+          } else if (index === 0 || isFreeIntro) {
+            // First chapter or free intro
+            unlockStatus = "UNLOCKED";
+            unlockReason = "Purchased";
+          } else {
+            // Check if previous chapter is completed
+            const previousChapter = modules[index - 1];
+            if (previousChapter?.chapterNumber) {
+              const previousProgress = progressMap.get(previousChapter.chapterNumber);
+
+              if (previousProgress?.isChapterCompleted) {
+                unlockStatus = "UNLOCKED";
+                unlockReason = "Previous chapter completed";
+              } else {
+                unlockStatus = "LOCKED";
+                unlockReason = "Previous chapter not completed";
+                canUnlock = false;
+              }
+            }
+          }
+
+          return {
+            chapterNumber: chapterNum,
+            title: module.title,
+            price: module.chapterPrice,
+            isPurchased,
+            isFreeIntro,
+            unlockStatus,
+            unlockReason,
+            canUnlock,
+            progress: progress
+              ? {
+                  completionPercentage: progress.completionPercentage,
+                  isCompleted: progress.isChapterCompleted,
+                  lessonsCompleted: progress.lessonsCompleted,
+                  totalLessons: progress.totalLessons,
+                  videosWatched: progress.videosWatched,
+                  totalVideos: progress.totalVideos,
+                  quizzesCompleted: progress.quizzesCompleted,
+                  totalQuizzes: progress.totalQuizzes
+                }
+              : null
+          };
+        })
+        .filter(Boolean);
+
+      return {
+        course: {
+          slug: courseSlug,
+          title: course.title
+        },
+        chapters: chapterStatuses
+      };
+    }
+  );
+
+  // ── POST /v1/learning/chapters/:chapterNumber/check-unlock ─────────────────
+  fastify.post<{ Params: { chapterNumber: string }; Querystring: { courseSlug: string } }>(
+    "/chapters/:chapterNumber/check-unlock",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+      const userId = await getCachedUserId(fastify, authUser);
+
+      const { courseSlug } = request.query;
+      const { chapterNumber } = request.params;
+
+      if (!courseSlug) {
+        return reply.badRequest("courseSlug is required");
+      }
+
+      const chapterNum = Number.parseInt(chapterNumber);
+      if (Number.isNaN(chapterNum)) {
+        return reply.badRequest("Invalid chapter number");
+      }
+
+      // Get course
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: courseSlug },
+        select: { id: true }
+      });
+
+      if (!course) {
+        return reply.notFound("Course not found");
+      }
+
+      // Get current chapter progress
+      const currentModule = await fastify.prisma.module.findFirst({
+        where: {
+          courseId: course.id,
+          chapterNumber: chapterNum
+        },
+        select: { id: true }
+      });
+
+      if (!currentModule) {
+        return reply.notFound("Chapter not found");
+      }
+
+      const currentProgress = await fastify.prisma.chapterProgress.findUnique({
+        where: {
+          userId_moduleId: {
+            userId,
+            moduleId: currentModule.id
+          }
+        }
+      });
+
+      if (!currentProgress) {
+        return reply.notFound("Chapter progress not found");
+      }
+
+      // Check completion criteria
+      const completionCriteria = {
+        allVideosWatched: currentProgress.videosWatched >= currentProgress.totalVideos,
+        allQuizzesPassed:
+          currentProgress.quizzesCompleted >= currentProgress.totalQuizzes &&
+          currentProgress.allQuizzesPassed,
+        allLessonsCompleted: currentProgress.lessonsCompleted >= currentProgress.totalLessons,
+        completionPercentage: currentProgress.completionPercentage >= 70
+      };
+
+      const isChapterComplete =
+        completionCriteria.allVideosWatched &&
+        completionCriteria.allQuizzesPassed &&
+        completionCriteria.allLessonsCompleted;
+
+      // Update chapter completion status if criteria met
+      if (isChapterComplete && !currentProgress.isChapterCompleted) {
+        await fastify.prisma.chapterProgress.update({
+          where: { id: currentProgress.id },
+          data: {
+            isChapterCompleted: true,
+            completionDate: new Date(),
+            nextChapterUnlocked: true,
+            unlockedDate: new Date()
+          }
+        });
+      }
+
+      // Check if next chapter should be unlocked
+      let nextChapterUnlocked = false;
+      const nextChapterNumber = chapterNum + 1;
+
+      if (isChapterComplete) {
+        // Get next chapter
+        const nextModule = await fastify.prisma.module.findFirst({
+          where: {
+            courseId: course.id,
+            chapterNumber: nextChapterNumber
+          },
+          select: { id: true, isLocked: true }
+        });
+
+        if (nextModule?.isLocked) {
+          // Unlock next chapter
+          await fastify.prisma.module.update({
+            where: { id: nextModule.id },
+            data: { isLocked: false }
+          });
+
+          // Initialize progress for next chapter
+          const nextModuleWithLessons = await fastify.prisma.module.findUnique({
+            where: { id: nextModule.id },
+            select: {
+              id: true,
+              chapterNumber: true,
+              courseId: true
+            }
+          });
+
+          if (nextModuleWithLessons) {
+            const totalLessons = await fastify.prisma.lesson.count({
+              where: { moduleId: nextModule.id, isRequired: true }
+            });
+
+            const totalVideos = await fastify.prisma.lesson.count({
+              where: { moduleId: nextModule.id, contentType: "VIDEO" }
+            });
+
+            const totalQuizzes = await fastify.prisma.lesson.count({
+              where: { moduleId: nextModule.id, contentType: "QUIZ" }
+            });
+
+            const totalAssignments = await fastify.prisma.lesson.count({
+              where: { moduleId: nextModule.id, learningMode: "PRACTICE" }
+            });
+
+            await fastify.prisma.chapterProgress.upsert({
+              where: {
+                userId_moduleId: {
+                  userId,
+                  moduleId: nextModule.id
+                }
+              },
+              update: {},
+              create: {
+                userId,
+                courseId: course.id,
+                moduleId: nextModule.id,
+                chapterNumber: nextChapterNumber,
+                totalLessons,
+                totalVideos,
+                totalQuizzes,
+                totalAssignments
+              }
+            });
+          }
+
+          nextChapterUnlocked = true;
+        }
+      }
+
+      return {
+        chapter: {
+          number: chapterNum,
+          isCompleted: isChapterComplete
+        },
+        completionCriteria,
+        nextChapter: {
+          number: nextChapterNumber,
+          unlocked: nextChapterUnlocked
+        },
+        message: isChapterComplete
+          ? nextChapterUnlocked
+            ? `Chapter ${chapterNum} completed! Chapter ${nextChapterNumber} is now unlocked.`
+            : `Chapter ${chapterNum} completed!`
+          : `Chapter ${chapterNum} not yet complete. Keep working!`
+      };
+    }
+  );
+
+  // ── GET /v1/learning/chapters/:chapterNumber/unlock-requirements ───────────
+  fastify.get<{ Params: { chapterNumber: string }; Querystring: { courseSlug: string } }>(
+    "/chapters/:chapterNumber/unlock-requirements",
+    async (request, reply) => {
+      const authUser = await fastify.requireAuth(request);
+      const userId = await getCachedUserId(fastify, authUser);
+
+      const { courseSlug } = request.query;
+      const { chapterNumber } = request.params;
+
+      if (!courseSlug) {
+        return reply.badRequest("courseSlug is required");
+      }
+
+      const chapterNum = Number.parseInt(chapterNumber);
+      if (Number.isNaN(chapterNum)) {
+        return reply.badRequest("Invalid chapter number");
+      }
+
+      // Get course
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: courseSlug },
+        select: { id: true }
+      });
+
+      if (!course) {
+        return reply.notFound("Course not found");
+      }
+
+      // Get the chapter module
+      const module = await fastify.prisma.module.findFirst({
+        where: {
+          courseId: course.id,
+          chapterNumber: chapterNum
+        },
+        select: {
+          id: true,
+          title: true,
+          chapterNumber: true,
+          isFreeIntro: true,
+          chapterPrice: true,
+          isLocked: true
+        }
+      });
+
+      if (!module) {
+        return reply.notFound("Chapter not found");
+      }
+
+      // If free intro, no requirements
+      if (module.isFreeIntro) {
+        return {
+          chapter: {
+            number: module.chapterNumber,
+            title: module.title
+          },
+          requirements: {
+            type: "FREE_INTRO",
+            message: "This is a free introduction module - no requirements to unlock"
+          }
+        };
+      }
+
+      // Check if purchased
+      const purchase = await fastify.prisma.chapterPurchase.findUnique({
+        where: {
+          userId_moduleId: {
+            userId,
+            moduleId: module.id
+          }
+        },
+        select: {
+          paymentStatus: true
+        }
+      });
+
+      const bundlePurchase = await fastify.prisma.bundlePurchase.findFirst({
+        where: {
+          userId,
+          courseId: course.id,
+          paymentStatus: "COMPLETED"
+        },
+        select: {
+          bundleOffer: {
+            select: {
+              includedChapters: true
+            }
+          }
+        }
+      });
+
+      const isPurchased =
+        purchase?.paymentStatus === "COMPLETED" ||
+        (bundlePurchase &&
+          (bundlePurchase.bundleOffer.includedChapters as number[]).includes(chapterNum));
+
+      if (!isPurchased) {
+        return {
+          chapter: {
+            number: module.chapterNumber,
+            title: module.title,
+            price: module.chapterPrice
+          },
+          requirements: {
+            type: "PURCHASE_REQUIRED",
+            message: "This chapter must be purchased before access",
+            action: "PURCHASE"
+          }
+        };
+      }
+
+      // If first chapter, no prerequisites
+      if (chapterNum === 1) {
+        return {
+          chapter: {
+            number: module.chapterNumber,
+            title: module.title
+          },
+          requirements: {
+            type: "NO_PREREQUISITES",
+            message: "This is the first chapter - no prerequisites required",
+            canUnlock: true
+          }
+        };
+      }
+
+      // Get previous chapter progress
+      const previousModule = await fastify.prisma.module.findFirst({
+        where: {
+          courseId: course.id,
+          chapterNumber: chapterNum - 1
+        },
+        select: { id: true }
+      });
+
+      if (!previousModule) {
+        return reply.notFound("Previous chapter not found");
+      }
+
+      const previousProgress = await fastify.prisma.chapterProgress.findUnique({
+        where: {
+          userId_moduleId: {
+            userId,
+            moduleId: previousModule.id
+          }
+        }
+      });
+
+      if (!previousProgress) {
+        return {
+          chapter: {
+            number: module.chapterNumber,
+            title: module.title
+          },
+          requirements: {
+            type: "PREREQUISITE_NOT_STARTED",
+            message: "Complete the previous chapter to unlock this one",
+            prerequisite: {
+              chapterNumber: chapterNum - 1,
+              status: "NOT_STARTED"
+            },
+            action: "COMPLETE_PREVIOUS"
+          }
+        };
+      }
+
+      if (previousProgress.isChapterCompleted) {
+        return {
+          chapter: {
+            number: module.chapterNumber,
+            title: module.title
+          },
+          requirements: {
+            type: "PREREQUISITES_MET",
+            message: "All requirements met - chapter is unlocked",
+            canUnlock: true,
+            prerequisite: {
+              chapterNumber: chapterNum - 1,
+              status: "COMPLETED",
+              completionPercentage: previousProgress.completionPercentage
+            }
+          }
+        };
+      }
+
+      // Previous chapter in progress
+      return {
+        chapter: {
+          number: module.chapterNumber,
+          title: module.title
+        },
+        requirements: {
+          type: "PREREQUISITE_IN_PROGRESS",
+          message: "Complete the previous chapter to unlock this one",
+          prerequisite: {
+            chapterNumber: chapterNum - 1,
+            status: "IN_PROGRESS",
+            completionPercentage: previousProgress.completionPercentage,
+            lessonsCompleted: previousProgress.lessonsCompleted,
+            totalLessons: previousProgress.totalLessons
+          },
+          action: "COMPLETE_PREVIOUS"
+        }
+      };
+    }
+  );
 };
 
 export default learningRoutes;

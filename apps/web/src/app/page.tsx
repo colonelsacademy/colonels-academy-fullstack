@@ -1,8 +1,9 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import type { Category, Course } from "@/data/gateway";
-import { getCourses, getInstructors } from "@/lib/api";
+import { getCourses, getEnrollments, getInstructors } from "@/lib/api";
 
 import { Footer } from "@/components/Footer";
 import {
@@ -38,9 +39,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const mentorCategory = (resolvedParams.mentorCategory as Category) ?? "all";
 
   // 1. Fetch from the API (single source of truth across all pages)
-  const [apiCourses, apiInstructors] = await Promise.all([getCourses(), getInstructors()]);
+  const [apiCourses, apiInstructors, enrollments] = await Promise.all([
+    getCourses(),
+    getInstructors(),
+    getEnrollments()
+  ]);
 
   const instructorNameBySlug = new Map(apiInstructors.map((i) => [i.slug, i.name]));
+  const enrolledCourseIds = new Set(enrollments.map((e) => e.courseSlug));
 
   // 2. Map to UI shape and apply category filter
   const allMappedCourses: Course[] = apiCourses.map((course) => ({
@@ -57,7 +63,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     duration: course.durationLabel,
     lessons: course.lessonCount,
     iconId: "Target",
-    thumbnail: course.heroImageUrl ?? "/images/placeholder.jpg",
+    thumbnail: course.heroImageUrl ?? "",
     price: course.priceNpr,
     originalPrice: course.originalPriceNpr ?? course.priceNpr,
     color: course.accentColor ?? "#D4AF37",
@@ -104,7 +110,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
 
           <Suspense fallback={<CourseGridSkeleton />}>
-            <CourseGrid courses={mainCourses} enrolledCourseIds={new Set()} />
+            <CourseGrid courses={mainCourses} enrolledCourseIds={enrolledCourseIds} />
           </Suspense>
         </CourseSection>
 

@@ -6,6 +6,12 @@ export async function POST(request: Request) {
   const csrfToken = request.headers.get("x-csrf-token");
   const cookie = request.headers.get("cookie");
 
+  console.log("Session login request:", {
+    hasIdToken: !!body.idToken,
+    hasCsrfToken: !!csrfToken,
+    apiBaseUrl: API_BASE_URL
+  });
+
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/session-login`, {
       method: "POST",
@@ -17,8 +23,11 @@ export async function POST(request: Request) {
       body: JSON.stringify(body)
     });
 
+    console.log("API response status:", apiResponse.status);
+
     if (!apiResponse.ok) {
       const error = await apiResponse.json();
+      console.error("API error response:", error);
       return NextResponse.json(error, { status: apiResponse.status });
     }
 
@@ -27,6 +36,7 @@ export async function POST(request: Request) {
 
     // Forward Set-Cookie headers from Fastify to the browser
     const setCookieHeaders = apiResponse.headers.getSetCookie();
+    console.log("Setting cookies:", setCookieHeaders.length);
     for (const cookie of setCookieHeaders) {
       response.headers.append("Set-Cookie", cookie);
     }

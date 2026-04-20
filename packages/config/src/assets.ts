@@ -38,17 +38,16 @@ export const getAssetUrl = (path: string, baseCdnUrl?: string): string => {
     process.env.EXPO_PUBLIC_BUNNY_CDN_URL;
   if (!cdnUrl) return path;
 
-  // Normalize absolute Bunny URLs: extract the path and re-apply the configured CDN.
-  // This handles stale absolute URLs in contract fallback data pointing at old pull zones.
-  let resolvedPath = path;
+  // Normalize absolute Bunny URLs: if already a valid absolute Bunny URL, return as-is.
+  // Only remap if it's a relative path.
+  const resolvedPath = path;
   if (path.startsWith("http")) {
     try {
       const parsed = new URL(path);
       if (BUNNY_HOST_PATTERN.test(parsed.hostname)) {
-        resolvedPath = parsed.pathname;
-      } else {
-        return path; // Non-Bunny absolute URL — leave it alone
+        return path; // Already a valid absolute Bunny URL — leave it alone
       }
+      return path; // Non-Bunny absolute URL — leave it alone
     } catch {
       return path;
     }
