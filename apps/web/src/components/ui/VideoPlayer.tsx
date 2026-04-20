@@ -1,7 +1,7 @@
 "use client";
 
 import { Play } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 
 interface VideoPlayerProps {
   videoId?: string | undefined;
@@ -44,118 +44,42 @@ const ThumbnailOverlay = ({
   </button>
 );
 
-// ─── Loading Spinner ──────────────────────────────────────────────────────────
-const _LoadingSpinner = () => (
-  <div className="absolute inset-0 flex items-center justify-center bg-transparent z-20 pointer-events-none backdrop-blur-sm">
-    <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin" />
-  </div>
-);
-
-<<<<<<< HEAD
-=======
-// ─── Countdown Intro ──────────────────────────────────────────────────────────
-const _CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
-  const [count, setCount] = useState(3);
-
-  useEffect(() => {
-    if (count > 0) {
-      const timer = setTimeout(() => setCount(count - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-    const timer = setTimeout(onFinish, 800);
-    return () => clearTimeout(timer);
-  }, [count, onFinish]);
-
-  return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={count}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 1.5, opacity: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="flex flex-col items-center"
-        >
-          <span className="text-7xl font-black text-[#D4AF37] italic uppercase tracking-tighter">
-            {count > 0 ? count : "Go"}
-          </span>
-          <div className="text-[#D4AF37]/50 text-xs mt-1 uppercase tracking-widest font-medium">
-            {count > 0 ? "Session Starting" : "Let's Learn"}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-};
-
 // ─── Skeleton Loader ──────────────────────────────────────────────────────────
 const VideoSkeleton = () => (
   <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 z-30">
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
-      {/* Pulsing play button */}
       <div className="relative">
         <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 flex items-center justify-center animate-pulse">
           <Play className="w-10 h-10 text-[#D4AF37]/60" />
         </div>
-        {/* Ripple effect */}
         <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]/30 animate-ping" />
       </div>
-
-      {/* Loading text */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="h-2 w-32 bg-gray-700/50 rounded-full animate-pulse" />
-        <p className="text-gray-500 text-sm font-medium">Loading video player...</p>
-      </div>
-
-      {/* Fake progress bar */}
       <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-[#D4AF37]/40 rounded-full animate-[loading_2s_ease-in-out_infinite]"
-          style={{
-            animation: "loading 2s ease-in-out infinite"
-          }}
-        />
+        <div className="h-full bg-[#D4AF37]/40 rounded-full animate-pulse" />
       </div>
     </div>
-
-    {/* Add keyframe animation */}
-    <style jsx>{`
-      @keyframes loading {
-        0% { width: 0%; margin-left: 0%; }
-        50% { width: 75%; margin-left: 12.5%; }
-        100% { width: 0%; margin-left: 100%; }
-      }
-    `}</style>
   </div>
 );
 
->>>>>>> 7c9099ff68906d72acb013d2df884e3f6d7251d3
 // ─── Main VideoPlayer ─────────────────────────────────────────────────────────
 const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(autoplay);
-  const [prevVideoId, setPrevVideoId] = useState(videoId);
   const [isLoading, setIsLoading] = useState(true);
+  const [prevVideoId, setPrevVideoId] = useState(videoId);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   if (videoId !== prevVideoId) {
     setPrevVideoId(videoId);
     setIsPlaying(autoplay);
-<<<<<<< HEAD
-=======
     setIsLoading(true);
->>>>>>> 7c9099ff68906d72acb013d2df884e3f6d7251d3
   }
 
   const handleStartPlayback = () => {
     setIsPlaying(true);
-<<<<<<< HEAD
-=======
   };
 
   const handleIframeLoad = () => {
     setIsLoading(false);
->>>>>>> 7c9099ff68906d72acb013d2df884e3f6d7251d3
   };
 
   const isBunny =
@@ -231,7 +155,7 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
     );
   }
 
-  // Fallback - just show thumbnail
+  // Fallback
   return (
     <div
       className={`relative w-full aspect-video bg-black overflow-hidden group ${className ?? "rounded-xl shadow-2xl"}`}
