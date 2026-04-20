@@ -40,6 +40,20 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Configure quality levels
     qualities: [50, 75, 90, 100]
+  },
+  async redirects() {
+    return [
+      {
+        source: "/courses/staff-college-command",
+        destination: "/staff-college",
+        permanent: true
+      },
+      {
+        source: "/courses/staff-college-command/:path*",
+        destination: "/staff-college",
+        permanent: true
+      }
+    ];
   }
 };
 
