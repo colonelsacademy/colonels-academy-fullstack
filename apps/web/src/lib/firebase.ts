@@ -35,25 +35,25 @@ function attachAuthEmulator(auth: Auth) {
   if (typeof window === "undefined") {
     return;
   }
-  
+
   // Check if emulator should be used
   const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
-  
+
   console.log("Firebase Emulator Config:", {
     useEmulator,
     envValue: process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR,
     authEmulatorConnected
   });
-  
+
   if (!useEmulator) {
     console.log("Firebase emulator disabled - using production auth");
     return;
   }
-  
+
   if (authEmulatorConnected) {
     return;
   }
-  
+
   const url = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL ?? "http://127.0.0.1:9099";
   console.log("Connecting to Firebase emulator at:", url);
   connectAuthEmulator(auth, url, { disableWarnings: true });

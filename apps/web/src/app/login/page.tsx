@@ -105,12 +105,12 @@ function LoginForm() {
 
       console.log("Starting Google sign-in...");
       const provider = new GoogleAuthProvider();
-      
+
       // Add additional scopes if needed
       provider.addScope("profile");
       provider.addScope("email");
 
-      let user;
+      let user: { getIdToken: () => Promise<string> } | undefined;
       try {
         // Try popup first
         const result = await signInWithPopup(auth, provider);
@@ -119,9 +119,12 @@ function LoginForm() {
       } catch (popupError: unknown) {
         const firebaseErr = popupError as { code?: string; message?: string };
         console.error("Popup error:", firebaseErr);
-        
+
         // If popup is blocked, try redirect
-        if (firebaseErr.code === "auth/popup-blocked" || firebaseErr.code === "auth/popup-closed-by-user") {
+        if (
+          firebaseErr.code === "auth/popup-blocked" ||
+          firebaseErr.code === "auth/popup-closed-by-user"
+        ) {
           console.log("Popup blocked, trying redirect...");
           await signInWithRedirect(auth, provider);
           return; // Exit here, redirect will handle the rest
@@ -129,9 +132,13 @@ function LoginForm() {
         throw popupError;
       }
 
+      if (!user) {
+        throw new Error("No user returned from sign-in");
+      }
+
       console.log("Getting ID token...");
       const token = await user.getIdToken();
-      
+
       console.log("Logging in with backend...");
       await login(token);
 
@@ -154,9 +161,9 @@ function LoginForm() {
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };
       console.error("Google sign-in error:", firebaseErr);
-      
+
       let errorMessage = "Sign-in failed. Please try again.";
-      
+
       if (firebaseErr.code === "auth/popup-blocked") {
         errorMessage = "Popup was blocked. Please allow popups for this site.";
       } else if (firebaseErr.code === "auth/cancelled-popup-request") {
@@ -166,7 +173,7 @@ function LoginForm() {
       } else if (firebaseErr.message) {
         errorMessage = firebaseErr.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
