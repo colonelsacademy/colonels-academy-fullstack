@@ -235,7 +235,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
           }
         },
         update: {
-          paymentMethod,
+          paymentMethod: paymentMethod as "ESEWA" | "KHALTI",
           paymentStatus: "PENDING",
           amount: module.chapterPrice
         },
@@ -245,7 +245,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
           moduleId: module.id,
           chapterNumber: module.chapterNumber,
           amount: module.chapterPrice,
-          paymentMethod,
+          paymentMethod: paymentMethod as "ESEWA" | "KHALTI",
           paymentStatus: "PENDING"
         }
       });
@@ -356,7 +356,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
           }
         },
         update: {
-          paymentMethod,
+          paymentMethod: paymentMethod as "ESEWA" | "KHALTI",
           paymentStatus: "PENDING",
           amount: bundleOffer.bundlePrice
         },
@@ -365,9 +365,9 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
           bundleOfferId: bundleOffer.id,
           courseId: bundleOffer.courseId,
           amount: bundleOffer.bundlePrice,
-          paymentMethod,
+          paymentMethod: paymentMethod as "ESEWA" | "KHALTI",
           paymentStatus: "PENDING",
-          chaptersUnlocked: bundleOffer.includedChapters
+          chaptersUnlocked: bundleOffer.includedChapters as number[]
         }
       });
 
@@ -437,9 +437,9 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
       await fastify.prisma.chapterPurchase.update({
         where: { id: purchaseId },
         data: {
-          paymentStatus,
+          paymentStatus: paymentStatus as "COMPLETED" | "FAILED",
           transactionId,
-          purchaseDate: paymentStatus === "COMPLETED" ? new Date() : undefined
+          ...(paymentStatus === "COMPLETED" ? { purchaseDate: new Date() } : {})
         }
       });
 
@@ -513,10 +513,11 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
       await fastify.prisma.bundlePurchase.update({
         where: { id: purchaseId },
         data: {
-          paymentStatus,
+          paymentStatus: paymentStatus as "COMPLETED" | "FAILED",
           transactionId,
-          purchaseDate: paymentStatus === "COMPLETED" ? new Date() : undefined,
-          unlockDate: paymentStatus === "COMPLETED" ? new Date() : undefined
+          ...(paymentStatus === "COMPLETED"
+            ? { purchaseDate: new Date(), unlockDate: new Date() }
+            : {})
         }
       });
 

@@ -528,57 +528,55 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     // Fetch chapter purchases
-    let chapterPurchases: Awaited<ReturnType<typeof fastify.prisma.chapterPurchase.findMany>> = [];
-    if (!type || type === "CHAPTER") {
-      chapterPurchases = await fastify.prisma.chapterPurchase.findMany({
-        where: chapterFilter,
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              displayName: true
+    const chapterPurchases = !type || type === "CHAPTER"
+      ? await fastify.prisma.chapterPurchase.findMany({
+          where: chapterFilter,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                displayName: true
+              }
+            },
+            module: {
+              select: {
+                chapterNumber: true,
+                title: true
+              }
             }
           },
-          module: {
-            select: {
-              chapterNumber: true,
-              title: true
-            }
-          }
-        },
-        orderBy: { purchaseDate: "desc" },
-        take: limit,
-        skip: offset
-      });
-    }
+          orderBy: { purchaseDate: "desc" },
+          take: limit,
+          skip: offset
+        })
+      : [];
 
     // Fetch bundle purchases
-    let bundlePurchases: Awaited<ReturnType<typeof fastify.prisma.bundlePurchase.findMany>> = [];
-    if (!type || type === "BUNDLE") {
-      bundlePurchases = await fastify.prisma.bundlePurchase.findMany({
-        where: bundleFilter,
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              displayName: true
+    const bundlePurchases = !type || type === "BUNDLE"
+      ? await fastify.prisma.bundlePurchase.findMany({
+          where: bundleFilter,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                displayName: true
+              }
+            },
+            bundleOffer: {
+              select: {
+                bundleType: true,
+                title: true,
+                includedChapters: true
+              }
             }
           },
-          bundleOffer: {
-            select: {
-              bundleType: true,
-              title: true,
-              includedChapters: true
-            }
-          }
-        },
-        orderBy: { purchaseDate: "desc" },
-        take: limit,
-        skip: offset
-      });
-    }
+          orderBy: { purchaseDate: "desc" },
+          take: limit,
+          skip: offset
+        })
+      : [];
 
     // Format response
     const purchases = [
