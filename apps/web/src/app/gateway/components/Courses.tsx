@@ -149,8 +149,14 @@ function CourseCard({
                 unoptimized
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                <BookOpen className="w-10 h-10 text-gray-600" />
+              <div
+                className="w-full h-full flex flex-col items-center justify-center gap-3"
+                style={{ background: `linear-gradient(135deg, ${wing.accent}cc, ${wing.accent}66)` }}
+              >
+                <BookOpen className="w-10 h-10 text-white/70" />
+                <span className="text-white/80 text-xs font-bold uppercase tracking-widest px-4 text-center leading-tight">
+                  {course.title}
+                </span>
               </div>
             )}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />

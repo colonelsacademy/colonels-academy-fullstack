@@ -393,11 +393,14 @@ async function main() {
   const courseCount = await prisma.course.count();
   console.log(`✅ Seed completed successfully. Courses in DB: ${courseCount}`);
 
-  // Seed Army Command & Staff Course 2083
   console.log('\n🎖️  Seeding Army Command & Staff Course 2083...');
-  await seedArmyCommandStaff2083();
+  try {
+    await seedArmyCommandStaff2083(prisma);
+  } catch (error) {
+    console.error('❌ Error seeding Army course:', error);
+    throw error;
+  }
 }
-
 main()
   .then(async () => {
     await prisma.$disconnect();

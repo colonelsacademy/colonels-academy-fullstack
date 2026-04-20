@@ -8,18 +8,34 @@
  * - Sequential lesson progression
  */
 
-import { PrismaClient, SubjectArea, ContentType, LessonLearningMode, LessonAccessKind, BundleType } from '@prisma/client';
+import { SubjectArea, ContentType, LessonLearningMode, LessonAccessKind } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export async function seedArmyCommandStaff2083() {
+export async function seedArmyCommandStaff2083(prisma: PrismaClient) {
   console.log('🎖️  Seeding Army Command & Staff Course 2083...');
 
-  // Step 1: Create or update the course
-  const course = await prisma.course.upsert({
-    where: { slug: 'army-command-staff-2083' },
-    update: {},
-    create: {
+  // Step 1: Delete ALL existing courses with this slug (in case of duplicates)
+  const existingCourses = await prisma.course.findMany({
+    where: { slug: 'army-command-staff-2083' }
+  });
+
+  if (existingCourses.length > 0) {
+    console.log(`🗑️  Found ${existingCourses.length} existing course(s), cleaning up...`);
+    for (const existingCourse of existingCourses) {
+      console.log(`   Deleting course: ${existingCourse.id}`);
+      await prisma.lesson.deleteMany({ where: { courseId: existingCourse.id } });
+      await prisma.module.deleteMany({ where: { courseId: existingCourse.id } });
+      await prisma.courseBundleOffer.deleteMany({ where: { courseId: existingCourse.id } });
+      await prisma.course.delete({ where: { id: existingCourse.id } });
+    }
+    console.log(`✅ Cleanup complete`);
+  } else {
+    console.log(`ℹ️  No existing course found, will create new one`);
+  }
+
+  // Step 2: Create the course (not upsert, since we deleted everything)
+  const course = await prisma.course.create({
+    data: {
       slug: 'army-command-staff-2083',
       title: 'Army Command & Staff Course Entrance Exam Preparation - 2083',
       track: 'army',
@@ -42,7 +58,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
       priceNpr: 20000, // Total if bought separately
       originalPriceNpr: 20000,
       accentColor: '#1a4d2e', // Military green
-      heroImageUrl: '/images/courses/army-command-staff-2083-hero.jpg',
+      heroImageUrl: '/images/army-course-hero.png',
       isFeatured: true,
       isComingSoon: false,
       assessmentWeighting: {
@@ -58,9 +74,9 @@ This comprehensive 6-month program covers all five subjects with structured stud
     }
   });
 
-  console.log(`✅ Course created: ${course.title}`);
+  console.log(`✅ Course upserted: ${course.title} (ID: ${course.id})`);
 
-  // Step 2: Create FREE Introduction Module (Module 0)
+  // Step 3: Create FREE Introduction Module (Module 0)
   const introModule = await prisma.module.upsert({
     where: {
       courseId_position: {
@@ -87,113 +103,10 @@ This comprehensive 6-month program covers all five subjects with structured stud
     }
   });
 
-  console.log(`✅ Free Introduction Module created`);
+  console.log(`✅ Free Introduction Module created: ${introModule.id}`);
 
-  // Create introduction lessons
-  const introLessons = [
-    {
-      title: 'Welcome to Army Command & Staff Course 2083',
-      synopsis: 'Introduction to the platform and course structure',
-      contentType: ContentType.VIDEO,
-      durationMinutes: 10,
-      position: 1
-    },
-    {
-      title: 'Vision, Mission, and Objectives',
-      synopsis: 'Understanding our commitment to officer preparation and success',
-      contentType: ContentType.TEXT,
-      durationMinutes: 5,
-      position: 2,
-      lessonContent: {
-        sections: [
-          {
-            heading: 'Our Vision',
-            content: 'To empower officers with structured, comprehensive, and modern learning tools that enhance their readiness for the Army Command & Staff Course entrance exam.'
-          },
-          {
-            heading: 'Our Mission',
-            content: 'To provide accessible, flexible, and interactive study resources that combine individual effort, faculty guidance, and peer collaboration.'
-          },
-          {
-            heading: 'Objectives',
-            points: [
-              'Equip officers with a clear understanding of exam requirements',
-              'Provide structured study plans and timelines',
-              'Facilitate practice through quizzes, mock exams, and feedback systems',
-              'Foster confidence, discipline, and analytical skills essential for success'
-            ]
-          }
-        ]
-      }
-    },
-    {
-      title: 'Course Overview & Structure',
-      synopsis: 'Complete breakdown of the 6-month preparation program',
-      contentType: ContentType.TEXT,
-      durationMinutes: 10,
-      position: 3,
-      lessonContent: {
-        sections: [
-          {
-            heading: 'Program Duration',
-            content: '6-month comprehensive preparation program'
-          },
-          {
-            heading: 'Subjects Covered',
-            subjects: [
-              { name: 'Military Operations & Administration', marks: 100, description: 'Tactics & Administration' },
-              { name: 'Contemporary Affairs', marks: 100, description: 'Current Affairs' },
-              { name: 'Military History & Strategic Thoughts', marks: 100, description: 'Military History' },
-              { name: 'Armed Conflicts', marks: 100, description: 'Military Appreciation & Plans' },
-              { name: 'Lecturette', marks: 100, description: 'Lecture Methodology' }
-            ]
-          },
-          {
-            heading: 'Learning Outcomes',
-            points: [
-              'Develop analytical and decision-making skills',
-              'Strengthen knowledge of military history, law, and technology',
-              'Enhance oral communication and presentation skills',
-              'Build confidence in exam-taking strategies'
-            ]
-          }
-        ]
-      }
-    },
-    {
-      title: 'How to Use This Platform',
-      synopsis: 'Guide to navigating the course and maximizing your learning',
-      contentType: ContentType.VIDEO,
-      durationMinutes: 15,
-      position: 4
-    }
-  ];
-
-  for (const lessonData of introLessons) {
-    await prisma.lesson.upsert({
-      where: {
-        courseId_position: {
-          courseId: course.id,
-          position: lessonData.position
-        }
-      },
-      update: {},
-      create: {
-        ...lessonData,
-        courseId: course.id,
-        moduleId: introModule.id,
-        learningMode: LessonLearningMode.LESSON,
-        accessKind: LessonAccessKind.PREVIEW, // Free preview
-        isRequired: false,
-        completionWeight: 0
-      }
-    });
-  }
-
-  console.log(`✅ Created ${introLessons.length} introduction lessons`);
-
-  // Step 3: Create Chapter 1 - Military Operations & Administration
-  const chapter1 = await prisma.module.upsert({
+  // Create single introduction video lesson
+  await prisma.lesson.upsert({
     where: {
       courseId_position: {
         courseId: course.id,
@@ -203,8 +116,91 @@ This comprehensive 6-month program covers all five subjects with structured stud
     update: {},
     create: {
       courseId: course.id,
-      title: 'Chapter 1: Military Operations & Administration',
+      moduleId: introModule.id,
+      title: 'Introduction: Vision, Mission & Objectives',
+      synopsis: 'Introduction covering vision, mission, and objectives of the course',
       position: 1,
+      contentType: ContentType.VIDEO,
+      durationMinutes: 10,
+      learningMode: LessonLearningMode.LESSON,
+      accessKind: LessonAccessKind.PREVIEW, // Free preview
+      isRequired: false,
+      completionWeight: 0,
+      bunnyVideoId: '6334bf98-12c7-492f-97bc-43dde00e0a3e' // Introduction video
+    }
+  });
+
+  console.log(`✅ Created 1 introduction video lesson`);
+
+  // Step 2b: Create FREE Overview Description Module
+  const overviewModule = await prisma.module.upsert({
+    where: {
+      courseId_position: {
+        courseId: course.id,
+        position: 1
+      }
+    },
+    update: {},
+    create: {
+      courseId: course.id,
+      title: 'Overview Description',
+      position: 1,
+      phaseNumber: 0,
+      chapterNumber: 0,
+      chapterPrice: 0,
+      isLocked: false,
+      isFreeIntro: true,
+      componentCode: 'OVERVIEW',
+      componentLabel: 'Free Overview',
+      completionCriteria: {
+        requiredLessons: [],
+        minCompletionPercentage: 0
+      }
+    }
+  });
+
+  console.log(`✅ Free Overview Module created`);
+
+  // Create overview lesson
+  await prisma.lesson.upsert({
+    where: {
+      courseId_position: {
+        courseId: course.id,
+        position: 2
+      }
+    },
+    update: {},
+    create: {
+      courseId: course.id,
+      moduleId: overviewModule.id,
+      title: 'Course Overview & Structure',
+      synopsis: '6-month preparation program covering all 5 subjects with structured learning path',
+      position: 2,
+      contentType: ContentType.VIDEO,
+      durationMinutes: 15,
+      learningMode: LessonLearningMode.LESSON,
+      accessKind: LessonAccessKind.PREVIEW, // Free preview
+      isRequired: false,
+      completionWeight: 0,
+      bunnyVideoId: 'dc18e46f-4ca9-4d41-a289-9f59edbce15e' // Your overview video ID
+    }
+  });
+
+  console.log(`✅ Created 1 overview video lesson`);
+
+  // Step 3: Create Chapter 1 - Military Operations & Administration
+  const chapter1 = await prisma.module.upsert({
+    where: {
+      courseId_position: {
+        courseId: course.id,
+        position: 2
+      }
+    },
+    update: {},
+    create: {
+      courseId: course.id,
+      title: 'Chapter 1: Military Operations & Administration',
+      position: 2,
       phaseNumber: 1,
       subjectArea: SubjectArea.TACTICS_ADMIN,
       chapterNumber: 1,
@@ -252,7 +248,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     { title: 'Logistics System', synopsis: 'Military supply chain management', durationMinutes: 40, referencePages: '001-SD, Pg 171-200' }
   ];
 
-  let lessonPosition = 5; // Continue from intro lessons
+  let lessonPosition = 3; // Continue from intro (1) and overview (2) lessons
   for (const lessonData of chapter1Lessons) {
     await prisma.lesson.upsert({
       where: {
@@ -282,7 +278,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
   // Step 4: Create remaining chapters (2-5) with placeholder structure
   const chapters = [
     {
-      position: 2,
+      position: 3,
       title: 'Chapter 2: Contemporary Affairs',
       subjectArea: SubjectArea.CURRENT_AFFAIRS,
       chapterNumber: 2,
@@ -290,7 +286,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
       lessonCount: 15
     },
     {
-      position: 3,
+      position: 4,
       title: 'Chapter 3: Military History & Strategic Thoughts',
       subjectArea: SubjectArea.MILITARY_HISTORY_STRATEGY,
       chapterNumber: 3,
@@ -298,7 +294,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
       lessonCount: 20
     },
     {
-      position: 4,
+      position: 5,
       title: 'Chapter 4: Armed Conflicts - Appreciation & Plans',
       subjectArea: SubjectArea.APPRECIATION_PLANS,
       chapterNumber: 4,
@@ -306,7 +302,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
       lessonCount: 15
     },
     {
-      position: 5,
+      position: 6,
       title: 'Chapter 5: Lecturette',
       subjectArea: SubjectArea.LECTURETTE,
       chapterNumber: 5,
@@ -381,7 +377,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
   const existingStandardBundle = await prisma.courseBundleOffer.findFirst({
     where: {
       courseId: course.id,
-      bundleType: BundleType.STANDARD
+      bundleType: 'STANDARD'
     }
   });
 
@@ -415,7 +411,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     : await prisma.courseBundleOffer.create({
         data: {
           courseId: course.id,
-          bundleType: BundleType.STANDARD,
+          bundleType: 'STANDARD',
           title: 'Standard Bundle - Complete Course Access',
           description: `Get all 5 chapters at a discounted price!
 
@@ -443,7 +439,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
   const existingPremiumBundle = await prisma.courseBundleOffer.findFirst({
     where: {
       courseId: course.id,
-      bundleType: BundleType.PREMIUM
+      bundleType: 'PREMIUM'
     }
   });
 
@@ -480,7 +476,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     : await prisma.courseBundleOffer.create({
         data: {
           courseId: course.id,
-          bundleType: BundleType.PREMIUM,
+          bundleType: 'PREMIUM',
           title: 'Premium Bundle - Complete Course + Mentorship',
           description: `The ultimate preparation package with personal mentorship!
 
@@ -524,7 +520,12 @@ This comprehensive 6-month program covers all five subjects with structured stud
 
   console.log(`\n🎉 Army Command & Staff Course 2083 seeded successfully!`);
   console.log(`   - Total lessons: ${totalLessons}`);
-  console.log(`   - Free introduction: 4 lessons`);
-  console.log(`   - Paid chapters: 5 chapters (${totalLessons - 4} lessons)`);
+  console.log(`   - Free modules: 2 (Introduction + Overview) - 2 video lessons`);
+  console.log(`   - Paid chapters: 5 chapters (${totalLessons - 2} lessons)`);
   console.log(`   - Bundle offers: 2 (Standard & Premium)`);
+
+  // Verify data was created
+  const moduleCount = await prisma.module.count({ where: { courseId: course.id } });
+  const lessonCount = await prisma.lesson.count({ where: { courseId: course.id } });
+  console.log(`\n🔍 Verification: ${moduleCount} modules, ${lessonCount} lessons in database`);
 }

@@ -190,10 +190,10 @@ const Navbar = () => {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8 h-full overflow-visible">
             <Link
-              href="/#mentors"
+              href="/staff-college"
               className="font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] text-white/90 hover:text-[#D4AF37] transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
             >
-              Directing Staff
+              Staff College
             </Link>
             <Link
               href="/courses"
@@ -203,8 +203,12 @@ const Navbar = () => {
             </Link>
             <Dropdown
               id="resources"
-              label="Resources"
-              items={academyResources}
+              label="Instructors"
+              items={[
+                { name: "Col. (Retd.) Rajesh Thapa", path: "/#mentors", icon: User },
+                { name: "DIG (Retd.) K. P. Sharma", path: "/#mentors", icon: User },
+                { name: "AIG (Retd.) S. B. Basnet", path: "/#mentors", icon: User }
+              ]}
               width="w-72"
               activeId={activeDropdown}
               setActiveId={setActiveDropdown}

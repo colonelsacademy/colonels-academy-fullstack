@@ -25,7 +25,7 @@ const apiClient = createApiClient({
     fetch(input, {
       ...init,
       next: {
-        revalidate: init?.next?.revalidate ?? 60
+        revalidate: process.env.NODE_ENV === "development" ? 0 : (init?.next?.revalidate ?? 60)
       }
     })
 });

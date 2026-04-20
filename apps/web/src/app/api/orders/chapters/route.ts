@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@colonels-academy/database';
+import { db as prisma } from '@colonels-academy/database';
 import { getServerSession } from '@/lib/auth';
 
 /**

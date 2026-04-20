@@ -63,7 +63,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     duration: course.durationLabel,
     lessons: course.lessonCount,
     iconId: "Target",
-    thumbnail: course.heroImageUrl ?? "/images/placeholder.jpg",
+    thumbnail: course.heroImageUrl ?? "",
     price: course.priceNpr,
     originalPrice: course.originalPriceNpr ?? course.priceNpr,
     color: course.accentColor ?? "#D4AF37",

@@ -66,8 +66,19 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
             authResult.user.role = cachedUser.role.toLowerCase();
           }
         } catch (error) {
-          // If user not found in cache/db, continue without role
-          fastify.log.warn({ uid: authResult.user.uid, error }, "Failed to get user role");
+          // If user not found in cache/db, sync them first
+          fastify.log.warn({ uid: authResult.user.uid, error }, "Failed to get user role, attempting sync");
+          await syncUserWithPostgres(fastify.prisma, authResult.user, request.log);
+          
+          // Try again after sync
+          try {
+            const cachedUser = await getCachedUser(fastify, authResult.user.uid);
+            if (cachedUser?.role) {
+              authResult.user.role = cachedUser.role.toLowerCase();
+            }
+          } catch (retryError) {
+            fastify.log.error({ uid: authResult.user.uid, error: retryError }, "Failed to get user role after sync");
+          }
         }
       }
 

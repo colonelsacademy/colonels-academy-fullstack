@@ -76,7 +76,7 @@ function mapCourseRecord(record: CourseRecord): CourseDetail {
     outcomeBullets: fallback?.outcomeBullets ?? [],
     syllabus: fallback?.syllabus ?? [],
     ...(record.originalPriceNpr !== null ? { originalPriceNpr: record.originalPriceNpr } : {}),
-    heroImageUrl: getAssetUrl(record.heroImageUrl ?? fallback?.heroImageUrl ?? "")
+    heroImageUrl: record.heroImageUrl ? getAssetUrl(record.heroImageUrl) : undefined
   };
 }
 
@@ -231,6 +231,8 @@ export async function getCourseLessons(
 
     if (!course) return null;
 
+    log.info({ courseId: course.id, courseSlug: course.slug }, 'Fetching lessons for course');
+
     // Fetch modules and lessons
     const modules = await prisma.module.findMany({
       where: { courseId: course.id },
@@ -257,6 +259,8 @@ export async function getCourseLessons(
         }
       }
     });
+
+    log.info({ moduleCount: modules.length, courseId: course.id }, 'Fetched modules');
 
     const unorganisedLessons = await prisma.lesson.findMany({
       where: { courseId: course.id, moduleId: null },
