@@ -103,7 +103,13 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
 
 export async function getEnrollments(): Promise<EnrolledCourse[]> {
   try {
-    const res = await fetch("/api/learning/enrollments", {
+    // On the client, use relative URL; on server, use absolute URL
+    const url =
+      typeof window !== "undefined"
+        ? "/api/learning/enrollments"
+        : `${API_BASE_URL}/v1/learning/enrollments`;
+
+    const res = await fetch(url, {
       credentials: "include",
       cache: "no-store"
     });
