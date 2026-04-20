@@ -55,7 +55,7 @@ function parseLessonContent(value: unknown): LessonDetail["lessonContent"] {
 function mapCourseRecord(record: CourseRecord): CourseDetail {
   const fallback = courseCatalog.find((course) => course.slug === record.slug);
 
-  return {
+  const baseDetail: CourseDetail = {
     slug: record.slug,
     title: record.title,
     track: (record.track as CourseDetail["track"]) ?? "army",
@@ -75,9 +75,14 @@ function mapCourseRecord(record: CourseRecord): CourseDetail {
     ),
     outcomeBullets: fallback?.outcomeBullets ?? [],
     syllabus: fallback?.syllabus ?? [],
-    ...(record.originalPriceNpr !== null ? { originalPriceNpr: record.originalPriceNpr } : {}),
-    heroImageUrl: record.heroImageUrl ? getAssetUrl(record.heroImageUrl) : undefined
+    heroImageUrl: record.heroImageUrl ? getAssetUrl(record.heroImageUrl) : ""
   };
+
+  if (record.originalPriceNpr !== null) {
+    baseDetail.originalPriceNpr = record.originalPriceNpr;
+  }
+
+  return baseDetail;
 }
 
 function mapInstructorRecord(record: InstructorRecord): InstructorProfile {

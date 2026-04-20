@@ -46,7 +46,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   ]);
 
   const instructorNameBySlug = new Map(apiInstructors.map((i) => [i.slug, i.name]));
-  const enrolledCourseIds = new Set(enrollments.map((e) => e.slug));
+  const enrolledCourseIds = new Set(enrollments.map((e) => e.courseSlug));
 
   // 2. Map to UI shape and apply category filter
   const allMappedCourses: Course[] = apiCourses.map((course) => ({

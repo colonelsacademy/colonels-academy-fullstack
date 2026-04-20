@@ -111,7 +111,7 @@ export class CacheManager {
       const dbsize = await this.redis.dbsize();
       const info = await this.redis.info("memory");
       const memoryMatch = info.match(/used_memory_human:([^\r\n]+)/);
-      const memory = memoryMatch ? memoryMatch[1] : "unknown";
+      const memory = memoryMatch?.[1] ?? "unknown";
 
       return { keys: dbsize, memory };
     } catch (error) {

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import { proxyFastifyRequest } from "../../_lib/fastify-proxy";
+import { proxyFastifyRequest } from "@/app/api/_lib/fastify-proxy";
 
 /**
  * GET /api/learning/chapters/status?courseSlug=xxx
