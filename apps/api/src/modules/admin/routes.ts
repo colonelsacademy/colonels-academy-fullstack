@@ -528,55 +528,57 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     // Fetch chapter purchases
-    const chapterPurchases = !type || type === "CHAPTER"
-      ? await fastify.prisma.chapterPurchase.findMany({
-          where: chapterFilter,
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                displayName: true
+    const chapterPurchases =
+      !type || type === "CHAPTER"
+        ? await fastify.prisma.chapterPurchase.findMany({
+            where: chapterFilter,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  displayName: true
+                }
+              },
+              module: {
+                select: {
+                  chapterNumber: true,
+                  title: true
+                }
               }
             },
-            module: {
-              select: {
-                chapterNumber: true,
-                title: true
-              }
-            }
-          },
-          orderBy: { purchaseDate: "desc" },
-          take: limit,
-          skip: offset
-        })
-      : [];
+            orderBy: { purchaseDate: "desc" },
+            take: limit,
+            skip: offset
+          })
+        : [];
 
     // Fetch bundle purchases
-    const bundlePurchases = !type || type === "BUNDLE"
-      ? await fastify.prisma.bundlePurchase.findMany({
-          where: bundleFilter,
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                displayName: true
+    const bundlePurchases =
+      !type || type === "BUNDLE"
+        ? await fastify.prisma.bundlePurchase.findMany({
+            where: bundleFilter,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  displayName: true
+                }
+              },
+              bundleOffer: {
+                select: {
+                  bundleType: true,
+                  title: true,
+                  includedChapters: true
+                }
               }
             },
-            bundleOffer: {
-              select: {
-                bundleType: true,
-                title: true,
-                includedChapters: true
-              }
-            }
-          },
-          orderBy: { purchaseDate: "desc" },
-          take: limit,
-          skip: offset
-        })
-      : [];
+            orderBy: { purchaseDate: "desc" },
+            take: limit,
+            skip: offset
+          })
+        : [];
 
     // Format response
     const purchases = [
