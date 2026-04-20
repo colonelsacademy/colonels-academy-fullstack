@@ -1,8 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Maximize, Pause, Play, Settings, Volume2, VolumeX } from "lucide-react";
-import { memo, useEffect, useRef, useState } from "react";
+import { Play } from "lucide-react";
+import { memo, useState } from "react";
 
 interface VideoPlayerProps {
   videoId?: string | undefined;
@@ -52,57 +51,18 @@ const _LoadingSpinner = () => (
   </div>
 );
 
-// ─── Countdown Intro ──────────────────────────────────────────────────────────
-const CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
-  const [count, setCount] = useState(3);
-
-  useEffect(() => {
-    if (count > 0) {
-      const timer = setTimeout(() => setCount(count - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-    const timer = setTimeout(onFinish, 800);
-    return () => clearTimeout(timer);
-  }, [count, onFinish]);
-
-  return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={count}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 1.5, opacity: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="flex flex-col items-center"
-        >
-          <span className="text-7xl font-black text-[#D4AF37] italic uppercase tracking-tighter">
-            {count > 0 ? count : "Go"}
-          </span>
-          <div className="text-[#D4AF37]/50 text-xs mt-1 uppercase tracking-widest font-medium">
-            {count > 0 ? "Session Starting" : "Let's Learn"}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-};
-
 // ─── Main VideoPlayer ─────────────────────────────────────────────────────────
 const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(autoplay);
-  const [isCountingDown, setIsCountingDown] = useState(false);
   const [prevVideoId, setPrevVideoId] = useState(videoId);
 
   if (videoId !== prevVideoId) {
     setPrevVideoId(videoId);
     setIsPlaying(autoplay);
-    setIsCountingDown(false);
   }
 
   const handleStartPlayback = () => {
     setIsPlaying(true);
-    setIsCountingDown(true);
   };
 
   const isBunny =
@@ -129,7 +89,6 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
             />
-            {isCountingDown && <CountdownIntro onFinish={() => setIsCountingDown(false)} />}
           </>
         )}
       </div>
@@ -153,7 +112,6 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
-            {isCountingDown && <CountdownIntro onFinish={() => setIsCountingDown(false)} />}
           </>
         )}
       </div>

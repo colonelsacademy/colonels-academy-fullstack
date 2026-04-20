@@ -458,8 +458,62 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
 
   if (!course) {
     return (
-      <div className="flex h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
+      <div className="flex h-screen flex-col overflow-hidden bg-white">
+        {/* Header skeleton */}
+        <div className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-4 shadow-sm md:px-6">
+          <div className="flex items-center gap-4">
+            <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+            <div className="mx-2 hidden h-6 w-px bg-gray-200 md:block" />
+            <div className="h-4 w-48 animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+        <div className="flex flex-1 overflow-hidden">
+          {/* Main content skeleton */}
+          <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+            {/* Video skeleton */}
+            <div className="aspect-video w-full animate-pulse bg-gray-900" />
+            {/* Tabs skeleton */}
+            <div className="border-b border-gray-200 px-6">
+              <div className="flex gap-8 py-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-4 w-16 animate-pulse rounded bg-gray-200" />
+                ))}
+              </div>
+            </div>
+            {/* Content skeleton */}
+            <div className="space-y-4 p-6">
+              <div className="h-3 w-24 animate-pulse rounded bg-gray-200" />
+              <div className="h-7 w-2/3 animate-pulse rounded bg-gray-200" />
+              <div className="space-y-2">
+                <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-5/6 animate-pulse rounded bg-gray-200" />
+                <div className="h-4 w-4/6 animate-pulse rounded bg-gray-200" />
+              </div>
+              <div className="grid grid-cols-4 gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
+                    <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Sidebar skeleton */}
+          <div className="hidden w-[350px] shrink-0 flex-col border-l border-gray-200 bg-white md:flex">
+            <div className="border-b border-gray-100 bg-gray-50/50 p-4">
+              <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
+            </div>
+            <div className="flex-1 space-y-px overflow-y-auto p-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="rounded-lg p-4">
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                  <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

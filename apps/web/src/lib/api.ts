@@ -21,13 +21,15 @@ const API_BASE_URL =
 
 const apiClient = createApiClient({
   baseUrl: API_BASE_URL,
-  fetcher: (input, init) =>
-    fetch(input, {
-      ...init,
-      next: {
-        revalidate: init?.next?.revalidate ?? 60
-      }
-    })
+  fetcher: (input, init) => {
+    // next: { revalidate } is a server-only Next.js option - strip it on the client
+    const { next, ...restInit } = init ?? {};
+    const options =
+      typeof window === "undefined"
+        ? { ...restInit, next: { revalidate: next?.revalidate ?? 60 } }
+        : { ...restInit, cache: "no-store" as RequestCache };
+    return fetch(input, options);
+  }
 });
 
 export async function getCourses(): Promise<CourseDetail[]> {
@@ -46,6 +48,12 @@ export async function getCourses(): Promise<CourseDetail[]> {
 
 export async function getCourseBySlug(slug: string): Promise<CourseDetail | null> {
   try {
+    // On the client, go through the Next.js proxy to avoid CORS/network issues
+    if (typeof window !== "undefined") {
+      const res = await fetch(`/api/catalog/courses/${slug}`, { cache: "no-store" });
+      if (!res.ok) return courseCatalog.find((c) => c.slug === slug) ?? null;
+      return await res.json();
+    }
     const course = await apiClient.getCourseBySlug(slug);
     if (!course) return null;
     const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
@@ -95,7 +103,10 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
 
 export async function getEnrollments(): Promise<EnrolledCourse[]> {
   try {
-    const res = await fetch("/api/learning/enrollments", { credentials: "include" });
+    const res = await fetch("/api/learning/enrollments", {
+      credentials: "include",
+      cache: "no-store"
+    });
     if (!res.ok) return [];
     const data = await res.json();
     const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
