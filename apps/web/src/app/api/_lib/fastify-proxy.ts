@@ -16,13 +16,16 @@ export async function proxyFastifyRequest(
 
   // Read request body if present and not already provided in options
   let bodyToSend = options.body;
-  if (bodyToSend === undefined && (request.method === "POST" || request.method === "PATCH" || request.method === "PUT")) {
+  if (
+    bodyToSend === undefined &&
+    (request.method === "POST" || request.method === "PATCH" || request.method === "PUT")
+  ) {
     try {
       const requestBody = await request.text();
       if (requestBody) {
         bodyToSend = requestBody;
       }
-    } catch (e) {
+    } catch (_e) {
       // Body might not be available, that's ok
     }
   }

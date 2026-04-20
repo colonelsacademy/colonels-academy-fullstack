@@ -102,7 +102,7 @@ const learningRoutes: FastifyPluginAsync = async (fastify) => {
   }
 
   // ── GET /v1/learning/enrollments ───────────────────────────────────────────
-  fastify.get("/enrollments", async (request, reply) => {
+  fastify.get("/enrollments", async (request, _reply) => {
     const authUser = await fastify.requireAuth(request);
 
     // ✅ OPTIMIZED: Use cached user lookup instead of database query

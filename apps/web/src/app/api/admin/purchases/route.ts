@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/admin/purchases?courseSlug=xxx&limit=50&offset=0&status=COMPLETED
- * 
+ *
  * List all purchases (admin only)
  * Query params:
  *   - courseSlug: Filter by course
@@ -16,12 +16,9 @@ import { getServerSession } from '@/lib/auth';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check admin role
@@ -30,19 +27,16 @@ export async function GET(request: NextRequest) {
       select: { role: true }
     });
 
-    if (user?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      );
+    if (user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
-    const courseSlug = searchParams.get('courseSlug');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
-    const offset = parseInt(searchParams.get('offset') || '0');
-    const status = searchParams.get('status');
-    const type = searchParams.get('type');
+    const courseSlug = searchParams.get("courseSlug");
+    const limit = Math.min(Number.parseInt(searchParams.get("limit") || "50"), 100);
+    const offset = Number.parseInt(searchParams.get("offset") || "0");
+    const status = searchParams.get("status");
+    const type = searchParams.get("type");
 
     let courseId: string | undefined;
     if (courseSlug) {
@@ -51,10 +45,7 @@ export async function GET(request: NextRequest) {
         select: { id: true }
       });
       if (!course) {
-        return NextResponse.json(
-          { error: 'Course not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Course not found" }, { status: 404 });
       }
       courseId = course.id;
     }
@@ -75,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch chapter purchases
     let chapterPurchases: any[] = [];
-    if (!type || type === 'CHAPTER') {
+    if (!type || type === "CHAPTER") {
       chapterPurchases = await db.chapterPurchase.findMany({
         where: chapterFilter,
         include: {
@@ -93,7 +84,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: { purchaseDate: 'desc' },
+        orderBy: { purchaseDate: "desc" },
         take: limit,
         skip: offset
       });
@@ -101,7 +92,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch bundle purchases
     let bundlePurchases: any[] = [];
-    if (!type || type === 'BUNDLE') {
+    if (!type || type === "BUNDLE") {
       bundlePurchases = await db.bundlePurchase.findMany({
         where: bundleFilter,
         include: {
@@ -120,7 +111,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: { purchaseDate: 'desc' },
+        orderBy: { purchaseDate: "desc" },
         take: limit,
         skip: offset
       });
@@ -128,9 +119,9 @@ export async function GET(request: NextRequest) {
 
     // Format response
     const purchases = [
-      ...chapterPurchases.map(p => ({
+      ...chapterPurchases.map((p) => ({
         id: p.id,
-        type: 'CHAPTER',
+        type: "CHAPTER",
         userId: p.userId,
         user: p.user,
         amount: p.amount,
@@ -143,9 +134,9 @@ export async function GET(request: NextRequest) {
           title: p.module.title
         }
       })),
-      ...bundlePurchases.map(p => ({
+      ...bundlePurchases.map((p) => ({
         id: p.id,
-        type: 'BUNDLE',
+        type: "BUNDLE",
         userId: p.userId,
         user: p.user,
         amount: p.amount,
@@ -185,12 +176,8 @@ export async function GET(request: NextRequest) {
         totalBundlePurchases: totalBundles
       }
     });
-
   } catch (error) {
-    console.error('Error fetching purchases:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching purchases:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

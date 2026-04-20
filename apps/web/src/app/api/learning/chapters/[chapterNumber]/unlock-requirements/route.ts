@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/learning/chapters/:chapterNumber/unlock-requirements?courseSlug=xxx
- * 
+ *
  * Get unlock requirements for a specific chapter
  * Returns what needs to be completed to unlock the chapter
  */
@@ -14,31 +14,22 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const courseSlug = searchParams.get('courseSlug');
+    const courseSlug = searchParams.get("courseSlug");
     const { chapterNumber } = await params;
 
     if (!courseSlug) {
-      return NextResponse.json(
-        { error: 'courseSlug is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "courseSlug is required" }, { status: 400 });
     }
 
-    const chapterNum = parseInt(chapterNumber);
-    if (isNaN(chapterNum)) {
-      return NextResponse.json(
-        { error: 'Invalid chapter number' },
-        { status: 400 }
-      );
+    const chapterNum = Number.parseInt(chapterNumber);
+    if (Number.isNaN(chapterNum)) {
+      return NextResponse.json({ error: "Invalid chapter number" }, { status: 400 });
     }
 
     // Get course
@@ -48,10 +39,7 @@ export async function GET(
     });
 
     if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
     // Get the chapter module
@@ -71,10 +59,7 @@ export async function GET(
     });
 
     if (!module) {
-      return NextResponse.json(
-        { error: 'Chapter not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
     }
 
     // If free intro, no requirements
@@ -85,8 +70,8 @@ export async function GET(
           title: module.title
         },
         requirements: {
-          type: 'FREE_INTRO',
-          message: 'This is a free introduction module - no requirements to unlock'
+          type: "FREE_INTRO",
+          message: "This is a free introduction module - no requirements to unlock"
         }
       });
     }
@@ -108,7 +93,7 @@ export async function GET(
       where: {
         userId: session.user.id,
         courseId: course.id,
-        paymentStatus: 'COMPLETED'
+        paymentStatus: "COMPLETED"
       },
       select: {
         bundleOffer: {
@@ -119,8 +104,10 @@ export async function GET(
       }
     });
 
-    const isPurchased = (purchase?.paymentStatus === 'COMPLETED') || 
-      (bundlePurchase && (bundlePurchase.bundleOffer.includedChapters as number[]).includes(chapterNum));
+    const isPurchased =
+      purchase?.paymentStatus === "COMPLETED" ||
+      (bundlePurchase &&
+        (bundlePurchase.bundleOffer.includedChapters as number[]).includes(chapterNum));
 
     if (!isPurchased) {
       return NextResponse.json({
@@ -130,9 +117,9 @@ export async function GET(
           price: module.chapterPrice
         },
         requirements: {
-          type: 'PURCHASE_REQUIRED',
-          message: 'This chapter must be purchased before access',
-          action: 'PURCHASE'
+          type: "PURCHASE_REQUIRED",
+          message: "This chapter must be purchased before access",
+          action: "PURCHASE"
         }
       });
     }
@@ -145,8 +132,8 @@ export async function GET(
           title: module.title
         },
         requirements: {
-          type: 'NO_PREREQUISITES',
-          message: 'This is the first chapter - no prerequisites required',
+          type: "NO_PREREQUISITES",
+          message: "This is the first chapter - no prerequisites required",
           canUnlock: true
         }
       });
@@ -162,10 +149,7 @@ export async function GET(
     });
 
     if (!previousModule) {
-      return NextResponse.json(
-        { error: 'Previous chapter not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Previous chapter not found" }, { status: 404 });
     }
 
     const previousProgress = await db.chapterProgress.findUnique({
@@ -184,13 +168,13 @@ export async function GET(
           title: module.title
         },
         requirements: {
-          type: 'PREREQUISITE_NOT_STARTED',
-          message: 'Complete the previous chapter to unlock this one',
+          type: "PREREQUISITE_NOT_STARTED",
+          message: "Complete the previous chapter to unlock this one",
           prerequisite: {
             chapterNumber: chapterNum - 1,
-            status: 'NOT_STARTED'
+            status: "NOT_STARTED"
           },
-          action: 'COMPLETE_PREVIOUS'
+          action: "COMPLETE_PREVIOUS"
         }
       });
     }
@@ -202,12 +186,12 @@ export async function GET(
           title: module.title
         },
         requirements: {
-          type: 'PREREQUISITES_MET',
-          message: 'All requirements met - chapter is unlocked',
+          type: "PREREQUISITES_MET",
+          message: "All requirements met - chapter is unlocked",
           canUnlock: true,
           prerequisite: {
             chapterNumber: chapterNum - 1,
-            status: 'COMPLETED',
+            status: "COMPLETED",
             completionPercentage: previousProgress.completionPercentage
           }
         }
@@ -221,24 +205,20 @@ export async function GET(
         title: module.title
       },
       requirements: {
-        type: 'PREREQUISITE_IN_PROGRESS',
-        message: 'Complete the previous chapter to unlock this one',
+        type: "PREREQUISITE_IN_PROGRESS",
+        message: "Complete the previous chapter to unlock this one",
         prerequisite: {
           chapterNumber: chapterNum - 1,
-          status: 'IN_PROGRESS',
+          status: "IN_PROGRESS",
           completionPercentage: previousProgress.completionPercentage,
           lessonsCompleted: previousProgress.lessonsCompleted,
           totalLessons: previousProgress.totalLessons
         },
-        action: 'COMPLETE_PREVIOUS'
+        action: "COMPLETE_PREVIOUS"
       }
     });
-
   } catch (error) {
-    console.error('Error fetching unlock requirements:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching unlock requirements:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * POST /api/learning/chapters/:chapterNumber/check-unlock?courseSlug=xxx
- * 
+ *
  * Check if a chapter should be unlocked based on completion criteria
  * This endpoint is called after completing a chapter to check if next chapter should unlock
  */
@@ -14,31 +14,22 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const courseSlug = searchParams.get('courseSlug');
+    const courseSlug = searchParams.get("courseSlug");
     const { chapterNumber } = await params;
 
     if (!courseSlug) {
-      return NextResponse.json(
-        { error: 'courseSlug is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "courseSlug is required" }, { status: 400 });
     }
 
-    const chapterNum = parseInt(chapterNumber);
-    if (isNaN(chapterNum)) {
-      return NextResponse.json(
-        { error: 'Invalid chapter number' },
-        { status: 400 }
-      );
+    const chapterNum = Number.parseInt(chapterNumber);
+    if (Number.isNaN(chapterNum)) {
+      return NextResponse.json({ error: "Invalid chapter number" }, { status: 400 });
     }
 
     // Get course
@@ -48,10 +39,7 @@ export async function POST(
     });
 
     if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
     // Get current chapter progress
@@ -64,10 +52,7 @@ export async function POST(
     });
 
     if (!currentModule) {
-      return NextResponse.json(
-        { error: 'Chapter not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
     }
 
     const currentProgress = await db.chapterProgress.findUnique({
@@ -80,22 +65,20 @@ export async function POST(
     });
 
     if (!currentProgress) {
-      return NextResponse.json(
-        { error: 'Chapter progress not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Chapter progress not found" }, { status: 404 });
     }
 
     // Check completion criteria
     const completionCriteria = {
       allVideosWatched: currentProgress.videosWatched >= currentProgress.totalVideos,
-      allQuizzesPassed: currentProgress.quizzesCompleted >= currentProgress.totalQuizzes && 
-                        currentProgress.allQuizzesPassed,
+      allQuizzesPassed:
+        currentProgress.quizzesCompleted >= currentProgress.totalQuizzes &&
+        currentProgress.allQuizzesPassed,
       allLessonsCompleted: currentProgress.lessonsCompleted >= currentProgress.totalLessons,
       completionPercentage: currentProgress.completionPercentage >= 70
     };
 
-    const isChapterComplete = 
+    const isChapterComplete =
       completionCriteria.allVideosWatched &&
       completionCriteria.allQuizzesPassed &&
       completionCriteria.allLessonsCompleted;
@@ -115,7 +98,7 @@ export async function POST(
 
     // Check if next chapter should be unlocked
     let nextChapterUnlocked = false;
-    let nextChapterNumber = chapterNum + 1;
+    const nextChapterNumber = chapterNum + 1;
 
     if (isChapterComplete) {
       // Get next chapter
@@ -127,7 +110,7 @@ export async function POST(
         select: { id: true, isLocked: true }
       });
 
-      if (nextModule && nextModule.isLocked) {
+      if (nextModule?.isLocked) {
         // Unlock next chapter
         await db.module.update({
           where: { id: nextModule.id },
@@ -150,15 +133,15 @@ export async function POST(
           });
 
           const totalVideos = await db.lesson.count({
-            where: { moduleId: nextModule.id, contentType: 'VIDEO' }
+            where: { moduleId: nextModule.id, contentType: "VIDEO" }
           });
 
           const totalQuizzes = await db.lesson.count({
-            where: { moduleId: nextModule.id, contentType: 'QUIZ' }
+            where: { moduleId: nextModule.id, contentType: "QUIZ" }
           });
 
           const totalAssignments = await db.lesson.count({
-            where: { moduleId: nextModule.id, learningMode: 'PRACTICE' }
+            where: { moduleId: nextModule.id, learningMode: "PRACTICE" }
           });
 
           await db.chapterProgress.upsert({
@@ -202,12 +185,8 @@ export async function POST(
           : `Chapter ${chapterNum} completed!`
         : `Chapter ${chapterNum} not yet complete. Keep working!`
     });
-
   } catch (error) {
-    console.error('Error checking chapter unlock:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error checking chapter unlock:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

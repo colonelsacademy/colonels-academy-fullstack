@@ -1,16 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db as prisma } from '@colonels-academy/database';
+import { db as prisma } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/catalog/courses/[slug]/chapters
- * 
+ *
  * Fetch course chapters with purchase status and bundle offers
  * Public endpoint - no authentication required
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(_request: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const { slug } = params;
 
@@ -19,7 +16,7 @@ export async function GET(
       where: { slug },
       include: {
         modules: {
-          orderBy: { position: 'asc' },
+          orderBy: { position: "asc" },
           include: {
             lessons: {
               select: {
@@ -29,22 +26,19 @@ export async function GET(
                 durationMinutes: true,
                 isRequired: true
               },
-              orderBy: { position: 'asc' }
+              orderBy: { position: "asc" }
             }
           }
         },
         bundleOffers: {
           where: { isActive: true },
-          orderBy: { bundlePrice: 'asc' }
+          orderBy: { bundlePrice: "asc" }
         }
       }
     });
 
     if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
     // Format response
@@ -58,7 +52,7 @@ export async function GET(
         durationLabel: course.durationLabel,
         totalPrice: course.priceNpr
       },
-      chapters: course.modules.map(module => ({
+      chapters: course.modules.map((module) => ({
         id: module.id,
         chapterNumber: module.chapterNumber,
         title: module.title,
@@ -67,10 +61,13 @@ export async function GET(
         isFreeIntro: module.isFreeIntro,
         isLocked: module.isLocked,
         lessonCount: module.lessons.length,
-        totalDuration: module.lessons.reduce((sum, lesson) => sum + (lesson.durationMinutes || 0), 0),
+        totalDuration: module.lessons.reduce(
+          (sum, lesson) => sum + (lesson.durationMinutes || 0),
+          0
+        ),
         lessons: module.lessons
       })),
-      bundles: course.bundleOffers.map(bundle => ({
+      bundles: course.bundleOffers.map((bundle) => ({
         id: bundle.id,
         type: bundle.bundleType,
         title: bundle.title,
@@ -92,10 +89,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching course chapters:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching course chapters:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

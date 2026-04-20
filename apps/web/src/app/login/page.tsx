@@ -104,7 +104,7 @@ function LoginForm() {
       const { user } = await signInWithPopup(auth, provider);
       const token = await user.getIdToken();
       await login(token);
-      
+
       // Check if trying to access admin route
       if (next.startsWith("/admin")) {
         // Fetch user role to verify admin access
@@ -118,7 +118,7 @@ function LoginForm() {
           }
         }
       }
-      
+
       router.push(next);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };
@@ -156,7 +156,7 @@ function LoginForm() {
         const token = await res.user.getIdToken();
         await login(token);
       }
-      
+
       // Check if trying to access admin route
       if (next.startsWith("/admin")) {
         // Fetch user role to verify admin access
@@ -170,7 +170,7 @@ function LoginForm() {
           }
         }
       }
-      
+
       router.push(next);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };

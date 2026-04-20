@@ -53,7 +53,7 @@ const _LoadingSpinner = () => (
 );
 
 // ─── Countdown Intro ──────────────────────────────────────────────────────────
-const CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
+const _CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
   const [count, setCount] = useState(3);
 
   useEffect(() => {
@@ -100,21 +100,24 @@ const VideoSkeleton = () => (
         {/* Ripple effect */}
         <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]/30 animate-ping" />
       </div>
-      
+
       {/* Loading text */}
       <div className="flex flex-col items-center gap-2">
         <div className="h-2 w-32 bg-gray-700/50 rounded-full animate-pulse" />
         <p className="text-gray-500 text-sm font-medium">Loading video player...</p>
       </div>
-      
+
       {/* Fake progress bar */}
       <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
-        <div className="h-full bg-[#D4AF37]/40 rounded-full animate-[loading_2s_ease-in-out_infinite]" style={{
-          animation: 'loading 2s ease-in-out infinite',
-        }} />
+        <div
+          className="h-full bg-[#D4AF37]/40 rounded-full animate-[loading_2s_ease-in-out_infinite]"
+          style={{
+            animation: "loading 2s ease-in-out infinite"
+          }}
+        />
       </div>
     </div>
-    
+
     {/* Add keyframe animation */}
     <style jsx>{`
       @keyframes loading {

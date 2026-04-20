@@ -168,10 +168,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       // ✅ OPTIMIZED: Invalidate course caches
-      await fastify.cache.del(
-        `course:${request.params.slug}`,
-        "courses:list"
-      );
+      await fastify.cache.del(`course:${request.params.slug}`, "courses:list");
       fastify.log.info({ slug: request.params.slug }, "Course cache invalidated");
 
       return course;
@@ -186,10 +183,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     await fastify.prisma.course.delete({ where: { slug: request.params.slug } });
 
     // ✅ OPTIMIZED: Invalidate course caches
-    await fastify.cache.del(
-      `course:${request.params.slug}`,
-      "courses:list"
-    );
+    await fastify.cache.del(`course:${request.params.slug}`, "courses:list");
     fastify.log.info({ slug: request.params.slug }, "Course cache invalidated after deletion");
 
     return { ok: true };
@@ -373,16 +367,19 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     const body = request.body || {};
 
     // Debug: Log the raw request body
-    fastify.log.info({ 
-      lessonId: request.params.id, 
-      rawBody: body,
-      bunnyVideoId: body.bunnyVideoId,
-      bunnyVideoIdType: typeof body.bunnyVideoId,
-      bunnyVideoIdUndefined: body.bunnyVideoId === undefined
-    }, "PATCH lesson - raw request body");
+    fastify.log.info(
+      {
+        lessonId: request.params.id,
+        rawBody: body,
+        bunnyVideoId: body.bunnyVideoId,
+        bunnyVideoIdType: typeof body.bunnyVideoId,
+        bunnyVideoIdUndefined: body.bunnyVideoId === undefined
+      },
+      "PATCH lesson - raw request body"
+    );
 
     // Build update data object explicitly
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (body.title) updateData.title = body.title;
     if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
@@ -399,11 +396,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     // Debug logging
-    fastify.log.info({ 
-      lessonId: request.params.id, 
-      updateData,
-      bodyBunnyVideoId: body.bunnyVideoId
-    }, "Updating lesson");
+    fastify.log.info(
+      {
+        lessonId: request.params.id,
+        updateData,
+        bodyBunnyVideoId: body.bunnyVideoId
+      },
+      "Updating lesson"
+    );
 
     const lesson = await fastify.prisma.lesson.update({
       where: { id: request.params.id },
@@ -411,11 +411,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // Debug: Log what was actually saved
-    fastify.log.info({ 
-      lessonId: lesson.id, 
-      savedBunnyVideoId: lesson.bunnyVideoId,
-      requestedBunnyVideoId: body.bunnyVideoId
-    }, "Lesson updated successfully");
+    fastify.log.info(
+      {
+        lessonId: lesson.id,
+        savedBunnyVideoId: lesson.bunnyVideoId,
+        requestedBunnyVideoId: body.bunnyVideoId
+      },
+      "Lesson updated successfully"
+    );
 
     return lesson;
   });
@@ -469,10 +472,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        fastify.log.error(
-          { status: response.status, error: errorText },
-          "Bunny Stream API error"
-        );
+        fastify.log.error({ status: response.status, error: errorText }, "Bunny Stream API error");
         return reply.internalServerError(`Bunny Stream API error: ${response.statusText}`);
       }
 

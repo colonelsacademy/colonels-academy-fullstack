@@ -1,24 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/admin/purchases/:id
- * 
+ *
  * Get detailed purchase information (admin only)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check admin role
@@ -27,17 +21,14 @@ export async function GET(
       select: { role: true }
     });
 
-    if (user?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      );
+    if (user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const { id } = await params;
 
     // Try to find as chapter purchase first
-    let purchase = await db.chapterPurchase.findUnique({
+    const purchase = await db.chapterPurchase.findUnique({
       where: { id },
       include: {
         user: {
@@ -69,7 +60,7 @@ export async function GET(
     if (purchase) {
       return NextResponse.json({
         id: purchase.id,
-        type: 'CHAPTER',
+        type: "CHAPTER",
         user: purchase.user,
         course: purchase.course,
         amount: purchase.amount,
@@ -142,7 +133,7 @@ export async function GET(
 
       return NextResponse.json({
         id: bundlePurchase.id,
-        type: 'BUNDLE',
+        type: "BUNDLE",
         user: bundlePurchase.user,
         course: bundlePurchase.course,
         amount: bundlePurchase.amount,
@@ -172,7 +163,7 @@ export async function GET(
           }
         },
         chaptersUnlocked: bundlePurchase.chaptersUnlocked as number[],
-        chapterProgress: chapterProgress.map(cp => ({
+        chapterProgress: chapterProgress.map((cp) => ({
           chapterNumber: cp.chapterNumber,
           completionPercentage: cp.completionPercentage,
           isCompleted: cp.isChapterCompleted,
@@ -182,16 +173,9 @@ export async function GET(
       });
     }
 
-    return NextResponse.json(
-      { error: 'Purchase not found' },
-      { status: 404 }
-    );
-
+    return NextResponse.json({ error: "Purchase not found" }, { status: 404 });
   } catch (error) {
-    console.error('Error fetching purchase details:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching purchase details:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

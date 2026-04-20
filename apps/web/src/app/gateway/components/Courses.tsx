@@ -123,9 +123,10 @@ function CourseCard({
     ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)
     : 0;
   const levelStyle = LEVEL_STYLE[course.level ?? ""] ?? "bg-gray-100 text-gray-600";
-  
+
   // Redirect Army Command & Staff course to staff-college page
-  const courseUrl = course.id === "army-command-staff-2083" ? "/staff-college" : `/courses/${course.id}`;
+  const courseUrl =
+    course.id === "army-command-staff-2083" ? "/staff-college" : `/courses/${course.id}`;
 
   return (
     <motion.div
@@ -154,7 +155,9 @@ function CourseCard({
             ) : (
               <div
                 className="w-full h-full flex flex-col items-center justify-center gap-3"
-                style={{ background: `linear-gradient(135deg, ${wing.accent}cc, ${wing.accent}66)` }}
+                style={{
+                  background: `linear-gradient(135deg, ${wing.accent}cc, ${wing.accent}66)`
+                }}
               >
                 <BookOpen className="w-10 h-10 text-white/70" />
                 <span className="text-white/80 text-xs font-bold uppercase tracking-widest px-4 text-center leading-tight">

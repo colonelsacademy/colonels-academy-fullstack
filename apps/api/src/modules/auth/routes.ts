@@ -6,8 +6,8 @@ import type {
 } from "@colonels-academy/contracts";
 import type { FastifyPluginAsync } from "fastify";
 
-import type { AuthUser } from "../../plugins/auth";
 import { getCachedUser } from "../../lib/user-cache";
+import type { AuthUser } from "../../plugins/auth";
 import { syncUserWithPostgres } from "./user-sync";
 
 function toSessionUser(authUser: AuthUser): AuthSessionUser {
@@ -67,9 +67,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
           }
         } catch (error) {
           // If user not found in cache/db, sync them first
-          fastify.log.warn({ uid: authResult.user.uid, error }, "Failed to get user role, attempting sync");
+          fastify.log.warn(
+            { uid: authResult.user.uid, error },
+            "Failed to get user role, attempting sync"
+          );
           await syncUserWithPostgres(fastify.prisma, authResult.user, request.log);
-          
+
           // Try again after sync
           try {
             const cachedUser = await getCachedUser(fastify, authResult.user.uid);
@@ -77,7 +80,10 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
               authResult.user.role = cachedUser.role.toLowerCase();
             }
           } catch (retryError) {
-            fastify.log.error({ uid: authResult.user.uid, error: retryError }, "Failed to get user role after sync");
+            fastify.log.error(
+              { uid: authResult.user.uid, error: retryError },
+              "Failed to get user role after sync"
+            );
           }
         }
       }

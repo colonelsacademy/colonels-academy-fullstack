@@ -1,32 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db as prisma } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db as prisma } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/learning/chapters/purchase-status?courseSlug=xxx
- * 
+ *
  * Get user's chapter purchase status and progress
  * Requires authentication
  */
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const courseSlug = searchParams.get('courseSlug');
+    const courseSlug = searchParams.get("courseSlug");
 
     if (!courseSlug) {
-      return NextResponse.json(
-        { error: 'courseSlug is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "courseSlug is required" }, { status: 400 });
     }
 
     // Get course
@@ -36,10 +30,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
     // Get user's chapter purchases
@@ -47,7 +38,7 @@ export async function GET(request: NextRequest) {
       where: {
         userId: session.user.id,
         courseId: course.id,
-        paymentStatus: 'COMPLETED'
+        paymentStatus: "COMPLETED"
       },
       include: {
         module: {
@@ -65,7 +56,7 @@ export async function GET(request: NextRequest) {
       where: {
         userId: session.user.id,
         courseId: course.id,
-        paymentStatus: 'COMPLETED'
+        paymentStatus: "COMPLETED"
       },
       include: {
         bundleOffer: {
@@ -87,18 +78,18 @@ export async function GET(request: NextRequest) {
 
     // Determine which chapters are unlocked
     const purchasedChapters = new Set<number>();
-    
+
     // Add individually purchased chapters
-    chapterPurchases.forEach(purchase => {
+    chapterPurchases.forEach((purchase) => {
       if (purchase.module.chapterNumber) {
         purchasedChapters.add(purchase.module.chapterNumber);
       }
     });
 
     // Add bundle-purchased chapters
-    bundlePurchases.forEach(purchase => {
+    bundlePurchases.forEach((purchase) => {
       const chapters = purchase.bundleOffer.includedChapters as number[];
-      chapters.forEach(ch => purchasedChapters.add(ch));
+      chapters.forEach((ch) => purchasedChapters.add(ch));
     });
 
     // Build response
@@ -106,7 +97,7 @@ export async function GET(request: NextRequest) {
       hasBundlePurchase: bundlePurchases.length > 0,
       bundleType: bundlePurchases[0]?.bundleOffer.bundleType || null,
       purchasedChapters: Array.from(purchasedChapters).sort(),
-      chapterProgress: chapterProgress.map(progress => ({
+      chapterProgress: chapterProgress.map((progress) => ({
         chapterNumber: progress.chapterNumber,
         completionPercentage: progress.completionPercentage,
         isCompleted: progress.isChapterCompleted,
@@ -117,10 +108,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching chapter purchase status:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching chapter purchase status:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

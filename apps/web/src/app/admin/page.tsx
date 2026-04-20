@@ -489,12 +489,12 @@ function BunnyVideoPicker({
                 placeholder="Paste Bunny video ID..."
                 className="flex-1 px-3 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     const id = e.currentTarget.value.trim();
                     if (id) {
-                      onChange(id, '', 0);
+                      onChange(id, "", 0);
                       setOpen(false);
-                      e.currentTarget.value = '';
+                      e.currentTarget.value = "";
                     }
                   }
                 }}
@@ -504,12 +504,12 @@ function BunnyVideoPicker({
                 onClick={(e) => {
                   const input = e.currentTarget.previousElementSibling as HTMLInputElement;
                   const id = input.value.trim();
-                  console.log('Manual video ID input:', id);
+                  console.log("Manual video ID input:", id);
                   if (id) {
-                    console.log('Calling onChange with:', { id, title: '', duration: 0 });
-                    onChange(id, '', 0);
+                    console.log("Calling onChange with:", { id, title: "", duration: 0 });
+                    onChange(id, "", 0);
                     setOpen(false);
-                    input.value = '';
+                    input.value = "";
                   }
                 }}
                 className="px-3 py-1.5 bg-[#D4AF37] text-[#0F1C15] text-xs font-bold rounded hover:bg-[#c9a227]"
@@ -649,7 +649,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
     };
 
     // Debug: Log what we're sending
-    console.log('Submitting lesson update:', { editingId, payload });
+    console.log("Submitting lesson update:", { editingId, payload });
 
     try {
       if (editingId) {
@@ -659,7 +659,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        console.log('Update response:', data);
+        console.log("Update response:", data);
         if (!res.ok) throw new Error(data.message);
       } else {
         const res = await fetch(`/api/admin/courses/${courseSlug}/lessons`, {
@@ -741,15 +741,15 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
               <BunnyVideoPicker
                 value={form.bunnyVideoId}
                 onChange={(id, title, duration) => {
-                  console.log('BunnyVideoPicker onChange called:', { id, title, duration });
+                  console.log("BunnyVideoPicker onChange called:", { id, title, duration });
                   setForm((p) => {
                     const newForm = {
                       ...p,
                       bunnyVideoId: id,
-                      title: p.title || title || 'Untitled Lesson',
+                      title: p.title || title || "Untitled Lesson",
                       durationMinutes: duration > 0 ? String(duration) : p.durationMinutes
                     };
-                    console.log('Updated form state:', newForm);
+                    console.log("Updated form state:", newForm);
                     return newForm;
                   });
                 }}

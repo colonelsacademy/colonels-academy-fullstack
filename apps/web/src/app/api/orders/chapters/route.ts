@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db as prisma } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db as prisma } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * POST /api/orders/chapters
- * 
+ *
  * Create a chapter purchase order
  * Body: { moduleId: string, paymentMethod: 'ESEWA' | 'KHALTI' }
  */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -24,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (!moduleId || !paymentMethod) {
       return NextResponse.json(
-        { error: 'moduleId and paymentMethod are required' },
+        { error: "moduleId and paymentMethod are required" },
         { status: 400 }
       );
     }
@@ -44,22 +41,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (!module) {
-      return NextResponse.json(
-        { error: 'Module not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Module not found" }, { status: 404 });
     }
 
     if (module.isFreeIntro) {
       return NextResponse.json(
-        { error: 'This module is free and does not require purchase' },
+        { error: "This module is free and does not require purchase" },
         { status: 400 }
       );
     }
 
     if (!module.chapterPrice || !module.chapterNumber) {
       return NextResponse.json(
-        { error: 'This module is not available for purchase' },
+        { error: "This module is not available for purchase" },
         { status: 400 }
       );
     }
@@ -74,11 +68,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (existingPurchase && existingPurchase.paymentStatus === 'COMPLETED') {
-      return NextResponse.json(
-        { error: 'Chapter already purchased' },
-        { status: 400 }
-      );
+    if (existingPurchase && existingPurchase.paymentStatus === "COMPLETED") {
+      return NextResponse.json({ error: "Chapter already purchased" }, { status: 400 });
     }
 
     // Create or update chapter purchase
@@ -91,7 +82,7 @@ export async function POST(request: NextRequest) {
       },
       update: {
         paymentMethod,
-        paymentStatus: 'PENDING',
+        paymentStatus: "PENDING",
         amount: module.chapterPrice
       },
       create: {
@@ -101,7 +92,7 @@ export async function POST(request: NextRequest) {
         chapterNumber: module.chapterNumber,
         amount: module.chapterPrice,
         paymentMethod,
-        paymentStatus: 'PENDING'
+        paymentStatus: "PENDING"
       }
     });
 
@@ -123,13 +114,13 @@ export async function POST(request: NextRequest) {
           where: { moduleId: module.id, isRequired: true }
         }),
         totalVideos: await prisma.lesson.count({
-          where: { moduleId: module.id, contentType: 'VIDEO' }
+          where: { moduleId: module.id, contentType: "VIDEO" }
         }),
         totalQuizzes: await prisma.lesson.count({
-          where: { moduleId: module.id, contentType: 'QUIZ' }
+          where: { moduleId: module.id, contentType: "QUIZ" }
         }),
         totalAssignments: await prisma.lesson.count({
-          where: { moduleId: module.id, learningMode: 'PRACTICE' }
+          where: { moduleId: module.id, learningMode: "PRACTICE" }
         })
       }
     });
@@ -138,7 +129,7 @@ export async function POST(request: NextRequest) {
     const response = {
       purchaseId: chapterPurchase.id,
       amount: chapterPurchase.amount,
-      currency: 'NPR',
+      currency: "NPR",
       chapter: {
         number: module.chapterNumber,
         title: module.title
@@ -154,10 +145,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error('Error creating chapter purchase:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error creating chapter purchase:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db as prisma } from '@colonels-academy/database';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from "@/lib/auth";
+import { db as prisma } from "@colonels-academy/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * POST /api/orders/bundles
- * 
+ *
  * Create a bundle purchase order
  * Body: { bundleOfferId: string, paymentMethod: 'ESEWA' | 'KHALTI' }
  */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -24,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (!bundleOfferId || !paymentMethod) {
       return NextResponse.json(
-        { error: 'bundleOfferId and paymentMethod are required' },
+        { error: "bundleOfferId and paymentMethod are required" },
         { status: 400 }
       );
     }
@@ -44,17 +41,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!bundleOffer) {
-      return NextResponse.json(
-        { error: 'Bundle offer not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Bundle offer not found" }, { status: 404 });
     }
 
     if (!bundleOffer.isActive) {
-      return NextResponse.json(
-        { error: 'This bundle offer is no longer active' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "This bundle offer is no longer active" }, { status: 400 });
     }
 
     // Check if already purchased
@@ -67,11 +58,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (existingPurchase && existingPurchase.paymentStatus === 'COMPLETED') {
-      return NextResponse.json(
-        { error: 'Bundle already purchased' },
-        { status: 400 }
-      );
+    if (existingPurchase && existingPurchase.paymentStatus === "COMPLETED") {
+      return NextResponse.json({ error: "Bundle already purchased" }, { status: 400 });
     }
 
     // Create or update bundle purchase
@@ -84,7 +72,7 @@ export async function POST(request: NextRequest) {
       },
       update: {
         paymentMethod,
-        paymentStatus: 'PENDING',
+        paymentStatus: "PENDING",
         amount: bundleOffer.bundlePrice
       },
       create: {
@@ -93,7 +81,7 @@ export async function POST(request: NextRequest) {
         courseId: bundleOffer.courseId,
         amount: bundleOffer.bundlePrice,
         paymentMethod,
-        paymentStatus: 'PENDING',
+        paymentStatus: "PENDING",
         chaptersUnlocked: bundleOffer.includedChapters
       }
     });
@@ -102,7 +90,7 @@ export async function POST(request: NextRequest) {
     const response = {
       purchaseId: bundlePurchase.id,
       amount: bundlePurchase.amount,
-      currency: 'NPR',
+      currency: "NPR",
       bundle: {
         type: bundleOffer.bundleType,
         title: bundleOffer.title,
@@ -119,10 +107,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error('Error creating bundle purchase:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error creating bundle purchase:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

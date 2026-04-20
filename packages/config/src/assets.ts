@@ -40,15 +40,14 @@ export const getAssetUrl = (path: string, baseCdnUrl?: string): string => {
 
   // Normalize absolute Bunny URLs: if already a valid absolute Bunny URL, return as-is.
   // Only remap if it's a relative path.
-  let resolvedPath = path;
+  const resolvedPath = path;
   if (path.startsWith("http")) {
     try {
       const parsed = new URL(path);
       if (BUNNY_HOST_PATTERN.test(parsed.hostname)) {
         return path; // Already a valid absolute Bunny URL — leave it alone
-      } else {
-        return path; // Non-Bunny absolute URL — leave it alone
       }
+      return path; // Non-Bunny absolute URL — leave it alone
     } catch {
       return path;
     }

@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Award,
   BookOpen,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Lock,
   PlayCircle,
   ShoppingBag,
   Star,
-  Users,
-  Unlock,
-  TrendingUp,
   Target,
-  ChevronDown,
-  ChevronUp
+  TrendingUp,
+  Unlock,
+  Users
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,11 +92,16 @@ interface PurchaseStatus {
 
 function contentTypeLabel(type: string) {
   switch (type) {
-    case "VIDEO": return "▶";
-    case "QUIZ": return "✓";
-    case "PDF": return "📄";
-    case "LIVE": return "●";
-    default: return "◆";
+    case "VIDEO":
+      return "▶";
+    case "QUIZ":
+      return "✓";
+    case "PDF":
+      return "📄";
+    case "LIVE":
+      return "●";
+    default:
+      return "◆";
   }
 }
 
@@ -140,7 +145,10 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
   };
 
   const handleChapterPurchase = async (moduleId: string) => {
-    if (!isAuthenticated) { redirectToLogin(); return; }
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     setPurchasing(moduleId);
     try {
       const res = await fetch("/api/orders/chapters", {
@@ -159,7 +167,10 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
   };
 
   const handleBundlePurchase = async (bundleOfferId: string) => {
-    if (!isAuthenticated) { redirectToLogin(); return; }
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
     setPurchasing(bundleOfferId);
     try {
       const res = await fetch("/api/orders/bundles", {
@@ -199,19 +210,17 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
   }
 
   const { course, chapters, bundles } = courseData;
-  const freeChapter = chapters.find(ch => ch.isFreeIntro);
-  const paidChapters = chapters.filter(ch => !ch.isFreeIntro);
-  const standardBundle = bundles.find(b => b.type === "STANDARD");
-  const premiumBundle = bundles.find(b => b.type === "PREMIUM");
-  const totalIndividualPrice = paidChapters.reduce((s, ch) => s + ch.price, 0);
-  const totalLessons = chapters.reduce((s, ch) => s + ch.lessonCount, 0);
+  const _freeChapter = chapters.find((ch) => ch.isFreeIntro);
+  const paidChapters = chapters.filter((ch) => !ch.isFreeIntro);
+  const standardBundle = bundles.find((b) => b.type === "STANDARD");
+  const _premiumBundle = bundles.find((b) => b.type === "PREMIUM");
+  const _totalIndividualPrice = paidChapters.reduce((s, ch) => s + ch.price, 0);
+  const _totalLessons = chapters.reduce((s, ch) => s + ch.lessonCount, 0);
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans">
-
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <div className="max-w-[1400px] mx-auto px-4 py-14 space-y-16">
-
         {/* ── Chapters List ─────────────────────────────────────────────── */}
         <div id="chapters-list">
           <h2 className="text-3xl font-bold text-[#0F1C15] mb-8 font-['Rajdhani']">
@@ -220,10 +229,11 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
 
           <div className="space-y-4">
             {chapters.map((chapter) => {
-              const isPurchased = chapter.isFreeIntro ||
+              const isPurchased =
+                chapter.isFreeIntro ||
                 (purchaseStatus?.purchasedChapters.includes(chapter.chapterNumber) ?? false);
               const progress = purchaseStatus?.chapterProgress.find(
-                p => p.chapterNumber === chapter.chapterNumber
+                (p) => p.chapterNumber === chapter.chapterNumber
               );
               const isExpanded = expandedChapter === chapter.id;
 
@@ -239,10 +249,18 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                       {/* Left: number + info */}
                       <div className="flex items-start gap-4 flex-1 min-w-0">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${
-                          isPurchased ? "bg-[#D4AF37] text-[#0F1C15]" : "bg-gray-100 text-gray-500"
-                        }`}>
-                          {chapter.isFreeIntro ? <Unlock className="w-5 h-5" /> : (chapter.chapterNumber ?? "?")}
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${
+                            isPurchased
+                              ? "bg-[#D4AF37] text-[#0F1C15]"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {chapter.isFreeIntro ? (
+                            <Unlock className="w-5 h-5" />
+                          ) : (
+                            (chapter.chapterNumber ?? "?")
+                          )}
                         </div>
                         <div className="min-w-0">
                           <h3 className="text-xl font-bold text-[#0F1C15] font-['Rajdhani'] leading-tight">
@@ -255,7 +273,8 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                             </span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              {Math.floor(chapter.totalDuration / 60)}h {chapter.totalDuration % 60}m
+                              {Math.floor(chapter.totalDuration / 60)}h {chapter.totalDuration % 60}
+                              m
                             </span>
                             {chapter.isFreeIntro && (
                               <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-bold border border-[#D4AF37]/30">
@@ -288,10 +307,15 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                       <div className="flex items-center gap-3 shrink-0">
                         {/* Expand lessons toggle */}
                         <button
+                          type="button"
                           onClick={() => setExpandedChapter(isExpanded ? null : chapter.id)}
                           className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
                         >
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
                           <span className="hidden sm:inline">Lessons</span>
                         </button>
 
@@ -319,6 +343,7 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                               </div>
                             </div>
                             <button
+                              type="button"
                               onClick={() => handleChapterPurchase(chapter.id)}
                               disabled={purchasing === chapter.id}
                               className="flex items-center gap-2 px-5 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-xl hover:bg-[#c49d2f] transition-colors text-sm disabled:opacity-60"
@@ -344,11 +369,15 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                           key={lesson.id}
                           className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 last:border-0"
                         >
-                          <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}</span>
+                          <span className="text-xs text-gray-400 w-5 text-right shrink-0">
+                            {idx + 1}
+                          </span>
                           <span className="text-sm">{contentTypeLabel(lesson.contentType)}</span>
                           <span className="text-sm text-gray-700 flex-1">{lesson.title}</span>
                           {lesson.durationMinutes && (
-                            <span className="text-xs text-gray-400 shrink-0">{lesson.durationMinutes}m</span>
+                            <span className="text-xs text-gray-400 shrink-0">
+                              {lesson.durationMinutes}m
+                            </span>
                           )}
                           {!isPurchased && !chapter.isFreeIntro && (
                             <Lock className="w-3.5 h-3.5 text-gray-300 shrink-0" />
@@ -375,11 +404,12 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-
             {/* Individual */}
             <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:shadow-xl transition-shadow">
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-[#0F1C15] mb-1 font-['Rajdhani']">Single Chapter</h3>
+                <h3 className="text-2xl font-bold text-[#0F1C15] mb-1 font-['Rajdhani']">
+                  Single Chapter
+                </h3>
                 <p className="text-sm text-gray-400">Pay as you learn</p>
               </div>
               <div className="text-center mb-6">
@@ -387,13 +417,18 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                 <div className="text-sm text-gray-400 mt-1">Per chapter</div>
               </div>
               <ul className="space-y-3 mb-8 text-sm">
-                {["Free Overview Modules (2)", "One Paid Chapter Access", "Video Lessons & Quizzes", "Study Materials"].map(f => (
+                {[
+                  "Free Overview Modules (2)",
+                  "One Paid Chapter Access",
+                  "Video Lessons & Quizzes",
+                  "Study Materials"
+                ].map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
                     <span>{f}</span>
                   </li>
                 ))}
-                {["Mock Exams", "Certificate"].map(f => (
+                {["Mock Exams", "Certificate"].map((f) => (
                   <li key={f} className="flex items-start gap-2 text-gray-400">
                     <span className="text-red-400 shrink-0">✗</span>
                     <span>{f}</span>
@@ -401,6 +436,7 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                 ))}
               </ul>
               <button
+                type="button"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
               >
@@ -419,22 +455,42 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                   <p className="text-sm text-gray-300">All 5 Chapters + Extras</p>
                 </div>
                 <div className="text-center mb-6">
-                  <div className="text-5xl font-bold text-[#D4AF37]">NPR {standardBundle.bundlePrice.toLocaleString()}</div>
-                  <div className="text-sm text-gray-400 line-through mt-1">NPR {standardBundle.originalPrice.toLocaleString()}</div>
+                  <div className="text-5xl font-bold text-[#D4AF37]">
+                    NPR {standardBundle.bundlePrice.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-400 line-through mt-1">
+                    NPR {standardBundle.originalPrice.toLocaleString()}
+                  </div>
                   <div className="inline-block mt-2 px-3 py-1 bg-[#D4AF37] text-[#0F1C15] rounded-full text-sm font-bold">
                     Save NPR {standardBundle.discount.toLocaleString()}
                   </div>
                 </div>
                 <ul className="space-y-3 mb-8 text-sm">
-                  {["Free Overview Modules (2)", "All 5 Paid Chapters Unlocked", "Video Lessons & Quizzes", "Study Materials",
-                    `${standardBundle.features.mockExamCount} Mock Exams`, "Certificate of Completion", "Study Schedule"].map(f => (
+                  {[
+                    "Free Overview Modules (2)",
+                    "All 5 Paid Chapters Unlocked",
+                    "Video Lessons & Quizzes",
+                    "Study Materials",
+                    `${standardBundle.features.mockExamCount} Mock Exams`,
+                    "Certificate of Completion",
+                    "Study Schedule"
+                  ].map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
-                      <span className={f.includes("All 5") || f.includes("Mock") || f.includes("Certificate") ? "font-bold" : ""}>{f}</span>
+                      <span
+                        className={
+                          f.includes("All 5") || f.includes("Mock") || f.includes("Certificate")
+                            ? "font-bold"
+                            : ""
+                        }
+                      >
+                        {f}
+                      </span>
                     </li>
                   ))}
                 </ul>
                 <button
+                  type="button"
                   onClick={() => handleBundlePurchase(standardBundle.id)}
                   disabled={purchasing === standardBundle.id}
                   className="w-full py-4 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-xl hover:bg-[#c49d2f] transition-colors text-lg shadow-xl disabled:opacity-60"
@@ -443,10 +499,8 @@ export default function ChapterBasedCourse({ courseSlug }: { courseSlug: string 
                 </button>
               </div>
             )}
-
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -60,7 +60,7 @@ export default function LessonStageRenderer({
     lesson?.contentType === "QUIZ" || lesson?.learningMode === "QUIZ" || hasQuizQuestions;
 
   if (!lesson) {
-    return <EmptyLessonStage courseTitle={courseTitle} />;
+    return <EmptyLessonStage />;
   }
 
   if (lesson.isLocked) {

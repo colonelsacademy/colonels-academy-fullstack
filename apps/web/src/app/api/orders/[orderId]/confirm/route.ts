@@ -1,10 +1,7 @@
 import { API_BASE_URL } from "@/lib/apiClient";
 import { NextResponse } from "next/server";
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ orderId: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
   const cookie = request.headers.get("cookie");
   const csrfToken = request.headers.get("x-csrf-token");

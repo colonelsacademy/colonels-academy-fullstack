@@ -15,9 +15,9 @@ import {
 } from "@colonels-academy/contracts";
 import type { DatabaseClient } from "@colonels-academy/database";
 
-import { isPhaseUnlocked, resolveCoursePhaseAccess } from "../../lib/course-phase-plan";
 import { CacheKeys, CacheTTL } from "../../lib/cache";
 import type { CacheManager } from "../../lib/cache";
+import { isPhaseUnlocked, resolveCoursePhaseAccess } from "../../lib/course-phase-plan";
 
 async function loadCourseRecords(prisma: DatabaseClient) {
   return prisma.course.findMany({
@@ -231,7 +231,7 @@ export async function getCourseLessons(
 
     if (!course) return null;
 
-    log.info({ courseId: course.id, courseSlug: course.slug }, 'Fetching lessons for course');
+    log.info({ courseId: course.id, courseSlug: course.slug }, "Fetching lessons for course");
 
     // Fetch modules and lessons
     const modules = await prisma.module.findMany({
@@ -260,7 +260,7 @@ export async function getCourseLessons(
       }
     });
 
-    log.info({ moduleCount: modules.length, courseId: course.id }, 'Fetched modules');
+    log.info({ moduleCount: modules.length, courseId: course.id }, "Fetched modules");
 
     const unorganisedLessons = await prisma.lesson.findMany({
       where: { courseId: course.id, moduleId: null },

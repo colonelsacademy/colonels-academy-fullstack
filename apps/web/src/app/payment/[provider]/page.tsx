@@ -17,7 +17,7 @@ function PaymentContent({ provider }: { provider: string }) {
   const type = searchParams.get("type") ?? "chapter"; // "chapter" | "bundle"
 
   const [status, setStatus] = useState<PaymentStatus>("pending");
-  const [paymentMethod, setPaymentMethod] = useState<"ESEWA" | "KHALTI">(
+  const [_paymentMethod, _setPaymentMethod] = useState<"ESEWA" | "KHALTI">(
     provider === "khalti" ? "KHALTI" : "ESEWA"
   );
   const [processing, setProcessing] = useState(false);
@@ -25,7 +25,7 @@ function PaymentContent({ provider }: { provider: string }) {
 
   const providerName = provider === "khalti" ? "Khalti" : "eSewa";
   const providerColor = provider === "khalti" ? "#5C2D91" : "#41A124";
-  const providerBg = provider === "khalti" ? "bg-purple-600" : "bg-green-600";
+  const _providerBg = provider === "khalti" ? "bg-purple-600" : "bg-green-600";
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -75,7 +75,10 @@ function PaymentContent({ provider }: { provider: string }) {
   };
 
   const handleCancel = async () => {
-    if (!purchaseId) { router.back(); return; }
+    if (!purchaseId) {
+      router.back();
+      return;
+    }
     // Mark as failed
     await fetch("/api/orders/confirm-payment", {
       method: "POST",
@@ -163,10 +166,7 @@ function PaymentContent({ provider }: { provider: string }) {
       <div className="max-w-[600px] mx-auto px-4 py-10">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           {/* Provider header */}
-          <div
-            className="px-8 py-6 text-white"
-            style={{ backgroundColor: providerColor }}
-          >
+          <div className="px-8 py-6 text-white" style={{ backgroundColor: providerColor }}>
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-lg font-['Rajdhani']">
@@ -223,16 +223,15 @@ function PaymentContent({ provider }: { provider: string }) {
               <div className="w-32 h-32 bg-gray-100 rounded-lg mx-auto mb-3 flex items-center justify-center">
                 <p className="text-xs text-gray-400 font-bold">QR CODE</p>
               </div>
-              <p className="text-xs text-gray-400">
-                Scan with {providerName} app
-              </p>
+              <p className="text-xs text-gray-400">Scan with {providerName} app</p>
             </div>
 
             {/* Note */}
             <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl p-4">
               <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-xs text-amber-700">
-                This payment session expires in <strong>15 minutes</strong>. Complete your payment before it expires.
+                This payment session expires in <strong>15 minutes</strong>. Complete your payment
+                before it expires.
               </p>
             </div>
 

@@ -54,7 +54,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
 
     const order = await fastify.prisma.purchaseOrder.create({
       data: {
-        userId,  // ✅ Fixed: Use userId directly
+        userId, // ✅ Fixed: Use userId directly
         status: "PENDING_PAYMENT",
         totalNpr,
         provider,

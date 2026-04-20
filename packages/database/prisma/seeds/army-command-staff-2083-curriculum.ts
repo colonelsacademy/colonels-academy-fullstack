@@ -1,6 +1,6 @@
 /**
  * Army Command & Staff Course 2083 - Curriculum Seed
- * 
+ *
  * This seed creates the complete course structure with:
  * - Free Introduction Module (Module 0)
  * - 5 Paid Chapters (Modules 1-5)
@@ -8,15 +8,15 @@
  * - Sequential lesson progression
  */
 
-import { SubjectArea, ContentType, LessonLearningMode, LessonAccessKind } from '@prisma/client';
-import type { PrismaClient } from '@prisma/client';
+import { ContentType, LessonAccessKind, LessonLearningMode, SubjectArea } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 
 export async function seedArmyCommandStaff2083(prisma: PrismaClient) {
-  console.log('🎖️  Seeding Army Command & Staff Course 2083...');
+  console.log("🎖️  Seeding Army Command & Staff Course 2083...");
 
   // Step 1: Delete ALL existing courses with this slug (in case of duplicates)
   const existingCourses = await prisma.course.findMany({
-    where: { slug: 'army-command-staff-2083' }
+    where: { slug: "army-command-staff-2083" }
   });
 
   if (existingCourses.length > 0) {
@@ -28,18 +28,19 @@ export async function seedArmyCommandStaff2083(prisma: PrismaClient) {
       await prisma.courseBundleOffer.deleteMany({ where: { courseId: existingCourse.id } });
       await prisma.course.delete({ where: { id: existingCourse.id } });
     }
-    console.log(`✅ Cleanup complete`);
+    console.log("✅ Cleanup complete");
   } else {
-    console.log(`ℹ️  No existing course found, will create new one`);
+    console.log("ℹ️  No existing course found, will create new one");
   }
 
   // Step 2: Create the course (not upsert, since we deleted everything)
   const course = await prisma.course.create({
     data: {
-      slug: 'army-command-staff-2083',
-      title: 'Army Command & Staff Course Entrance Exam Preparation - 2083',
-      track: 'army',
-      summary: '6-month comprehensive preparation program for Nepal Army Command & Staff Course entrance exam',
+      slug: "army-command-staff-2083",
+      title: "Army Command & Staff Course Entrance Exam Preparation - 2083",
+      track: "army",
+      summary:
+        "6-month comprehensive preparation program for Nepal Army Command & Staff Course entrance exam",
       description: `Professional preparation platform for Nepalese Army officers preparing for the Command & Staff Course entrance examination. 
       
 This comprehensive 6-month program covers all five subjects with structured study plans, mock exams, and expert guidance.
@@ -52,22 +53,22 @@ This comprehensive 6-month program covers all five subjects with structured stud
 - Lecturette (100 marks)
 
 **Total: 500 marks**`,
-      level: 'Advanced',
-      durationLabel: '6 months',
+      level: "Advanced",
+      durationLabel: "6 months",
       lessonCount: 0, // Will be updated after lessons are created
       priceNpr: 20000, // Total if bought separately
       originalPriceNpr: 20000,
-      accentColor: '#1a4d2e', // Military green
-      heroImageUrl: '/images/army-course-hero.png',
+      accentColor: "#1a4d2e", // Military green
+      heroImageUrl: "/images/army-course-hero.png",
       isFeatured: true,
       isComingSoon: false,
       assessmentWeighting: {
         subjects: [
-          { name: 'Military Operations & Administration', weight: 100, percentage: 20 },
-          { name: 'Contemporary Affairs', weight: 100, percentage: 20 },
-          { name: 'Military History & Strategic Thoughts', weight: 100, percentage: 20 },
-          { name: 'Armed Conflicts - Appreciation & Plans', weight: 100, percentage: 20 },
-          { name: 'Lecturette', weight: 100, percentage: 20 }
+          { name: "Military Operations & Administration", weight: 100, percentage: 20 },
+          { name: "Contemporary Affairs", weight: 100, percentage: 20 },
+          { name: "Military History & Strategic Thoughts", weight: 100, percentage: 20 },
+          { name: "Armed Conflicts - Appreciation & Plans", weight: 100, percentage: 20 },
+          { name: "Lecturette", weight: 100, percentage: 20 }
         ],
         total: 500
       }
@@ -87,15 +88,15 @@ This comprehensive 6-month program covers all five subjects with structured stud
     update: {},
     create: {
       courseId: course.id,
-      title: 'Introduction: Vision, Mission & Course Overview',
+      title: "Introduction: Vision, Mission & Course Overview",
       position: 0,
       phaseNumber: 0,
       chapterNumber: 0,
       chapterPrice: 0,
       isLocked: false,
       isFreeIntro: true,
-      componentCode: 'INTRO',
-      componentLabel: 'Free Introduction',
+      componentCode: "INTRO",
+      componentLabel: "Free Introduction",
       completionCriteria: {
         requiredLessons: [],
         minCompletionPercentage: 0
@@ -117,8 +118,8 @@ This comprehensive 6-month program covers all five subjects with structured stud
     create: {
       courseId: course.id,
       moduleId: introModule.id,
-      title: 'Introduction: Vision, Mission & Objectives',
-      synopsis: 'Introduction covering vision, mission, and objectives of the course',
+      title: "Introduction: Vision, Mission & Objectives",
+      synopsis: "Introduction covering vision, mission, and objectives of the course",
       position: 1,
       contentType: ContentType.VIDEO,
       durationMinutes: 10,
@@ -126,11 +127,11 @@ This comprehensive 6-month program covers all five subjects with structured stud
       accessKind: LessonAccessKind.PREVIEW, // Free preview
       isRequired: false,
       completionWeight: 0,
-      bunnyVideoId: '6334bf98-12c7-492f-97bc-43dde00e0a3e' // Introduction video
+      bunnyVideoId: "6334bf98-12c7-492f-97bc-43dde00e0a3e" // Introduction video
     }
   });
 
-  console.log(`✅ Created 1 introduction video lesson`);
+  console.log("✅ Created 1 introduction video lesson");
 
   // Step 2b: Create FREE Overview Description Module
   const overviewModule = await prisma.module.upsert({
@@ -143,15 +144,15 @@ This comprehensive 6-month program covers all five subjects with structured stud
     update: {},
     create: {
       courseId: course.id,
-      title: 'Overview Description',
+      title: "Overview Description",
       position: 1,
       phaseNumber: 0,
       chapterNumber: 0,
       chapterPrice: 0,
       isLocked: false,
       isFreeIntro: true,
-      componentCode: 'OVERVIEW',
-      componentLabel: 'Free Overview',
+      componentCode: "OVERVIEW",
+      componentLabel: "Free Overview",
       completionCriteria: {
         requiredLessons: [],
         minCompletionPercentage: 0
@@ -159,7 +160,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     }
   });
 
-  console.log(`✅ Free Overview Module created`);
+  console.log("✅ Free Overview Module created");
 
   // Create overview lesson
   await prisma.lesson.upsert({
@@ -173,8 +174,8 @@ This comprehensive 6-month program covers all five subjects with structured stud
     create: {
       courseId: course.id,
       moduleId: overviewModule.id,
-      title: 'Course Overview & Structure',
-      synopsis: '6-month preparation program covering all 5 subjects with structured learning path',
+      title: "Course Overview & Structure",
+      synopsis: "6-month preparation program covering all 5 subjects with structured learning path",
       position: 2,
       contentType: ContentType.VIDEO,
       durationMinutes: 15,
@@ -182,11 +183,11 @@ This comprehensive 6-month program covers all five subjects with structured stud
       accessKind: LessonAccessKind.PREVIEW, // Free preview
       isRequired: false,
       completionWeight: 0,
-      bunnyVideoId: 'dc18e46f-4ca9-4d41-a289-9f59edbce15e' // Your overview video ID
+      bunnyVideoId: "dc18e46f-4ca9-4d41-a289-9f59edbce15e" // Your overview video ID
     }
   });
 
-  console.log(`✅ Created 1 overview video lesson`);
+  console.log("✅ Created 1 overview video lesson");
 
   // Step 3: Create Chapter 1 - Military Operations & Administration
   const chapter1 = await prisma.module.upsert({
@@ -199,7 +200,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     update: {},
     create: {
       courseId: course.id,
-      title: 'Chapter 1: Military Operations & Administration',
+      title: "Chapter 1: Military Operations & Administration",
       position: 2,
       phaseNumber: 1,
       subjectArea: SubjectArea.TACTICS_ADMIN,
@@ -207,8 +208,8 @@ This comprehensive 6-month program covers all five subjects with structured stud
       chapterPrice: 5000,
       isLocked: true,
       isFreeIntro: false,
-      componentCode: 'MOA',
-      componentLabel: 'Military Operations & Administration',
+      componentCode: "MOA",
+      componentLabel: "Military Operations & Administration",
       completionCriteria: {
         requiredLessons: 25,
         minCompletionPercentage: 100,
@@ -221,31 +222,156 @@ This comprehensive 6-month program covers all five subjects with structured stud
 
   // Create Chapter 1 lessons (25 lessons)
   const chapter1Lessons = [
-    { title: 'Operation of War', synopsis: 'Fundamentals of military operations', durationMinutes: 45, referencePages: '002-Tac, Pg 2-32' },
-    { title: 'Patrolling Tactics', synopsis: 'Reconnaissance and combat patrols', durationMinutes: 60, referencePages: '002-Tac, Pg 33-68' },
-    { title: 'Raid Operations', synopsis: 'Planning and executing raids', durationMinutes: 50, referencePages: '002-Tac, Pg 69-100' },
-    { title: 'Ambush Tactics', synopsis: 'Ambush planning and execution', durationMinutes: 50, referencePages: '002-Tac, Pg 101-130' },
-    { title: 'Infantry Operations', synopsis: 'Infantry tactics and formations', durationMinutes: 45, referencePages: '002-Tac, Pg 131-160' },
-    { title: 'Armor Operations', synopsis: 'Tank and armored vehicle tactics', durationMinutes: 40, referencePages: '002-Tac, Pg 161-185' },
-    { title: 'Artillery Support', synopsis: 'Fire support coordination', durationMinutes: 40, referencePages: '002-Tac, Pg 186-210' },
-    { title: 'Air Defence Operations', synopsis: 'Anti-aircraft defense systems', durationMinutes: 35, referencePages: '002-Tac, Pg 211-235' },
-    { title: 'Engineer Operations', synopsis: 'Combat engineering and obstacles', durationMinutes: 35, referencePages: '002-Tac, Pg 236-260' },
-    { title: 'Signal Operations', synopsis: 'Military communications', durationMinutes: 30, referencePages: '002-Tac, Pg 261-280' },
-    { title: 'Special Forces Operations', synopsis: 'Special operations tactics', durationMinutes: 40, referencePages: '002-Tac, Pg 281-310' },
-    { title: 'Mountain Warfare', synopsis: 'High-altitude combat operations', durationMinutes: 45, referencePages: '002-Tac, Pg 311-345' },
-    { title: 'Jungle Warfare', synopsis: 'Tropical environment operations', durationMinutes: 40, referencePages: '002-Tac, Pg 346-375' },
-    { title: 'Counter Insurgency', synopsis: 'COIN operations and tactics', durationMinutes: 50, referencePages: '002-Tac, Pg 376-415' },
-    { title: 'Urban Warfare', synopsis: 'Fighting in built-up areas', durationMinutes: 45, referencePages: '002-Tac, Pg 416-450' },
-    { title: 'Peacekeeping Operations', synopsis: 'UN peacekeeping missions', durationMinutes: 40, referencePages: '002-Tac, Pg 451-480' },
-    { title: 'Intelligence & Security', synopsis: 'Military intelligence operations', durationMinutes: 35, referencePages: '002-Tac, Pg 481-505' },
-    { title: 'Administration in War', synopsis: 'Wartime administrative procedures', durationMinutes: 30, referencePages: '001-SD, Pg 2-25' },
-    { title: 'Administration in Peace', synopsis: 'Peacetime administrative duties', durationMinutes: 25, referencePages: '001-SD, Pg 26-45' },
-    { title: 'Training Methods', synopsis: 'Military training principles', durationMinutes: 35, referencePages: '001-SD, Pg 46-70' },
-    { title: 'Leadership Principles', synopsis: 'Military leadership fundamentals', durationMinutes: 40, referencePages: '001-SD, Pg 71-100' },
-    { title: 'Man Management', synopsis: 'Personnel management skills', durationMinutes: 35, referencePages: '001-SD, Pg 101-125' },
-    { title: 'Nepal Army Organization', synopsis: 'Structure and organization', durationMinutes: 25, referencePages: '001-SD, Pg 126-145' },
-    { title: 'Military Act & Laws', synopsis: 'Military legal framework', durationMinutes: 30, referencePages: '001-SD, Pg 146-170' },
-    { title: 'Logistics System', synopsis: 'Military supply chain management', durationMinutes: 40, referencePages: '001-SD, Pg 171-200' }
+    {
+      title: "Operation of War",
+      synopsis: "Fundamentals of military operations",
+      durationMinutes: 45,
+      referencePages: "002-Tac, Pg 2-32"
+    },
+    {
+      title: "Patrolling Tactics",
+      synopsis: "Reconnaissance and combat patrols",
+      durationMinutes: 60,
+      referencePages: "002-Tac, Pg 33-68"
+    },
+    {
+      title: "Raid Operations",
+      synopsis: "Planning and executing raids",
+      durationMinutes: 50,
+      referencePages: "002-Tac, Pg 69-100"
+    },
+    {
+      title: "Ambush Tactics",
+      synopsis: "Ambush planning and execution",
+      durationMinutes: 50,
+      referencePages: "002-Tac, Pg 101-130"
+    },
+    {
+      title: "Infantry Operations",
+      synopsis: "Infantry tactics and formations",
+      durationMinutes: 45,
+      referencePages: "002-Tac, Pg 131-160"
+    },
+    {
+      title: "Armor Operations",
+      synopsis: "Tank and armored vehicle tactics",
+      durationMinutes: 40,
+      referencePages: "002-Tac, Pg 161-185"
+    },
+    {
+      title: "Artillery Support",
+      synopsis: "Fire support coordination",
+      durationMinutes: 40,
+      referencePages: "002-Tac, Pg 186-210"
+    },
+    {
+      title: "Air Defence Operations",
+      synopsis: "Anti-aircraft defense systems",
+      durationMinutes: 35,
+      referencePages: "002-Tac, Pg 211-235"
+    },
+    {
+      title: "Engineer Operations",
+      synopsis: "Combat engineering and obstacles",
+      durationMinutes: 35,
+      referencePages: "002-Tac, Pg 236-260"
+    },
+    {
+      title: "Signal Operations",
+      synopsis: "Military communications",
+      durationMinutes: 30,
+      referencePages: "002-Tac, Pg 261-280"
+    },
+    {
+      title: "Special Forces Operations",
+      synopsis: "Special operations tactics",
+      durationMinutes: 40,
+      referencePages: "002-Tac, Pg 281-310"
+    },
+    {
+      title: "Mountain Warfare",
+      synopsis: "High-altitude combat operations",
+      durationMinutes: 45,
+      referencePages: "002-Tac, Pg 311-345"
+    },
+    {
+      title: "Jungle Warfare",
+      synopsis: "Tropical environment operations",
+      durationMinutes: 40,
+      referencePages: "002-Tac, Pg 346-375"
+    },
+    {
+      title: "Counter Insurgency",
+      synopsis: "COIN operations and tactics",
+      durationMinutes: 50,
+      referencePages: "002-Tac, Pg 376-415"
+    },
+    {
+      title: "Urban Warfare",
+      synopsis: "Fighting in built-up areas",
+      durationMinutes: 45,
+      referencePages: "002-Tac, Pg 416-450"
+    },
+    {
+      title: "Peacekeeping Operations",
+      synopsis: "UN peacekeeping missions",
+      durationMinutes: 40,
+      referencePages: "002-Tac, Pg 451-480"
+    },
+    {
+      title: "Intelligence & Security",
+      synopsis: "Military intelligence operations",
+      durationMinutes: 35,
+      referencePages: "002-Tac, Pg 481-505"
+    },
+    {
+      title: "Administration in War",
+      synopsis: "Wartime administrative procedures",
+      durationMinutes: 30,
+      referencePages: "001-SD, Pg 2-25"
+    },
+    {
+      title: "Administration in Peace",
+      synopsis: "Peacetime administrative duties",
+      durationMinutes: 25,
+      referencePages: "001-SD, Pg 26-45"
+    },
+    {
+      title: "Training Methods",
+      synopsis: "Military training principles",
+      durationMinutes: 35,
+      referencePages: "001-SD, Pg 46-70"
+    },
+    {
+      title: "Leadership Principles",
+      synopsis: "Military leadership fundamentals",
+      durationMinutes: 40,
+      referencePages: "001-SD, Pg 71-100"
+    },
+    {
+      title: "Man Management",
+      synopsis: "Personnel management skills",
+      durationMinutes: 35,
+      referencePages: "001-SD, Pg 101-125"
+    },
+    {
+      title: "Nepal Army Organization",
+      synopsis: "Structure and organization",
+      durationMinutes: 25,
+      referencePages: "001-SD, Pg 126-145"
+    },
+    {
+      title: "Military Act & Laws",
+      synopsis: "Military legal framework",
+      durationMinutes: 30,
+      referencePages: "001-SD, Pg 146-170"
+    },
+    {
+      title: "Logistics System",
+      synopsis: "Military supply chain management",
+      durationMinutes: 40,
+      referencePages: "001-SD, Pg 171-200"
+    }
   ];
 
   let lessonPosition = 3; // Continue from intro (1) and overview (2) lessons
@@ -279,7 +405,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
   const chapters = [
     {
       position: 3,
-      title: 'Chapter 2: Contemporary Affairs',
+      title: "Chapter 2: Contemporary Affairs",
       subjectArea: SubjectArea.CURRENT_AFFAIRS,
       chapterNumber: 2,
       chapterPrice: 3500,
@@ -287,7 +413,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     },
     {
       position: 4,
-      title: 'Chapter 3: Military History & Strategic Thoughts',
+      title: "Chapter 3: Military History & Strategic Thoughts",
       subjectArea: SubjectArea.MILITARY_HISTORY_STRATEGY,
       chapterNumber: 3,
       chapterPrice: 4000,
@@ -295,7 +421,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     },
     {
       position: 5,
-      title: 'Chapter 4: Armed Conflicts - Appreciation & Plans',
+      title: "Chapter 4: Armed Conflicts - Appreciation & Plans",
       subjectArea: SubjectArea.APPRECIATION_PLANS,
       chapterNumber: 4,
       chapterPrice: 4500,
@@ -303,7 +429,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     },
     {
       position: 6,
-      title: 'Chapter 5: Lecturette',
+      title: "Chapter 5: Lecturette",
       subjectArea: SubjectArea.LECTURETTE,
       chapterNumber: 5,
       chapterPrice: 3000,
@@ -377,7 +503,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
   const existingStandardBundle = await prisma.courseBundleOffer.findFirst({
     where: {
       courseId: course.id,
-      bundleType: 'STANDARD'
+      bundleType: "STANDARD"
     }
   });
 
@@ -385,7 +511,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     ? await prisma.courseBundleOffer.update({
         where: { id: existingStandardBundle.id },
         data: {
-          title: 'Standard Bundle - Complete Course Access',
+          title: "Standard Bundle - Complete Course Access",
           description: `Get all 5 chapters at a discounted price!
 
 **Includes:**
@@ -411,8 +537,8 @@ This comprehensive 6-month program covers all five subjects with structured stud
     : await prisma.courseBundleOffer.create({
         data: {
           courseId: course.id,
-          bundleType: 'STANDARD',
-          title: 'Standard Bundle - Complete Course Access',
+          bundleType: "STANDARD",
+          title: "Standard Bundle - Complete Course Access",
           description: `Get all 5 chapters at a discounted price!
 
 **Includes:**
@@ -439,7 +565,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
   const existingPremiumBundle = await prisma.courseBundleOffer.findFirst({
     where: {
       courseId: course.id,
-      bundleType: 'PREMIUM'
+      bundleType: "PREMIUM"
     }
   });
 
@@ -447,7 +573,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
     ? await prisma.courseBundleOffer.update({
         where: { id: existingPremiumBundle.id },
         data: {
-          title: 'Premium Bundle - Complete Course + Mentorship',
+          title: "Premium Bundle - Complete Course + Mentorship",
           description: `The ultimate preparation package with personal mentorship!
 
 **Includes Everything in Standard Bundle PLUS:**
@@ -476,8 +602,8 @@ This comprehensive 6-month program covers all five subjects with structured stud
     : await prisma.courseBundleOffer.create({
         data: {
           courseId: course.id,
-          bundleType: 'PREMIUM',
-          title: 'Premium Bundle - Complete Course + Mentorship',
+          bundleType: "PREMIUM",
+          title: "Premium Bundle - Complete Course + Mentorship",
           description: `The ultimate preparation package with personal mentorship!
 
 **Includes Everything in Standard Bundle PLUS:**
@@ -504,7 +630,7 @@ This comprehensive 6-month program covers all five subjects with structured stud
         }
       });
 
-  console.log(`✅ Bundle offers created:`);
+  console.log("✅ Bundle offers created:");
   console.log(`   - ${standardBundle.title}: NPR ${standardBundle.bundlePrice}`);
   console.log(`   - ${premiumBundle.title}: NPR ${premiumBundle.bundlePrice}`);
 
@@ -518,11 +644,11 @@ This comprehensive 6-month program covers all five subjects with structured stud
     data: { lessonCount: totalLessons }
   });
 
-  console.log(`\n🎉 Army Command & Staff Course 2083 seeded successfully!`);
+  console.log("\n🎉 Army Command & Staff Course 2083 seeded successfully!");
   console.log(`   - Total lessons: ${totalLessons}`);
-  console.log(`   - Free modules: 2 (Introduction + Overview) - 2 video lessons`);
+  console.log("   - Free modules: 2 (Introduction + Overview) - 2 video lessons");
   console.log(`   - Paid chapters: 5 chapters (${totalLessons - 2} lessons)`);
-  console.log(`   - Bundle offers: 2 (Standard & Premium)`);
+  console.log("   - Bundle offers: 2 (Standard & Premium)");
 
   // Verify data was created
   const moduleCount = await prisma.module.count({ where: { courseId: course.id } });
