@@ -483,6 +483,319 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.internalServerError("Failed to fetch videos from Bunny Stream");
     }
   });
+
+  // ── GET /v1/admin/purchases ────────────────────────────────────────────────
+  fastify.get<{
+    Querystring: {
+      courseSlug?: string;
+      limit?: string;
+      offset?: string;
+      status?: string;
+      type?: string;
+    };
+  }>("/purchases", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    const { courseSlug, limit: limitStr, offset: offsetStr, status, type } = request.query;
+    const limit = Math.min(Number.parseInt(limitStr || "50"), 100);
+    const offset = Number.parseInt(offsetStr || "0");
+
+    let courseId: string | undefined;
+    if (courseSlug) {
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: courseSlug },
+        select: { id: true }
+      });
+      if (!course) {
+        return reply.notFound("Course not found");
+      }
+      courseId = course.id;
+    }
+
+    // Build filters
+    const chapterFilter: Record<string, unknown> = {};
+    const bundleFilter: Record<string, unknown> = {};
+
+    if (courseId) {
+      chapterFilter.courseId = courseId;
+      bundleFilter.courseId = courseId;
+    }
+
+    if (status) {
+      chapterFilter.paymentStatus = status;
+      bundleFilter.paymentStatus = status;
+    }
+
+    // Fetch chapter purchases
+    let chapterPurchases: Awaited<ReturnType<typeof fastify.prisma.chapterPurchase.findMany>> = [];
+    if (!type || type === "CHAPTER") {
+      chapterPurchases = await fastify.prisma.chapterPurchase.findMany({
+        where: chapterFilter,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              displayName: true
+            }
+          },
+          module: {
+            select: {
+              chapterNumber: true,
+              title: true
+            }
+          }
+        },
+        orderBy: { purchaseDate: "desc" },
+        take: limit,
+        skip: offset
+      });
+    }
+
+    // Fetch bundle purchases
+    let bundlePurchases: Awaited<ReturnType<typeof fastify.prisma.bundlePurchase.findMany>> = [];
+    if (!type || type === "BUNDLE") {
+      bundlePurchases = await fastify.prisma.bundlePurchase.findMany({
+        where: bundleFilter,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              displayName: true
+            }
+          },
+          bundleOffer: {
+            select: {
+              bundleType: true,
+              title: true,
+              includedChapters: true
+            }
+          }
+        },
+        orderBy: { purchaseDate: "desc" },
+        take: limit,
+        skip: offset
+      });
+    }
+
+    // Format response
+    const purchases = [
+      ...chapterPurchases.map((p) => ({
+        id: p.id,
+        type: "CHAPTER",
+        userId: p.userId,
+        user: p.user,
+        amount: p.amount,
+        paymentMethod: p.paymentMethod,
+        paymentStatus: p.paymentStatus,
+        transactionId: p.transactionId,
+        purchaseDate: p.purchaseDate,
+        chapter: {
+          number: p.module.chapterNumber,
+          title: p.module.title
+        }
+      })),
+      ...bundlePurchases.map((p) => ({
+        id: p.id,
+        type: "BUNDLE",
+        userId: p.userId,
+        user: p.user,
+        amount: p.amount,
+        paymentMethod: p.paymentMethod,
+        paymentStatus: p.paymentStatus,
+        transactionId: p.transactionId,
+        purchaseDate: p.purchaseDate,
+        bundle: {
+          type: p.bundleOffer.bundleType,
+          title: p.bundleOffer.title,
+          chaptersIncluded: p.bundleOffer.includedChapters as number[]
+        }
+      }))
+    ].sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
+
+    // Get total counts
+    const totalChapters = await fastify.prisma.chapterPurchase.count({
+      where: chapterFilter
+    });
+
+    const totalBundles = await fastify.prisma.bundlePurchase.count({
+      where: bundleFilter
+    });
+
+    const total = totalChapters + totalBundles;
+
+    return {
+      purchases: purchases.slice(0, limit),
+      pagination: {
+        limit,
+        offset,
+        total,
+        hasMore: offset + limit < total
+      },
+      summary: {
+        totalChapterPurchases: totalChapters,
+        totalBundlePurchases: totalBundles
+      }
+    };
+  });
+
+  // ── GET /v1/admin/purchases/:id ────────────────────────────────────────────
+  fastify.get<{ Params: { id: string } }>("/purchases/:id", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    const { id } = request.params;
+
+    // Try to find as chapter purchase first
+    const purchase = await fastify.prisma.chapterPurchase.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true,
+            role: true
+          }
+        },
+        module: {
+          select: {
+            id: true,
+            chapterNumber: true,
+            title: true,
+            chapterPrice: true
+          }
+        },
+        course: {
+          select: {
+            id: true,
+            slug: true,
+            title: true
+          }
+        }
+      }
+    });
+
+    if (purchase) {
+      return {
+        id: purchase.id,
+        type: "CHAPTER",
+        user: purchase.user,
+        course: purchase.course,
+        amount: purchase.amount,
+        paymentMethod: purchase.paymentMethod,
+        paymentStatus: purchase.paymentStatus,
+        transactionId: purchase.transactionId,
+        purchaseDate: purchase.purchaseDate,
+        createdAt: purchase.createdAt,
+        updatedAt: purchase.updatedAt,
+        chapter: {
+          id: purchase.module.id,
+          number: purchase.module.chapterNumber,
+          title: purchase.module.title,
+          price: purchase.module.chapterPrice
+        },
+        isBundle: purchase.isBundle,
+        bundleId: purchase.bundleId
+      };
+    }
+
+    // Try to find as bundle purchase
+    const bundlePurchase = await fastify.prisma.bundlePurchase.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true,
+            role: true
+          }
+        },
+        bundleOffer: {
+          select: {
+            id: true,
+            bundleType: true,
+            title: true,
+            description: true,
+            includedChapters: true,
+            originalPrice: true,
+            bundlePrice: true,
+            discount: true,
+            includesMentorAccess: true,
+            includesMockExams: true,
+            includesCertificate: true,
+            mockExamCount: true
+          }
+        },
+        course: {
+          select: {
+            id: true,
+            slug: true,
+            title: true
+          }
+        }
+      }
+    });
+
+    if (bundlePurchase) {
+      // Get chapter progress for this user
+      const chapterProgress = await fastify.prisma.chapterProgress.findMany({
+        where: {
+          userId: bundlePurchase.userId,
+          courseId: bundlePurchase.courseId,
+          chapterNumber: {
+            in: bundlePurchase.bundleOffer.includedChapters as number[]
+          }
+        }
+      });
+
+      return {
+        id: bundlePurchase.id,
+        type: "BUNDLE",
+        user: bundlePurchase.user,
+        course: bundlePurchase.course,
+        amount: bundlePurchase.amount,
+        paymentMethod: bundlePurchase.paymentMethod,
+        paymentStatus: bundlePurchase.paymentStatus,
+        transactionId: bundlePurchase.transactionId,
+        purchaseDate: bundlePurchase.purchaseDate,
+        unlockDate: bundlePurchase.unlockDate,
+        createdAt: bundlePurchase.createdAt,
+        updatedAt: bundlePurchase.updatedAt,
+        bundle: {
+          id: bundlePurchase.bundleOffer.id,
+          type: bundlePurchase.bundleOffer.bundleType,
+          title: bundlePurchase.bundleOffer.title,
+          description: bundlePurchase.bundleOffer.description,
+          chaptersIncluded: bundlePurchase.bundleOffer.includedChapters as number[],
+          pricing: {
+            originalPrice: bundlePurchase.bundleOffer.originalPrice,
+            bundlePrice: bundlePurchase.bundleOffer.bundlePrice,
+            discount: bundlePurchase.bundleOffer.discount
+          },
+          features: {
+            mentorAccess: bundlePurchase.bundleOffer.includesMentorAccess,
+            mockExams: bundlePurchase.bundleOffer.includesMockExams,
+            mockExamCount: bundlePurchase.bundleOffer.mockExamCount,
+            certificate: bundlePurchase.bundleOffer.includesCertificate
+          }
+        },
+        chaptersUnlocked: bundlePurchase.chaptersUnlocked as number[],
+        chapterProgress: chapterProgress.map((cp) => ({
+          chapterNumber: cp.chapterNumber,
+          completionPercentage: cp.completionPercentage,
+          isCompleted: cp.isChapterCompleted,
+          lessonsCompleted: cp.lessonsCompleted,
+          totalLessons: cp.totalLessons
+        }))
+      };
+    }
+
+    return reply.notFound("Purchase not found");
+  });
 };
 
 export default adminRoutes;
