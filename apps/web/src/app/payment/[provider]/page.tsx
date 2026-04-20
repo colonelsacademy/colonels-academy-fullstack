@@ -134,6 +134,7 @@ function PaymentContent({ provider }: { provider: string }) {
           </h2>
           <p className="text-red-500 text-sm mb-6">{error}</p>
           <button
+            type="button"
             onClick={() => router.back()}
             className="w-full py-3 bg-[#0B1120] text-white font-bold rounded-xl hover:bg-black transition-colors font-['Rajdhani'] uppercase tracking-widest"
           >
@@ -238,6 +239,7 @@ function PaymentContent({ provider }: { provider: string }) {
             {/* Actions */}
             <div className="space-y-3 pt-2">
               <button
+                type="button"
                 onClick={handleConfirmPayment}
                 disabled={processing}
                 className="w-full py-4 font-bold font-['Rajdhani'] uppercase tracking-widest rounded-xl text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
@@ -257,6 +259,7 @@ function PaymentContent({ provider }: { provider: string }) {
               </button>
 
               <button
+                type="button"
                 onClick={handleCancel}
                 disabled={processing}
                 className="w-full py-3 bg-gray-100 text-gray-600 font-bold font-['Rajdhani'] uppercase tracking-widest rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"

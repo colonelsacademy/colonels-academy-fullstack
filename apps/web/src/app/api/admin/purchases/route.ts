@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Build filters
-    const chapterFilter: any = {};
-    const bundleFilter: any = {};
+    const chapterFilter: Record<string, unknown> = {};
+    const bundleFilter: Record<string, unknown> = {};
 
     if (courseId) {
       chapterFilter.courseId = courseId;
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch chapter purchases
-    let chapterPurchases: any[] = [];
+    let chapterPurchases: Awaited<ReturnType<typeof db.chapterPurchase.findMany>> = [];
     if (!type || type === "CHAPTER") {
       chapterPurchases = await db.chapterPurchase.findMany({
         where: chapterFilter,
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch bundle purchases
-    let bundlePurchases: any[] = [];
+    let bundlePurchases: Awaited<ReturnType<typeof db.bundlePurchase.findMany>> = [];
     if (!type || type === "BUNDLE") {
       bundlePurchases = await db.bundlePurchase.findMany({
         where: bundleFilter,

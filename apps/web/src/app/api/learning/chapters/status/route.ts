@@ -86,10 +86,12 @@ export async function GET(request: NextRequest) {
     const purchasedModuleIds = new Set(chapterPurchases.map((p) => p.moduleId));
     const purchasedChapters = new Set<number>();
 
-    bundlePurchases.forEach((bp) => {
+    for (const bp of bundlePurchases) {
       const chapters = bp.bundleOffer.includedChapters as number[];
-      chapters.forEach((ch) => purchasedChapters.add(ch));
-    });
+      for (const ch of chapters) {
+        purchasedChapters.add(ch);
+      }
+    }
 
     // Build progress map
     const progressMap = new Map(chapterProgress.map((cp) => [cp.chapterNumber, cp]));

@@ -80,17 +80,19 @@ export async function GET(request: NextRequest) {
     const purchasedChapters = new Set<number>();
 
     // Add individually purchased chapters
-    chapterPurchases.forEach((purchase) => {
+    for (const purchase of chapterPurchases) {
       if (purchase.module.chapterNumber) {
         purchasedChapters.add(purchase.module.chapterNumber);
       }
-    });
+    }
 
     // Add bundle-purchased chapters
-    bundlePurchases.forEach((purchase) => {
+    for (const purchase of bundlePurchases) {
       const chapters = purchase.bundleOffer.includedChapters as number[];
-      chapters.forEach((ch) => purchasedChapters.add(ch));
-    });
+      for (const ch of chapters) {
+        purchasedChapters.add(ch);
+      }
+    }
 
     // Build response
     const response = {
