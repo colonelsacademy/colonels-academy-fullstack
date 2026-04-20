@@ -4,9 +4,14 @@ import Link from "next/link";
 
 interface InstructorsProps {
   activeTab?: string;
+  /** Same as CourseFilter `basePath` — keeps mentor tabs on this hub. */
+  instructorTabsBasePath?: string;
 }
 
-export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
+export const Instructors = async ({
+  activeTab = "all",
+  instructorTabsBasePath = "/"
+}: InstructorsProps) => {
   const instructors = await getInstructors();
 
   const filtered =
@@ -32,7 +37,7 @@ export const Instructors = async ({ activeTab = "all" }: InstructorsProps) => {
           </p>
         </div>
 
-        <InstructorTabs activeTab={activeTab} tabs={tabs} />
+        <InstructorTabs activeTab={activeTab} tabs={tabs} basePath={instructorTabsBasePath} />
       </div>
 
       {/* Cards Grid */}

@@ -5,13 +5,14 @@ import { getFirebaseClientAuth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   signInWithPopup,
   signInWithRedirect
 } from "firebase/auth";
 import { Eye, EyeOff, Lock, Mail, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
@@ -54,7 +55,43 @@ function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const _useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
+  useEffect(() => {
+    let cancelled = false;
+
+    async function finalizeRedirectSignIn() {
+      const auth = getFirebaseClientAuth();
+      if (!auth) {
+        return;
+      }
+
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result?.user || cancelled) {
+          return;
+        }
+
+        const token = await result.user.getIdToken();
+        if (cancelled) {
+          return;
+        }
+        await login(token);
+        if (!cancelled) {
+          router.push(next);
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          const firebaseErr = err as { message?: string };
+          setError(firebaseErr.message || "Google sign-up failed. Please try again.");
+        }
+      }
+    }
+
+    void finalizeRedirectSignIn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [login, next, router]);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -90,7 +127,18 @@ function SignupForm() {
       await login(token);
       router.push(next);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign-up failed.");
+      const firebaseErr = err as { code?: string; message?: string };
+      if (firebaseErr.code === "auth/popup-blocked") {
+        const auth = getFirebaseClientAuth();
+        if (!auth) {
+          setError("Firebase is not configured.");
+          return;
+        }
+        const provider = new GoogleAuthProvider();
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      setError(firebaseErr.message || "Sign-up failed.");
     } finally {
       setLoading(false);
     }

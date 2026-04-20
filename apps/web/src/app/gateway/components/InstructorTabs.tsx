@@ -10,9 +10,11 @@ interface Tab {
 interface InstructorTabsProps {
   activeTab: string;
   tabs: Tab[];
+  /** Hub for mentor tab query updates (defaults to home `/`). */
+  basePath?: string;
 }
 
-export default function InstructorTabs({ activeTab, tabs }: InstructorTabsProps) {
+export default function InstructorTabs({ activeTab, tabs, basePath = "/" }: InstructorTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -20,7 +22,16 @@ export default function InstructorTabs({ activeTab, tabs }: InstructorTabsProps)
     const params = new URLSearchParams(searchParams.toString());
     if (id === "all") params.delete("mentorCategory");
     else params.set("mentorCategory", id);
-    router.push(`/?${params.toString()}#mentors`, { scroll: false });
+    const qs = params.toString();
+    const url =
+      basePath === "/"
+        ? qs
+          ? `/?${qs}#mentors`
+          : "/#mentors"
+        : qs
+          ? `${basePath}?${qs}#mentors`
+          : `${basePath}#mentors`;
+    router.push(url, { scroll: false });
   };
 
   return (
