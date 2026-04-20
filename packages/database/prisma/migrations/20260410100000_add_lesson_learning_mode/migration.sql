@@ -1,0 +1,4 @@
+CREATE TYPE "LessonLearningMode" AS ENUM ('LESSON', 'PRACTICE', 'QUIZ', 'LIVE', 'FEEDBACK', 'RESOURCE');
+
+ALTER TABLE "Lesson"
+ADD COLUMN "learningMode" "LessonLearningMode" NOT NULL DEFAULT 'LESSON';

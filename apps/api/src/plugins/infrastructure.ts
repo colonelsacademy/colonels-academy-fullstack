@@ -1,13 +1,18 @@
-import fp from "fastify-plugin";
 import { Queue } from "bullmq";
+import fp from "fastify-plugin";
 import Redis from "ioredis";
 
 import { defaultJobOptions, loadApiEnv, queueNames } from "@colonels-academy/config";
-import type { NotificationJob, VideoSyncJob } from "@colonels-academy/contracts";
+import type {
+  NotificationJob,
+  StudySessionReconcileJob,
+  VideoSyncJob
+} from "@colonels-academy/contracts";
 
 export interface QueueRegistry {
   videoSync: Queue<VideoSyncJob>;
   notifications: Queue<NotificationJob>;
+  studySessionReconcile: Queue<StudySessionReconcileJob>;
 }
 
 export interface BunnyConfig {
@@ -42,7 +47,14 @@ export default fp(async (fastify) => {
         notifications: new Queue<NotificationJob>(queueNames.notifications, {
           connection: redis,
           defaultJobOptions
-        })
+        }),
+        studySessionReconcile: new Queue<StudySessionReconcileJob>(
+          queueNames.studySessionReconcile,
+          {
+            connection: redis,
+            defaultJobOptions
+          }
+        )
       }
     : null;
 
@@ -68,7 +80,11 @@ export default fp(async (fastify) => {
 
   fastify.addHook("onClose", async () => {
     if (queues) {
-      await Promise.all([queues.videoSync.close(), queues.notifications.close()]);
+      await Promise.all([
+        queues.videoSync.close(),
+        queues.notifications.close(),
+        queues.studySessionReconcile.close()
+      ]);
     }
 
     if (redis) {

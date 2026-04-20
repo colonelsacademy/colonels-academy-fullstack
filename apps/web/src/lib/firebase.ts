@@ -1,5 +1,7 @@
-import { getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { type FirebaseOptions, getApp, getApps, initializeApp } from "firebase/app";
+import { type Auth, connectAuthEmulator, getAuth } from "firebase/auth";
+
+let authEmulatorConnected = false;
 
 function getFirebaseConfig(): FirebaseOptions | null {
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
@@ -29,8 +31,29 @@ export function getFirebaseClientApp() {
   return getApps().length ? getApp() : initializeApp(firebaseConfig);
 }
 
+function attachAuthEmulator(auth: Auth) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR !== "true") {
+    return;
+  }
+  if (authEmulatorConnected) {
+    return;
+  }
+  const url = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL ?? "http://127.0.0.1:9099";
+  connectAuthEmulator(auth, url, { disableWarnings: true });
+  authEmulatorConnected = true;
+}
+
 export function getFirebaseClientAuth() {
   const app = getFirebaseClientApp();
 
-  return app ? getAuth(app) : null;
+  if (!app) {
+    return null;
+  }
+
+  const auth = getAuth(app);
+  attachAuthEmulator(auth);
+  return auth;
 }

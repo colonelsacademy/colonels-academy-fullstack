@@ -1,17 +1,17 @@
-import { NextResponse, NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/apiClient";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const sessionCookie = request.cookies.get("__session");
   const csrfToken = request.headers.get("x-csrf-token");
+  const cookie = request.headers.get("cookie");
 
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/session-logout`, {
       method: "POST",
       headers: {
-        Cookie: `__session=${sessionCookie?.value}`,
         ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
-      },
+        ...(cookie ? { cookie } : {})
+      }
     });
 
     if (!apiResponse.ok) {
@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
 
     // Forward Set-Cookie headers (to clear the cookie)
     const setCookieHeaders = apiResponse.headers.getSetCookie();
-    setCookieHeaders.forEach((cookie) => {
+    for (const cookie of setCookieHeaders) {
       response.headers.append("Set-Cookie", cookie);
-    });
+    }
 
     return response;
   } catch (error) {

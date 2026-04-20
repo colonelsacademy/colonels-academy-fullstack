@@ -11,10 +11,26 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ca-assets.b-cdn.net",
+        hostname: "ca-assets.b-cdn.net"
       },
-    ],
-  },
+      {
+        protocol: "https",
+        hostname: "dev.thecolonelsacademy.com"
+      },
+      {
+        protocol: "https",
+        hostname: "uat.thecolonelsacademy.com"
+      },
+      {
+        protocol: "https",
+        hostname: "colonels-alpha.b-cdn.net"
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com"
+      }
+    ]
+  }
 };
 
 export default nextConfig;

@@ -1,7 +1,7 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 
-import fp from "fastify-plugin";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import fp from "fastify-plugin";
 import type { DecodedIdToken } from "firebase-admin/auth";
 
 import { loadApiEnv } from "@colonels-academy/config";
@@ -30,7 +30,7 @@ export interface AuthCookieSettings {
   csrfMaxAgeSeconds: number;
   secure: boolean;
   domain?: string;
-  sameSite: "lax";
+  sameSite: "none" | "lax" | "strict";
 }
 
 declare module "fastify" {
@@ -107,7 +107,9 @@ function matchesCsrfToken(cookieToken?: string, headerValue?: string | string[])
 }
 
 function clearAuthContext(request: FastifyRequest) {
+  // biome-ignore lint/performance/noDelete: exactOptionalPropertyTypes requires delete, not undefined assignment
   delete request.authUser;
+  // biome-ignore lint/performance/noDelete: exactOptionalPropertyTypes requires delete, not undefined assignment
   delete request.authMethod;
 }
 
@@ -132,7 +134,7 @@ export default fp(async (fastify) => {
     sessionMaxAgeMs: env.SESSION_MAX_AGE_DAYS * 24 * 60 * 60 * 1_000,
     csrfMaxAgeSeconds: env.CSRF_TOKEN_MAX_AGE_MINUTES * 60,
     secure: env.SESSION_COOKIE_SECURE,
-    sameSite: "lax",
+    sameSite: env.SESSION_COOKIE_SECURE ? "none" : "lax",
     ...(env.SESSION_COOKIE_DOMAIN ? { domain: env.SESSION_COOKIE_DOMAIN } : {})
   };
 
@@ -147,9 +149,12 @@ export default fp(async (fastify) => {
       return null;
     }
 
-    const decoded = await adminAuth.verifyIdToken(token);
-
-    return mapAuthUser(decoded);
+    try {
+      const decoded = await adminAuth.verifyIdToken(token);
+      return mapAuthUser(decoded);
+    } catch {
+      return null;
+    }
   }
 
   async function verifySessionCookie(sessionCookie?: string): Promise<AuthUser | null> {
@@ -157,9 +162,15 @@ export default fp(async (fastify) => {
       return null;
     }
 
-    const decoded = await adminAuth.verifySessionCookie(sessionCookie, env.FIREBASE_CHECK_REVOKED_SESSIONS);
-
-    return mapAuthUser(decoded);
+    try {
+      const decoded = await adminAuth.verifySessionCookie(
+        sessionCookie,
+        env.FIREBASE_CHECK_REVOKED_SESSIONS
+      );
+      return mapAuthUser(decoded);
+    } catch {
+      return null;
+    }
   }
 
   async function authenticateRequest(request: FastifyRequest): Promise<AuthResult> {
@@ -250,7 +261,9 @@ export default fp(async (fastify) => {
   });
   fastify.decorate("createSession", async (reply, idToken) => {
     if (!adminAuth) {
-      throw fastify.httpErrors.serviceUnavailable("Firebase Auth admin credentials are not configured.");
+      throw fastify.httpErrors.serviceUnavailable(
+        "Firebase Auth admin credentials are not configured."
+      );
     }
 
     const decoded = await adminAuth.verifyIdToken(idToken);

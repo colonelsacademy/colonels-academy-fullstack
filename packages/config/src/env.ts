@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-const optionalString = z.string().min(1).optional();
+const optionalString = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.string().min(1).optional()
+);
 const logLevelSchema = z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]);
 
 function booleanFlag(defaultValue: boolean) {
@@ -25,6 +28,15 @@ function booleanFlag(defaultValue: boolean) {
   );
 }
 
+function optionalUrl(defaultValue: string) {
+  return z.preprocess((value) => {
+    if (value === "") {
+      return undefined;
+    }
+    return value;
+  }, z.string().url().default(defaultValue));
+}
+
 const apiEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   API_HOST: z.string().default("0.0.0.0"),
@@ -47,6 +59,9 @@ const apiEnvSchema = z.object({
   FIREBASE_CLIENT_EMAIL: optionalString,
   FIREBASE_PRIVATE_KEY: optionalString,
   FIREBASE_CHECK_REVOKED_SESSIONS: booleanFlag(true),
+  /** Set to `127.0.0.1:9099` when using the Firebase Auth emulator (no `http://`). */
+  FIREBASE_AUTH_EMULATOR_HOST: optionalString,
+  BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net"),
   BUNNY_STREAM_LIBRARY_ID: optionalString,
   BUNNY_STREAM_API_KEY: optionalString,
   BUNNY_STREAM_PULL_ZONE: optionalString,
@@ -66,19 +81,24 @@ const workerEnvSchema = z.object({
 });
 
 const publicWebEnvSchema = z.object({
-  NEXT_PUBLIC_API_BASE_URL: z.string().url().default("http://localhost:4000"),
+  NEXT_PUBLIC_API_BASE_URL: optionalUrl("http://localhost:4000"),
   NEXT_PUBLIC_FIREBASE_API_KEY: optionalString,
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
-  NEXT_PUBLIC_FIREBASE_APP_ID: optionalString
+  NEXT_PUBLIC_FIREBASE_APP_ID: optionalString,
+  NEXT_PUBLIC_BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net")
 });
 
 const publicMobileEnvSchema = z.object({
-  EXPO_PUBLIC_API_BASE_URL: z.string().url().default("http://localhost:4000"),
+  EXPO_PUBLIC_API_BASE_URL: optionalUrl("http://localhost:4000"),
   EXPO_PUBLIC_FIREBASE_API_KEY: optionalString,
   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: optionalString,
   EXPO_PUBLIC_FIREBASE_PROJECT_ID: optionalString,
-  EXPO_PUBLIC_FIREBASE_APP_ID: optionalString
+  EXPO_PUBLIC_FIREBASE_APP_ID: optionalString,
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: optionalString,
+  EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: optionalString,
+  EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: optionalString,
+  EXPO_PUBLIC_BUNNY_CDN_URL: optionalUrl("https://ca-assets.b-cdn.net")
 });
 
 export type ApiEnv = ReturnType<typeof loadApiEnv>;
@@ -90,11 +110,42 @@ function normalizePrivateKey(value?: string) {
   return value?.replace(/\\n/g, "\n");
 }
 
+function resolveFirebaseAuthEmulatorHost(
+  env: NodeJS.ProcessEnv,
+  configuredHost?: string
+): string | undefined {
+  if (configuredHost) {
+    return configuredHost;
+  }
+
+  const useEmulator = env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR?.trim().toLowerCase();
+  if (!["true", "1", "yes", "on"].includes(useEmulator ?? "")) {
+    return undefined;
+  }
+
+  const emulatorUrl = env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL?.trim();
+  if (!emulatorUrl) {
+    return "127.0.0.1:9099";
+  }
+
+  try {
+    const parsed = new URL(emulatorUrl);
+    return parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname;
+  } catch {
+    return "127.0.0.1:9099";
+  }
+}
+
 export function loadApiEnv(env: NodeJS.ProcessEnv = process.env) {
   const parsed = apiEnvSchema.parse(env);
+  const firebaseAuthEmulatorHost = resolveFirebaseAuthEmulatorHost(
+    env,
+    parsed.FIREBASE_AUTH_EMULATOR_HOST
+  );
 
   return {
     ...parsed,
+    FIREBASE_AUTH_EMULATOR_HOST: firebaseAuthEmulatorHost,
     FIREBASE_PRIVATE_KEY: normalizePrivateKey(parsed.FIREBASE_PRIVATE_KEY),
     SESSION_COOKIE_SECURE: parsed.SESSION_COOKIE_SECURE || parsed.NODE_ENV === "production"
   };

@@ -1,11 +1,15 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
+import { type Auth, getAuth } from "firebase-admin/auth";
 
 import type { ApiEnv } from "@colonels-academy/config";
 
 const APP_NAME = "colonels-academy-api";
 
 export function getFirebaseAdminAuth(env: ApiEnv): Auth | null {
+  if (env.FIREBASE_AUTH_EMULATOR_HOST) {
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = env.FIREBASE_AUTH_EMULATOR_HOST;
+  }
+
   if (!env.FIREBASE_PROJECT_ID || !env.FIREBASE_CLIENT_EMAIL || !env.FIREBASE_PRIVATE_KEY) {
     return null;
   }

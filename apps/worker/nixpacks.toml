@@ -1,0 +1,19 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = [
+  "npm install -g corepack@0.31.0",
+  "corepack enable",
+  "corepack prepare pnpm@10.33.0 --activate",
+  "cd /app && pnpm install --frozen-lockfile"
+]
+
+[phases.build]
+cmds = [
+  "cd /app && pnpm --filter @colonels-academy/database run db:generate",
+  "cd /app && pnpm --filter @colonels-academy/worker run build"
+]
+
+[start]
+cmd = "node /app/apps/worker/dist/index.js"

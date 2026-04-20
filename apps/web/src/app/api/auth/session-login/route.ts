@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/apiClient";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
   const csrfToken = request.headers.get("x-csrf-token");
+  const cookie = request.headers.get("cookie");
 
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/session-login`, {
@@ -11,8 +12,9 @@ export async function POST(request: Request) {
       headers: {
         "Content-Type": "application/json",
         ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+        ...(cookie ? { cookie } : {})
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body)
     });
 
     if (!apiResponse.ok) {
@@ -25,9 +27,9 @@ export async function POST(request: Request) {
 
     // Forward Set-Cookie headers from Fastify to the browser
     const setCookieHeaders = apiResponse.headers.getSetCookie();
-    setCookieHeaders.forEach((cookie) => {
+    for (const cookie of setCookieHeaders) {
       response.headers.append("Set-Cookie", cookie);
-    });
+    }
 
     return response;
   } catch (error) {

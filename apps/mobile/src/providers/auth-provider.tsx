@@ -1,13 +1,30 @@
 import {
+  type PropsWithChildren,
   createContext,
   useContext,
   useEffect,
   useMemo,
-  useState,
-  type PropsWithChildren
+  useState
 } from "react";
 
-import { getFirebaseMobileAuth, onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from "../lib/firebase";
+import {
+  GoogleAuthProvider,
+  type User,
+  createUserWithEmailAndPassword,
+  getFirebaseMobileAuth,
+  onIdTokenChanged,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  signOut
+} from "../lib/firebase";
+
+import { readPublicMobileEnv } from "@colonels-academy/config";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
+import Constants from "expo-constants";
+
+const env = readPublicMobileEnv();
+const extra = Constants.expoConfig?.extra ?? {};
+const apiBaseUrl = extra.EXPO_PUBLIC_API_BASE_URL || env.EXPO_PUBLIC_API_BASE_URL;
 
 interface AuthContextValue {
   accessToken: string | null;
@@ -15,30 +32,63 @@ interface AuthContextValue {
   isConfigured: boolean;
   isReady: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
   user: User | null;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Configure Google Sign-In once at module level
+const webClientId = extra.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const iosClientId = extra.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+if (webClientId) {
+  GoogleSignin.configure({
+    webClientId,
+    ...(iosClientId ? { iosClientId } : {}),
+    offlineAccess: false
+  });
+  // Clear any stale Google session on startup to prevent DEVELOPER_ERROR on load
+  GoogleSignin.signOut().catch(() => {});
+}
+
 export function AuthProvider({ children }: PropsWithChildren) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+
   const auth = getFirebaseMobileAuth();
 
+  // Firebase auth state listener — also syncs user to Postgres on login
   useEffect(() => {
     if (!auth) {
       setIsReady(true);
-      setUser(null);
-      setAccessToken(null);
       return;
     }
 
     const unsubscribe = onIdTokenChanged(auth, async (nextUser) => {
       setUser(nextUser);
-      setAccessToken(nextUser ? await nextUser.getIdToken() : null);
+      if (nextUser) {
+        const idToken = await nextUser.getIdToken();
+        setAccessToken(idToken);
+        // Sync user to Postgres via API using Bearer token (mobile doesn't use session cookies)
+        try {
+          await fetch(`${apiBaseUrl}/v1/auth/mobile-sync`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+              "Content-Type": "application/json"
+            }
+          });
+        } catch (err) {
+          // Non-fatal — user is still authenticated via Firebase
+          console.warn("Failed to sync user to Postgres:", err);
+        }
+      } else {
+        setAccessToken(null);
+      }
       setIsReady(true);
     });
 
@@ -51,32 +101,81 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error,
       isConfigured: Boolean(auth),
       isReady,
+      user,
+
       async signInWithEmail(email, password) {
         if (!auth) {
-          setError("Firebase mobile auth is not configured.");
+          setError("Firebase not configured");
           return;
         }
 
         try {
           setError(null);
           await signInWithEmailAndPassword(auth, email.trim(), password);
-        } catch (authError) {
-          setError(authError instanceof Error ? authError.message : "Sign-in failed.");
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Sign in failed");
         }
       },
-      async signOutUser() {
+
+      async signUpWithEmail(email, password) {
         if (!auth) {
+          setError("Firebase not configured");
           return;
         }
 
         try {
           setError(null);
-          await signOut(auth);
-        } catch (authError) {
-          setError(authError instanceof Error ? authError.message : "Sign-out failed.");
+          await createUserWithEmailAndPassword(auth, email.trim(), password);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Sign up failed");
         }
       },
-      user
+
+      async signInWithGoogle() {
+        if (!auth) {
+          setError("Firebase not configured");
+          return;
+        }
+        try {
+          setError(null);
+          await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+          await GoogleSignin.signOut();
+          const signInResult = await GoogleSignin.signIn();
+          const idToken = signInResult.data?.idToken;
+          if (!idToken) throw new Error("No ID token from Google");
+          const credential = GoogleAuthProvider.credential(idToken);
+          await signInWithCredential(auth, credential);
+        } catch (err) {
+          const e = err as { code?: string; message?: string };
+          if (e.code === statusCodes.SIGN_IN_CANCELLED) {
+            // user cancelled — no error shown
+          } else if (e.code === statusCodes.IN_PROGRESS) {
+            setError("Sign-in already in progress");
+          } else if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+            setError("Google Play Services not available");
+          } else if (e.message?.includes("DEVELOPER_ERROR")) {
+            setError("Google Sign-In is not configured correctly. Please use email/password.");
+          } else {
+            setError(e.message ?? "Google Sign-In failed");
+          }
+        }
+      },
+
+      async signOutUser() {
+        if (!auth) return;
+        try {
+          setError(null);
+          await signOut(auth);
+          // Also sign out from Google if they used Google Sign-In
+          try {
+            await GoogleSignin.signOut();
+          } catch {
+            /* not signed in via Google */
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Sign out failed");
+        }
+      }
     }),
     [accessToken, auth, error, isReady, user]
   );

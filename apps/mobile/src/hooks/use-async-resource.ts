@@ -1,4 +1,4 @@
-import { useEffect, useState, type DependencyList } from "react";
+import { type DependencyList, useEffect, useState } from "react";
 
 interface AsyncResourceState<T> {
   data: T;
@@ -17,6 +17,7 @@ export function useAsyncResource<T>(
     loading: true
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: loader is intentionally excluded to prevent infinite loops
   useEffect(() => {
     let isCancelled = false;
 
@@ -53,6 +54,7 @@ export function useAsyncResource<T>(
     return () => {
       isCancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies);
 
   return state;
