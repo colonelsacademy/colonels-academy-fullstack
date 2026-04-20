@@ -4,12 +4,15 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request, { params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
   const cookie = request.headers.get("cookie");
+  const csrfToken = request.headers.get("x-csrf-token");
 
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/orders/${orderId}/confirm`, {
       method: "POST",
       headers: {
-        ...(cookie ? { cookie } : {})
+        "Content-Type": "application/json",
+        ...(cookie ? { cookie } : {}),
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       }
     });
 

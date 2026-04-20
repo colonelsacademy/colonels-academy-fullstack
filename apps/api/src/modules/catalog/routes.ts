@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 
 import { getCoursePhasePlan } from "../../lib/course-phase-plan";
+import { getCachedUserId } from "../../lib/user-cache";
 import { getCourseBySlug, getCourseLessons, listCourses, listInstructors } from "./service";
 
 const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/courses", async (request) => {
-    const items = await listCourses(fastify.prisma, request.log);
+    // ✅ OPTIMIZED: Pass cache manager to service
+    const items = await listCourses(fastify.prisma, fastify.cache, request.log);
 
     return {
       items
@@ -13,7 +15,13 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get<{ Params: { slug: string } }>("/courses/:slug", async (request, reply) => {
-    const course = await getCourseBySlug(fastify.prisma, request.log, request.params.slug);
+    // ✅ OPTIMIZED: Pass cache manager to service
+    const course = await getCourseBySlug(
+      fastify.prisma,
+      fastify.cache,
+      request.log,
+      request.params.slug
+    );
 
     if (!course) {
       return reply.notFound("Course not found.");
@@ -25,14 +33,10 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/lessons", async (request, reply) => {
     const { user: authUser } = await fastify.authenticateRequest(request);
 
-    // Fetch DB user ID to check enrollment/progress
+    // ✅ OPTIMIZED: Use cached user lookup
     let dbUserId: string | undefined;
     if (authUser) {
-      const dbUser = await fastify.prisma.user.findUnique({
-        where: { firebaseUid: authUser.uid },
-        select: { id: true }
-      });
-      dbUserId = dbUser?.id;
+      dbUserId = await getCachedUserId(fastify, authUser);
     }
 
     const response = await getCourseLessons(
@@ -53,13 +57,10 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/phases", async (request, reply) => {
     const { user: authUser } = await fastify.authenticateRequest(request);
 
+    // ✅ OPTIMIZED: Use cached user lookup
     let dbUserId: string | undefined;
     if (authUser) {
-      const dbUser = await fastify.prisma.user.findUnique({
-        where: { firebaseUid: authUser.uid },
-        select: { id: true }
-      });
-      dbUserId = dbUser?.id;
+      dbUserId = await getCachedUserId(fastify, authUser);
     }
 
     const response = await getCoursePhasePlan(
@@ -78,10 +79,92 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get("/instructors", async (request) => {
-    const items = await listInstructors(fastify.prisma, request.log);
+    // ✅ OPTIMIZED: Pass cache manager to service
+    const items = await listInstructors(fastify.prisma, fastify.cache, request.log);
 
     return {
       items
+    };
+  });
+
+  // ── GET /v1/catalog/courses/:slug/chapters ─────────────────────────────────
+  fastify.get<{ Params: { slug: string } }>("/courses/:slug/chapters", async (request, reply) => {
+    const { slug } = request.params;
+
+    // Get course with modules and bundle offers
+    const course = await fastify.prisma.course.findUnique({
+      where: { slug },
+      include: {
+        modules: {
+          orderBy: { position: "asc" },
+          include: {
+            lessons: {
+              select: {
+                id: true,
+                title: true,
+                contentType: true,
+                durationMinutes: true,
+                isRequired: true
+              },
+              orderBy: { position: "asc" }
+            }
+          }
+        },
+        bundleOffers: {
+          where: { isActive: true },
+          orderBy: { bundlePrice: "asc" }
+        }
+      }
+    });
+
+    if (!course) {
+      return reply.notFound("Course not found");
+    }
+
+    // Format response
+    return {
+      course: {
+        id: course.id,
+        slug: course.slug,
+        title: course.title,
+        description: course.description,
+        heroImageUrl: course.heroImageUrl,
+        durationLabel: course.durationLabel,
+        totalPrice: course.priceNpr
+      },
+      chapters: course.modules.map((module) => ({
+        id: module.id,
+        chapterNumber: module.chapterNumber,
+        title: module.title,
+        position: module.position,
+        price: module.chapterPrice,
+        isFreeIntro: module.isFreeIntro,
+        isLocked: module.isLocked,
+        lessonCount: module.lessons.length,
+        totalDuration: module.lessons.reduce(
+          (sum, lesson) => sum + (lesson.durationMinutes || 0),
+          0
+        ),
+        lessons: module.lessons
+      })),
+      bundles: course.bundleOffers.map((bundle) => ({
+        id: bundle.id,
+        type: bundle.bundleType,
+        title: bundle.title,
+        description: bundle.description,
+        originalPrice: bundle.originalPrice,
+        bundlePrice: bundle.bundlePrice,
+        discount: bundle.discount,
+        features: {
+          includesMentorAccess: bundle.includesMentorAccess,
+          includesMockExams: bundle.includesMockExams,
+          includesCertificate: bundle.includesCertificate,
+          includesLiveClasses: bundle.includesLiveClasses,
+          mockExamCount: bundle.mockExamCount,
+          liveClassCount: bundle.liveClassCount
+        },
+        includedChapters: bundle.includedChapters as number[]
+      }))
     };
   });
 };

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type PaymentProvider = "esewa" | "khalti";
 
@@ -25,6 +25,11 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentProvider>("esewa");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handlePayment = async () => {
     if (!authenticated || !user) return;
@@ -99,13 +104,13 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3">
                   <Link
-                    href="/signup"
+                    href="/signup?next=/checkout"
                     className="w-full py-4 bg-[#D4AF37] text-[#0F1C15] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#F4CA30] transition-all shadow-lg"
                   >
                     Create Account & Save 10%
                   </Link>
                   <Link
-                    href="/login"
+                    href="/login?next=/checkout"
                     className="w-full py-4 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
                   >
                     Already have an account? Sign In
@@ -182,7 +187,7 @@ export default function CheckoutPage() {
                     <span>Processing...</span>
                   ) : (
                     <>
-                      Pay NPR {total.toLocaleString()}
+                      Pay NPR {mounted ? total.toLocaleString() : 0}
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
@@ -212,7 +217,7 @@ export default function CheckoutPage() {
             <div className="flex items-center justify-between mb-6 border-b border-gray-700 pb-4">
               <h3 className="font-bold text-lg text-[#D4AF37]">Order Summary</h3>
               <span className="text-xs font-mono text-gray-500">
-                {items.length} ITEM{items.length !== 1 ? "S" : ""}
+                {mounted ? items.length : 0} ITEM{mounted && items.length !== 1 ? "S" : ""}
               </span>
             </div>
 
@@ -221,8 +226,10 @@ export default function CheckoutPage() {
                 <ShoppingBag className="w-3.5 h-3.5" /> Cart Items
               </div>
 
-              {items.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-4">Your cart is empty</p>
+              {!mounted || items.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-4">
+                  {mounted ? "Your cart is empty" : "Loading..."}
+                </p>
               ) : (
                 <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
                   {items.map((item) => (
@@ -253,12 +260,14 @@ export default function CheckoutPage() {
 
               <div className="flex justify-between items-center text-sm pt-4 border-t border-gray-800">
                 <div className="text-gray-400">Subtotal</div>
-                <div className="text-gray-200">NPR {total.toLocaleString()}</div>
+                <div className="text-gray-200">NPR {mounted ? total.toLocaleString() : 0}</div>
               </div>
 
               <div className="flex justify-between items-end pt-4 border-t border-gray-700">
                 <span className="font-bold text-sm text-gray-300">Total Due</span>
-                <span className="font-bold text-3xl text-white">NPR {total.toLocaleString()}</span>
+                <span className="font-bold text-3xl text-white">
+                  NPR {mounted ? total.toLocaleString() : 0}
+                </span>
               </div>
             </div>
 

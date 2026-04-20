@@ -99,25 +99,82 @@ function LoginForm() {
     setLoading(true);
     try {
       const auth = getFirebaseClientAuth();
-      if (!auth) throw new Error("Firebase is not configured.");
+      if (!auth) {
+        throw new Error("Firebase is not configured.");
+      }
+
+      console.log("Starting Google sign-in...");
       const provider = new GoogleAuthProvider();
-      const { user } = await signInWithPopup(auth, provider);
+
+      // Add additional scopes if needed
+      provider.addScope("profile");
+      provider.addScope("email");
+
+      let user: { getIdToken: () => Promise<string> } | undefined;
+      try {
+        // Try popup first
+        const result = await signInWithPopup(auth, provider);
+        user = result.user;
+        console.log("Google sign-in successful via popup");
+      } catch (popupError: unknown) {
+        const firebaseErr = popupError as { code?: string; message?: string };
+        console.error("Popup error:", firebaseErr);
+
+        // If popup is blocked, try redirect
+        if (
+          firebaseErr.code === "auth/popup-blocked" ||
+          firebaseErr.code === "auth/popup-closed-by-user"
+        ) {
+          console.log("Popup blocked, trying redirect...");
+          await signInWithRedirect(auth, provider);
+          return; // Exit here, redirect will handle the rest
+        }
+        throw popupError;
+      }
+
+      if (!user) {
+        throw new Error("No user returned from sign-in");
+      }
+
+      console.log("Getting ID token...");
       const token = await user.getIdToken();
+
+      console.log("Logging in with backend...");
       await login(token);
+
+      // Check if trying to access admin route
+      if (next.startsWith("/admin")) {
+        console.log("Checking admin access...");
+        const sessionRes = await fetch("/api/auth/session");
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData.user?.role !== "ADMIN") {
+            console.log("Not an admin, redirecting to my-learning");
+            router.push("/my-learning");
+            return;
+          }
+        }
+      }
+
+      console.log("Redirecting to:", next);
       router.push(next);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };
+      console.error("Google sign-in error:", firebaseErr);
+
+      let errorMessage = "Sign-in failed. Please try again.";
+
       if (firebaseErr.code === "auth/popup-blocked") {
-        const auth = getFirebaseClientAuth();
-        if (!auth) {
-          setError("Firebase is not configured.");
-          return;
-        }
-        const provider = new GoogleAuthProvider();
-        await signInWithRedirect(auth, provider);
-        return;
+        errorMessage = "Popup was blocked. Please allow popups for this site.";
+      } else if (firebaseErr.code === "auth/cancelled-popup-request") {
+        errorMessage = "Sign-in was cancelled. Please try again.";
+      } else if (firebaseErr.code === "auth/unauthorized-domain") {
+        errorMessage = "This domain is not authorized. Please contact support.";
+      } else if (firebaseErr.message) {
+        errorMessage = firebaseErr.message;
       }
-      setError(firebaseErr.message || "Sign-in failed.");
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -141,6 +198,21 @@ function LoginForm() {
         const token = await res.user.getIdToken();
         await login(token);
       }
+
+      // Check if trying to access admin route
+      if (next.startsWith("/admin")) {
+        // Fetch user role to verify admin access
+        const sessionRes = await fetch("/api/auth/session");
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData.user?.role !== "admin") {
+            // Not an admin, redirect to my-learning instead
+            router.push("/my-learning");
+            return;
+          }
+        }
+      }
+
       router.push(next);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };

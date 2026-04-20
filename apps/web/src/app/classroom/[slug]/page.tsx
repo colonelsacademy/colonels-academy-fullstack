@@ -587,6 +587,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ slug: stri
           <div className="bg-black">
             <div className="w-full">
               <LessonStageRenderer
+                key={activeLesson?.id}
                 courseTitle={course.title}
                 {...(course.heroImageUrl ? { poster: course.heroImageUrl } : {})}
                 lesson={activeLesson}

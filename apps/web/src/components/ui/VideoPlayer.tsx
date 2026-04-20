@@ -53,7 +53,7 @@ const _LoadingSpinner = () => (
 );
 
 // ─── Countdown Intro ──────────────────────────────────────────────────────────
-const CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
+const _CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
   const [count, setCount] = useState(3);
 
   useEffect(() => {
@@ -88,21 +88,66 @@ const CountdownIntro = ({ onFinish }: { onFinish: () => void }) => {
   );
 };
 
+// ─── Skeleton Loader ──────────────────────────────────────────────────────────
+const VideoSkeleton = () => (
+  <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 z-30">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
+      {/* Pulsing play button */}
+      <div className="relative">
+        <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 flex items-center justify-center animate-pulse">
+          <Play className="w-10 h-10 text-[#D4AF37]/60" />
+        </div>
+        {/* Ripple effect */}
+        <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]/30 animate-ping" />
+      </div>
+
+      {/* Loading text */}
+      <div className="flex flex-col items-center gap-2">
+        <div className="h-2 w-32 bg-gray-700/50 rounded-full animate-pulse" />
+        <p className="text-gray-500 text-sm font-medium">Loading video player...</p>
+      </div>
+
+      {/* Fake progress bar */}
+      <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-[#D4AF37]/40 rounded-full animate-[loading_2s_ease-in-out_infinite]"
+          style={{
+            animation: "loading 2s ease-in-out infinite"
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Add keyframe animation */}
+    <style jsx>{`
+      @keyframes loading {
+        0% { width: 0%; margin-left: 0%; }
+        50% { width: 75%; margin-left: 12.5%; }
+        100% { width: 0%; margin-left: 100%; }
+      }
+    `}</style>
+  </div>
+);
+
 // ─── Main VideoPlayer ─────────────────────────────────────────────────────────
 const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(autoplay);
-  const [isCountingDown, setIsCountingDown] = useState(false);
   const [prevVideoId, setPrevVideoId] = useState(videoId);
+  const [isLoading, setIsLoading] = useState(true);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   if (videoId !== prevVideoId) {
     setPrevVideoId(videoId);
     setIsPlaying(autoplay);
-    setIsCountingDown(false);
+    setIsLoading(true);
   }
 
   const handleStartPlayback = () => {
     setIsPlaying(true);
-    setIsCountingDown(true);
+  };
+
+  const handleIframeLoad = () => {
+    setIsLoading(false);
   };
 
   const isBunny =
@@ -121,15 +166,18 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
           <ThumbnailOverlay poster={poster} onPlay={handleStartPlayback} />
         ) : (
           <>
+            {isLoading && <VideoSkeleton />}
             <iframe
+              ref={iframeRef}
+              key={videoId}
               src={iframeUrl}
               loading="eager"
               title="Course Video"
               className="w-full h-full border-0 absolute top-0 left-0"
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
+              onLoad={handleIframeLoad}
             />
-            {isCountingDown && <CountdownIntro onFinish={() => setIsCountingDown(false)} />}
           </>
         )}
       </div>
@@ -146,14 +194,16 @@ const VideoPlayer = memo(({ videoId, poster, autoplay = false, className }: Vide
           <ThumbnailOverlay poster={poster} onPlay={handleStartPlayback} />
         ) : (
           <>
+            {isLoading && <VideoSkeleton />}
             <iframe
+              key={videoId}
               src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`}
               title="Course Video"
               className="w-full h-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              onLoad={handleIframeLoad}
             />
-            {isCountingDown && <CountdownIntro onFinish={() => setIsCountingDown(false)} />}
           </>
         )}
       </div>

@@ -103,7 +103,13 @@ export const FeaturedCourse = ({ course, isEnrolled = false }: FeaturedCoursePro
                 </button>
               ) : (
                 <Link
-                  href={isEnrolled ? `/classroom/${course.id}` : `/courses/${course.id}`}
+                  href={
+                    isEnrolled
+                      ? `/classroom/${course.id}`
+                      : course.id === "army-command-staff-2083"
+                        ? "/staff-college"
+                        : `/courses/${course.id}`
+                  }
                   className={`w-full sm:w-auto px-10 py-5 ${isEnrolled ? "bg-[#00693E] hover:bg-[#005a34]" : "bg-[#1c1d1f] hover:bg-black"} text-white text-base font-bold rounded-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-3 active:scale-95`}
                 >
                   <span>{isEnrolled ? "Go to Course" : "View Details"}</span>

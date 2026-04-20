@@ -1,23 +1,45 @@
 "use client";
 
-import { StageShell } from "./StageShell";
+import { Play } from "lucide-react";
 
-export function EmptyLessonStage({ courseTitle }: { courseTitle: string }) {
+export function EmptyLessonStage() {
   return (
-    <StageShell
-      title="Classroom content is loading"
-      eyebrow="Course player"
-      courseTitle={courseTitle}
-      footerTitle="Awaiting lesson selection"
-    >
-      <div className="flex h-full items-center justify-center">
-        <div className="max-w-3xl rounded-[1.75rem] border border-white/70 bg-white/82 p-8 text-center shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-          <p className="text-lg leading-8 text-slate-700">
-            The classroom is using live curriculum data. Once a lesson is available, the correct
-            player experience will appear here automatically.
-          </p>
+    <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
+        {/* Pulsing play button */}
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 flex items-center justify-center animate-pulse">
+            <Play className="w-10 h-10 text-[#D4AF37]/60" />
+          </div>
+          {/* Ripple effect */}
+          <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]/30 animate-ping" />
+        </div>
+
+        {/* Loading text */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-2 w-32 bg-gray-700/50 rounded-full animate-pulse" />
+          <p className="text-gray-400 text-sm font-medium">Loading lesson...</p>
+        </div>
+
+        {/* Fake progress bar */}
+        <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#D4AF37]/40 rounded-full"
+            style={{
+              animation: "loading 2s ease-in-out infinite"
+            }}
+          />
         </div>
       </div>
-    </StageShell>
+
+      {/* Add keyframe animation */}
+      <style jsx>{`
+        @keyframes loading {
+          0% { width: 0%; margin-left: 0%; }
+          50% { width: 75%; margin-left: 12.5%; }
+          100% { width: 0%; margin-left: 100%; }
+        }
+      `}</style>
+    </div>
   );
 }
