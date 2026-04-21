@@ -1834,25 +1834,25 @@ function CourseListTab() {
               <InputField
                 label="Title"
                 value={editFormData.title || ""}
-                onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                onChange={(v) => setEditFormData({ ...editFormData, title: v })}
               />
               <InputField
                 label="Summary"
                 value={editFormData.summary || ""}
-                onChange={(e) => setEditFormData({ ...editFormData, summary: e.target.value })}
+                onChange={(v) => setEditFormData({ ...editFormData, summary: v })}
               />
               <InputField
                 label="Price (NPR)"
                 type="number"
-                value={editFormData.priceNpr || ""}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, priceNpr: Number.parseInt(e.target.value) })
+                value={String(editFormData.priceNpr || "")}
+                onChange={(v) =>
+                  setEditFormData({ ...editFormData, priceNpr: Number.parseInt(v) })
                 }
               />
               <InputField
                 label="Hero Image URL"
                 value={editFormData.heroImageUrl || ""}
-                onChange={(e) => setEditFormData({ ...editFormData, heroImageUrl: e.target.value })}
+                onChange={(v) => setEditFormData({ ...editFormData, heroImageUrl: v })}
               />
               <label className="flex items-center gap-2">
                 <input
