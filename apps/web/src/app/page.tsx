@@ -117,7 +117,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         {/* Top Pick (Featured Course): Now an RSC */}
         {topPick && (
           <Suspense fallback={<SectionFallback className="min-h-[640px]" />}>
-            <FeaturedCourse course={topPick} isEnrolled={false} />
+            <FeaturedCourse course={topPick} isEnrolled={enrolledCourseIds.has(topPick.id)} />
           </Suspense>
         )}
 
