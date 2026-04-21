@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { createDatabaseClient } from "../src/client";
 
-const prisma = new PrismaClient();
+const prisma = createDatabaseClient();
 
 async function main() {
   console.log("🖼️  Fixing course image URLs...");

@@ -14,28 +14,58 @@ import type { PrismaClient } from "@prisma/client";
 export async function seedArmyCommandStaff2083(prisma: PrismaClient) {
   console.log("🎖️  Seeding Army Command & Staff Course 2083...");
 
-  // Step 1: Delete ALL existing courses with this slug (in case of duplicates)
-  const existingCourses = await prisma.course.findMany({
+  // Step 1: Check for existing course - if it exists, just update it
+  const existingCourse = await prisma.course.findUnique({
     where: { slug: "army-command-staff-2083" }
   });
 
-  if (existingCourses.length > 0) {
-    console.log(`🗑️  Found ${existingCourses.length} existing course(s), cleaning up...`);
-    for (const existingCourse of existingCourses) {
-      console.log(`   Deleting course: ${existingCourse.id}`);
-      await prisma.lesson.deleteMany({ where: { courseId: existingCourse.id } });
-      await prisma.module.deleteMany({ where: { courseId: existingCourse.id } });
-      await prisma.courseBundleOffer.deleteMany({ where: { courseId: existingCourse.id } });
-      await prisma.course.delete({ where: { id: existingCourse.id } });
-    }
-    console.log("✅ Cleanup complete");
+  if (existingCourse) {
+    console.log(`ℹ️  Existing course found, updating...`);
+    // Just update the course without deleting to preserve purchase history
   } else {
     console.log("ℹ️  No existing course found, will create new one");
   }
 
-  // Step 2: Create the course (not upsert, since we deleted everything)
-  const course = await prisma.course.create({
-    data: {
+  // Step 2: Upsert the course to preserve purchase history
+  const course = await prisma.course.upsert({
+    where: { slug: "army-command-staff-2083" },
+    update: {
+      title: "Army Command & Staff Course Entrance Exam Preparation - 2083",
+      track: "army",
+      summary:
+        "6-month comprehensive preparation program for Nepal Army Command & Staff Course entrance exam",
+      description: `Professional preparation platform for Nepalese Army officers preparing for the Command & Staff Course entrance examination. 
+      
+This comprehensive 6-month program covers all five subjects with structured study plans, mock exams, and expert guidance.
+
+**Subjects Covered:**
+- Military Operations & Administration (100 marks)
+- Contemporary Affairs (100 marks)
+- Military History & Strategic Thoughts (100 marks)
+- Armed Conflicts - Appreciation & Plans (100 marks)
+- Lecturette (100 marks)
+
+**Total: 500 marks**`,
+      level: "Advanced",
+      durationLabel: "6 months",
+      priceNpr: 20000,
+      originalPriceNpr: 20000,
+      accentColor: "#1a4d2e",
+      heroImageUrl: "/images/courses/army-command-staff.jpg",
+      isFeatured: true,
+      isComingSoon: false,
+      assessmentWeighting: {
+        subjects: [
+          { name: "Military Operations & Administration", weight: 100, percentage: 20 },
+          { name: "Contemporary Affairs", weight: 100, percentage: 20 },
+          { name: "Military History & Strategic Thoughts", weight: 100, percentage: 20 },
+          { name: "Armed Conflicts - Appreciation & Plans", weight: 100, percentage: 20 },
+          { name: "Lecturette", weight: 100, percentage: 20 }
+        ],
+        total: 500
+      }
+    },
+    create: {
       slug: "army-command-staff-2083",
       title: "Army Command & Staff Course Entrance Exam Preparation - 2083",
       track: "army",
@@ -55,11 +85,11 @@ This comprehensive 6-month program covers all five subjects with structured stud
 **Total: 500 marks**`,
       level: "Advanced",
       durationLabel: "6 months",
-      lessonCount: 0, // Will be updated after lessons are created
-      priceNpr: 20000, // Total if bought separately
+      lessonCount: 0,
+      priceNpr: 20000,
       originalPriceNpr: 20000,
-      accentColor: "#1a4d2e", // Military green
-      heroImageUrl: "/images/army-course-hero.png",
+      accentColor: "#1a4d2e",
+      heroImageUrl: "/images/courses/army-command-staff.jpg",
       isFeatured: true,
       isComingSoon: false,
       assessmentWeighting: {

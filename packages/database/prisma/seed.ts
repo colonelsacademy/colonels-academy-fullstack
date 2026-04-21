@@ -393,6 +393,25 @@ async function main() {
   const courseCount = await prisma.course.count();
   console.log(`✅ Seed completed successfully. Courses in DB: ${courseCount}`);
 
+  // Fix course image URLs to match actual Bunny CDN filenames
+  console.log("\n🖼️  Fixing course image URLs...");
+  const imageMapping: Record<string, string> = {
+    "staff-college-command": "/images/courses/nepal-army-staff-college.jpg",
+    "police-inspector-cadet": "/images/courses/nepal-police-inspector-cadet.jpg",
+    "apf-inspector-cadet": "/images/courses/apf-inspector-cadet.jpg",
+    "officer-cadet-elite": "/images/courses/nepal-army-officer-cadet.jpg",
+    "mission-english-ops": "/images/courses/mission-english-ops.jpg",
+    "army-command-staff-2083": "/images/courses/army-command-staff.jpg"
+  };
+
+  for (const [slug, imageUrl] of Object.entries(imageMapping)) {
+    await prisma.course.update({
+      where: { slug },
+      data: { heroImageUrl: imageUrl }
+    });
+    console.log(`  ✅ Updated ${slug} with ${imageUrl}`);
+  }
+
   console.log("\n🎖️  Seeding Army Command & Staff Course 2083...");
   try {
     await seedArmyCommandStaff2083(prisma);
