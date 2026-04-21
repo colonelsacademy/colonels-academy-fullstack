@@ -187,11 +187,23 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
-    await fastify.prisma.course.delete({ where: { slug: request.params.slug } });
+    const course = await fastify.prisma.course.findUnique({
+      where: { slug: request.params.slug },
+      select: { id: true }
+    });
 
-    // ✅ OPTIMIZED: Invalidate course caches
+    if (!course) return reply.notFound("Course not found.");
+
+    // Delete in correct order to avoid FK constraint violations
+    // PurchaseOrderItem has onDelete: Restrict so must be removed first
+    await fastify.prisma.$transaction([
+      fastify.prisma.purchaseOrderItem.deleteMany({ where: { courseId: course.id } }),
+      fastify.prisma.course.delete({ where: { id: course.id } })
+    ]);
+
+    // Invalidate course caches
     await fastify.cache.del(`course:${request.params.slug}`, "courses:list");
-    fastify.log.info({ slug: request.params.slug }, "Course cache invalidated after deletion");
+    fastify.log.info({ slug: request.params.slug }, "Course deleted and cache invalidated");
 
     return { ok: true };
   });
