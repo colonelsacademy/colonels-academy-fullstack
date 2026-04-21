@@ -1,15 +1,12 @@
-import { API_BASE_URL } from "@/lib/apiClient";
-import { NextResponse } from "next/server";
+import { proxyFastifyRequest } from "@/app/api/_lib/fastify-proxy";
+import type { NextRequest } from "next/server";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const cookie = request.headers.get("cookie");
-  const body = await request.json();
-  const res = await fetch(`${API_BASE_URL}/v1/admin/users/${id}/role`, {
+  const body = await request.text();
+  return proxyFastifyRequest(request, `/v1/admin/users/${id}/role`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
-    body: JSON.stringify(body)
+    body,
+    contentType: "application/json"
   });
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
 }
