@@ -2,8 +2,8 @@
 
 import { CourseFilter, CourseGrid, CourseGridSkeleton } from "@/app/gateway/components/Courses";
 import type { Category, Course } from "@/data/gateway";
-import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function CoursesPage() {
   const searchParams = useSearchParams();
@@ -25,42 +25,44 @@ export default function CoursesPage() {
           const data = await coursesRes.json();
           const items = data.items ?? [];
           setAllCourses(
-            items.map((c: {
-              slug: string;
-              title: string;
-              track: string;
-              summary: string;
-              durationLabel: string;
-              lessonCount: number;
-              heroImageUrl?: string;
-              priceNpr: number;
-              originalPriceNpr?: number;
-              accentColor?: string;
-              level?: string;
-              featured?: boolean;
-              isComingSoon?: boolean;
-            }) => ({
-              id: c.slug,
-              title: c.title,
-              category: c.track,
-              description: c.summary,
-              instructor: "Expert Faculty",
-              rating: 4.8,
-              ratingCount: 1200,
-              students: 1500,
-              duration: c.durationLabel,
-              lessons: c.lessonCount,
-              iconId: "Target" as const,
-              thumbnail: c.heroImageUrl ?? "",
-              price: c.priceNpr,
-              originalPrice: c.originalPriceNpr ?? c.priceNpr,
-              color: c.accentColor ?? "#D4AF37",
-              lightColor: "#FEFCE8",
-              tag: c.track.toUpperCase(),
-              level: c.level,
-              isBestseller: c.featured,
-              comingSoon: c.isComingSoon ?? false
-            }))
+            items.map(
+              (c: {
+                slug: string;
+                title: string;
+                track: string;
+                summary: string;
+                durationLabel: string;
+                lessonCount: number;
+                heroImageUrl?: string;
+                priceNpr: number;
+                originalPriceNpr?: number;
+                accentColor?: string;
+                level?: string;
+                featured?: boolean;
+                isComingSoon?: boolean;
+              }) => ({
+                id: c.slug,
+                title: c.title,
+                category: c.track,
+                description: c.summary,
+                instructor: "Expert Faculty",
+                rating: 4.8,
+                ratingCount: 1200,
+                students: 1500,
+                duration: c.durationLabel,
+                lessons: c.lessonCount,
+                iconId: "Target" as const,
+                thumbnail: c.heroImageUrl ?? "",
+                price: c.priceNpr,
+                originalPrice: c.originalPriceNpr ?? c.priceNpr,
+                color: c.accentColor ?? "#D4AF37",
+                lightColor: "#FEFCE8",
+                tag: c.track.toUpperCase(),
+                level: c.level,
+                isBestseller: c.featured,
+                comingSoon: c.isComingSoon ?? false
+              })
+            )
           );
         }
 
@@ -82,9 +84,7 @@ export default function CoursesPage() {
   }, []);
 
   const filtered =
-    activeCategory === "all"
-      ? allCourses
-      : allCourses.filter((c) => c.category === activeCategory);
+    activeCategory === "all" ? allCourses : allCourses.filter((c) => c.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">

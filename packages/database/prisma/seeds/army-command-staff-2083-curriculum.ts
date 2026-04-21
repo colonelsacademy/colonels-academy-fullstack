@@ -20,7 +20,7 @@ export async function seedArmyCommandStaff2083(prisma: PrismaClient) {
   });
 
   if (existingCourse) {
-    console.log(`ℹ️  Existing course found, updating...`);
+    console.log("ℹ️  Existing course found, updating...");
     // Just update the course without deleting to preserve purchase history
   } else {
     console.log("ℹ️  No existing course found, will create new one");

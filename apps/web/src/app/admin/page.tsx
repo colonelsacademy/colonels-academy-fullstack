@@ -1715,7 +1715,9 @@ function CourseListTab() {
         body: JSON.stringify(editFormData)
       });
       if (res.ok) {
-        setCourses(courses.map((c) => (c.slug === editingCourse.slug ? { ...c, ...editFormData } : c)));
+        setCourses(
+          courses.map((c) => (c.slug === editingCourse.slug ? { ...c, ...editFormData } : c))
+        );
         setEditingCourse(null);
       }
     } catch (error) {
@@ -1843,7 +1845,9 @@ function CourseListTab() {
                 label="Price (NPR)"
                 type="number"
                 value={editFormData.priceNpr || ""}
-                onChange={(e) => setEditFormData({ ...editFormData, priceNpr: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, priceNpr: Number.parseInt(e.target.value) })
+                }
               />
               <InputField
                 label="Hero Image URL"
@@ -1854,7 +1858,9 @@ function CourseListTab() {
                 <input
                   type="checkbox"
                   checked={editFormData.isFeatured || false}
-                  onChange={(e) => setEditFormData({ ...editFormData, isFeatured: e.target.checked })}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, isFeatured: e.target.checked })
+                  }
                   className="w-4 h-4"
                 />
                 <span className="text-sm font-medium">Featured</span>

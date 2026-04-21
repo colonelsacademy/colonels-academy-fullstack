@@ -119,9 +119,7 @@ export async function getEnrollments(): Promise<EnrolledCourse[]> {
 
       res = await fetch(`${API_BASE_URL}/v1/learning/enrollments`, {
         cache: "no-store",
-        headers: sessionCookie
-          ? { Cookie: `ca_session=${sessionCookie.value}` }
-          : {}
+        headers: sessionCookie ? { Cookie: `ca_session=${sessionCookie.value}` } : {}
       });
     }
 
