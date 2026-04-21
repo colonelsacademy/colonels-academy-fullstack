@@ -40,14 +40,21 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/my-learning";
+  const prefillEmail = searchParams.get("email") ?? "";
   const { login } = useAuth();
 
   const [view, setView] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (prefillEmail) {
+      setEmail(prefillEmail);
+    }
+  }, [prefillEmail]);
 
   useEffect(() => {
     let cancelled = false;

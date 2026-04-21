@@ -73,6 +73,7 @@ const RELATED_COURSES = [
 
 export default async function CourseDetailPage({ params }: CoursePageProps) {
   const { slug } = await params;
+
   const [course, faculty] = await Promise.all([getCourseBySlug(slug), getInstructors()]);
 
   if (!course) notFound();
