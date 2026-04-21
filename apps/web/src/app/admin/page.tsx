@@ -1845,9 +1845,7 @@ function CourseListTab() {
                 label="Price (NPR)"
                 type="number"
                 value={String(editFormData.priceNpr || "")}
-                onChange={(v) =>
-                  setEditFormData({ ...editFormData, priceNpr: Number.parseInt(v) })
-                }
+                onChange={(v) => setEditFormData({ ...editFormData, priceNpr: Number.parseInt(v) })}
               />
               <InputField
                 label="Hero Image URL"
