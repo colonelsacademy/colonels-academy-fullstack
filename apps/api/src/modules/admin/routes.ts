@@ -1,6 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import type { FastifyPluginAsync } from "fastify";
 
+import { getAssetUrl } from "@colonels-academy/config";
+
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── Auth guard helper ──────────────────────────────────────────────────────
   async function requireAdmin(
@@ -99,7 +101,12 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       }
     });
 
-    return { courses };
+    return {
+      courses: courses.map((course) => ({
+        ...course,
+        heroImageUrl: course.heroImageUrl ? getAssetUrl(course.heroImageUrl) : ""
+      }))
+    };
   });
 
   // ── POST /v1/admin/courses ─────────────────────────────────────────────────

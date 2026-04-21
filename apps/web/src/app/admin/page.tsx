@@ -1688,6 +1688,9 @@ function CourseListTab() {
   const [courses, setCourses] = useState<DBCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [editingCourse, setEditingCourse] = useState<DBCourse | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<DBCourse>>({});
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/courses")
@@ -1697,6 +1700,45 @@ function CourseListTab() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleEdit = (course: DBCourse) => {
+    setEditingCourse(course);
+    setEditFormData(course);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingCourse) return;
+    try {
+      const res = await fetch(`/api/admin/courses/${editingCourse.slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editFormData)
+      });
+      if (res.ok) {
+        setCourses(courses.map((c) => (c.slug === editingCourse.slug ? { ...c, ...editFormData } : c)));
+        setEditingCourse(null);
+      }
+    } catch (error) {
+      console.error("Failed to update course:", error);
+    }
+  };
+
+  const handleDelete = async (slug: string) => {
+    if (!confirm("Are you sure you want to delete this course?")) return;
+    setDeleting(slug);
+    try {
+      const res = await fetch(`/api/admin/courses/${slug}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        setCourses(courses.filter((c) => c.slug !== slug));
+      }
+    } catch (error) {
+      console.error("Failed to delete course:", error);
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const tracks = ["all", ...Array.from(new Set(courses.map((c) => c.track)))];
   const filtered = filter === "all" ? courses : courses.filter((c) => c.track === filter);
@@ -1721,40 +1763,120 @@ function CourseListTab() {
           <Loader2 className="w-5 h-5 animate-spin" /> Loading...
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c) => (
-            <div
-              key={c.slug}
-              className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-            >
-              {c.heroImageUrl && (
-                <img src={c.heroImageUrl} alt={c.title} className="w-full h-32 object-cover" />
-              )}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{c.title}</h3>
-                  {c.isFeatured && (
-                    <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase shrink-0">
-                      Featured
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th className="text-left px-5 py-3">Title</th>
+                <th className="text-left px-5 py-3">Track</th>
+                <th className="text-left px-5 py-3">Price</th>
+                <th className="text-left px-5 py-3">Enrollments</th>
+                <th className="text-left px-5 py-3">Lessons</th>
+                <th className="text-left px-5 py-3">Featured</th>
+                <th className="px-5 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => (
+                <tr key={c.slug} className="border-t border-gray-100 hover:bg-gray-50">
+                  <td className="px-5 py-3 font-medium text-gray-900">{c.title}</td>
+                  <td className="px-5 py-3">
+                    <span className="text-xs bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase">
+                      {c.track}
                     </span>
-                  )}
-                </div>
-                <p className="text-gray-500 text-xs mb-3 line-clamp-2">{c.summary}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold uppercase">
-                    {c.track}
-                  </span>
-                  <span className="text-gray-900 font-bold text-sm">
-                    NPR {c.priceNpr.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                  <span>{c._count.enrollments} enrolled</span>
-                  <span>{c._count.lessons} lessons</span>
-                </div>
+                  </td>
+                  <td className="px-5 py-3 text-gray-600">NPR {c.priceNpr.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-gray-600">{c._count.enrollments}</td>
+                  <td className="px-5 py-3 text-gray-600">{c._count.lessons}</td>
+                  <td className="px-5 py-3 text-gray-600">{c.isFeatured ? "✓" : "—"}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(c)}
+                        className="p-1.5 hover:bg-blue-50 text-blue-600 rounded"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(c.slug)}
+                        disabled={deleting === c.slug}
+                        className="p-1.5 hover:bg-red-50 text-red-500 rounded disabled:opacity-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {editingCourse && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-lg font-bold">Edit Course</h2>
+              <button
+                type="button"
+                onClick={() => setEditingCourse(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <InputField
+                label="Title"
+                value={editFormData.title || ""}
+                onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+              />
+              <InputField
+                label="Summary"
+                value={editFormData.summary || ""}
+                onChange={(e) => setEditFormData({ ...editFormData, summary: e.target.value })}
+              />
+              <InputField
+                label="Price (NPR)"
+                type="number"
+                value={editFormData.priceNpr || ""}
+                onChange={(e) => setEditFormData({ ...editFormData, priceNpr: parseInt(e.target.value) })}
+              />
+              <InputField
+                label="Hero Image URL"
+                value={editFormData.heroImageUrl || ""}
+                onChange={(e) => setEditFormData({ ...editFormData, heroImageUrl: e.target.value })}
+              />
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={editFormData.isFeatured || false}
+                  onChange={(e) => setEditFormData({ ...editFormData, isFeatured: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm font-medium">Featured</span>
+              </label>
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingCourse(null)}
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEdit}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors"
+                >
+                  Save
+                </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

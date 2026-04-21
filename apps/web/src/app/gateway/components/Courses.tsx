@@ -124,9 +124,12 @@ function CourseCard({
     : 0;
   const levelStyle = LEVEL_STYLE[course.level ?? ""] ?? "bg-gray-100 text-gray-600";
 
-  // Redirect Army Command & Staff course to staff-college page
-  const courseUrl =
-    course.id === "army-command-staff-2083" ? "/staff-college" : `/courses/${course.id}`;
+  // If enrolled, go straight to classroom; otherwise course detail (army-command-staff → staff-college)
+  const courseUrl = isEnrolled
+    ? `/classroom/${course.id}`
+    : course.id === "army-command-staff-2083"
+      ? "/staff-college"
+      : `/courses/${course.id}`;
 
   return (
     <motion.div
@@ -279,10 +282,7 @@ function CourseCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (isEnrolled) {
-                        router.push(`/courses/${course.id}/learn`);
-                      } else if (course.id === "army-command-staff-2083") {
-                        // For Army Command & Staff, go to chapter view
-                        router.push("/staff-college");
+                        router.push(`/classroom/${course.id}`);
                       } else if (!inCart) {
                         addItem({
                           id: course.id,
@@ -299,22 +299,15 @@ function CourseCard({
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 shrink-0 active:scale-[0.97] shadow-sm ${
                       isEnrolled
                         ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        : course.id === "army-command-staff-2083"
-                          ? "bg-blue-600 hover:bg-blue-700 text-white"
-                          : inCart
-                            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                            : "bg-[#1c1d1f] hover:bg-black text-white"
+                        : inCart
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                          : "bg-[#1c1d1f] hover:bg-black text-white"
                     }`}
                   >
                     {isEnrolled ? (
                       <>
                         <Play className="w-3.5 h-3.5" />
                         Continue
-                      </>
-                    ) : course.id === "army-command-staff-2083" ? (
-                      <>
-                        <BookOpen className="w-3.5 h-3.5" />
-                        View Details
                       </>
                     ) : (
                       <>

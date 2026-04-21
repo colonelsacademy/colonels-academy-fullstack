@@ -103,16 +103,28 @@ export async function getDashboardOverview(): Promise<DashboardOverviewResponse>
 
 export async function getEnrollments(): Promise<EnrolledCourse[]> {
   try {
-    // On the client, use relative URL; on server, use absolute URL
-    const url =
-      typeof window !== "undefined"
-        ? "/api/learning/enrollments"
-        : `${API_BASE_URL}/v1/learning/enrollments`;
+    let res: Response;
 
-    const res = await fetch(url, {
-      credentials: "include",
-      cache: "no-store"
-    });
+    if (typeof window !== "undefined") {
+      // Client-side: cookies sent automatically
+      res = await fetch("/api/learning/enrollments", {
+        credentials: "include",
+        cache: "no-store"
+      });
+    } else {
+      // Server-side: manually forward the session cookie
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const sessionCookie = cookieStore.get("ca_session");
+
+      res = await fetch(`${API_BASE_URL}/v1/learning/enrollments`, {
+        cache: "no-store",
+        headers: sessionCookie
+          ? { Cookie: `ca_session=${sessionCookie.value}` }
+          : {}
+      });
+    }
+
     if (!res.ok) return [];
     const data = await res.json();
     const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
