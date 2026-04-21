@@ -1,26 +1,25 @@
-import { API_BASE_URL } from "@/lib/apiClient";
-import { NextResponse } from "next/server";
+import { proxyFastifyRequest } from "@/app/api/_lib/fastify-proxy";
+import type { NextRequest } from "next/server";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const { slug } = await params;
-  const cookie = request.headers.get("cookie");
-  const body = await request.json();
-  const res = await fetch(`${API_BASE_URL}/v1/admin/courses/${slug}`, {
+  const body = await request.text();
+  return proxyFastifyRequest(request, `/v1/admin/courses/${slug}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...(cookie ? { cookie } : {}) },
-    body: JSON.stringify(body)
+    body,
+    contentType: "application/json"
   });
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
 }
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const { slug } = await params;
-  const cookie = request.headers.get("cookie");
-  const res = await fetch(`${API_BASE_URL}/v1/admin/courses/${slug}`, {
-    method: "DELETE",
-    headers: { ...(cookie ? { cookie } : {}) }
+  return proxyFastifyRequest(request, `/v1/admin/courses/${slug}`, {
+    method: "DELETE"
   });
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
 }
