@@ -1039,6 +1039,7 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
   const deleteCourse = async (slug: string) => {
     if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
     await fetch(`/api/admin/courses/${slug}`, { method: "DELETE" });
+    await fetch("/api/admin/revalidate", { method: "POST" });
     load();
     onRefresh();
   };
@@ -1048,6 +1049,7 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
     await Promise.all(
       selectedIds.map((slug) => fetch(`/api/admin/courses/${slug}`, { method: "DELETE" }))
     );
+    await fetch("/api/admin/revalidate", { method: "POST" });
     setSelectedIds([]);
     load();
     onRefresh();
@@ -1734,6 +1736,8 @@ function CourseListTab() {
       });
       if (res.ok) {
         setCourses(courses.filter((c) => c.slug !== slug));
+        // Bust Next.js cache for home and courses pages
+        await fetch("/api/admin/revalidate", { method: "POST" });
       }
     } catch (error) {
       console.error("Failed to delete course:", error);
