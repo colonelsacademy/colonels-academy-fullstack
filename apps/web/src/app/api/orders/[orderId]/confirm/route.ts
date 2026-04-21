@@ -10,7 +10,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ ord
     const apiResponse = await fetch(`${API_BASE_URL}/v1/orders/${orderId}/confirm`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         ...(cookie ? { cookie } : {}),
         ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       }
