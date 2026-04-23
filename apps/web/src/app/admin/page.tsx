@@ -514,7 +514,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       title: form.title,
       synopsis: form.synopsis,
       bunnyVideoId: form.bunnyVideoId || "",
-      pdfUrl: form.pdfUrl || undefined,
+      pdfUrl: form.pdfUrl || "",
       durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined,
       accessKind: form.accessKind,
       contentType: form.contentType,
