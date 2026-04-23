@@ -292,6 +292,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         learningMode: true,
         accessKind: true,
         bunnyVideoId: true,
+        pdfUrl: true,
         lessonContent: true,
         moduleId: true
       }
@@ -372,6 +373,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       title?: string;
       synopsis?: string;
       bunnyVideoId?: string;
+      pdfUrl?: string;
       durationMinutes?: number;
       accessKind?: string;
       contentType?: string;
@@ -404,6 +406,9 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
     if (body.bunnyVideoId !== undefined) {
       updateData.bunnyVideoId = body.bunnyVideoId || null;
+    }
+    if (body.pdfUrl !== undefined) {
+      updateData.pdfUrl = body.pdfUrl || null;
     }
     if (body.durationMinutes !== undefined) updateData.durationMinutes = body.durationMinutes;
     if (body.accessKind) updateData.accessKind = body.accessKind;

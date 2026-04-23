@@ -410,161 +410,30 @@ interface Lesson {
   learningMode: string;
   accessKind: string;
   bunnyVideoId: string | null;
+  pdfUrl: string | null;
   moduleId: string | null;
-}
-
-interface BunnyVideo {
-  guid: string;
-  title: string;
-  status: number;
-  lengthSeconds: number;
-  thumbnail: string | null;
 }
 
 function BunnyVideoPicker({
   value,
   onChange
 }: { value: string; onChange: (id: string, title: string, duration: number) => void }) {
-  const [videos, setVideos] = useState<BunnyVideo[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-
-  const load = async () => {
-    if (videos.length > 0) {
-      setOpen(true);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/bunny-videos");
-      const data = await res.json();
-      if (data.items) setVideos(data.items.filter((v: BunnyVideo) => v.status === 4));
-    } finally {
-      setLoading(false);
-      setOpen(true);
-    }
-  };
-
-  const filtered = videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()));
-  const selected = videos.find((v) => v.guid === value);
-
   return (
     <div>
       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">
-        Bunny Video
+        Bunny Video ID
       </label>
-      <button
-        type="button"
-        onClick={load}
-        className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg text-sm hover:border-[#D4AF37] transition-colors text-left"
-      >
-        {selected ? (
-          <span className="text-emerald-600 font-medium truncate">✓ {selected.title}</span>
-        ) : value ? (
-          <span className="text-gray-500 font-mono text-xs truncate">{value}</span>
-        ) : (
-          <span className="text-gray-400">Click to pick from Bunny Stream...</span>
-        )}
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-gray-400 shrink-0" />
-        ) : (
-          <Plus className="w-4 h-4 text-gray-400 shrink-0" />
-        )}
-      </button>
-
-      {open && (
-        <div className="mt-2 border border-gray-200 rounded-lg bg-white shadow-lg max-h-64 overflow-hidden flex flex-col">
-          <div className="p-2 border-b border-gray-100 space-y-2">
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search videos..."
-              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
-            />
-            <div className="text-xs text-gray-500">Or paste video ID manually:</div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Paste Bunny video ID..."
-                className="flex-1 px-3 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const id = e.currentTarget.value.trim();
-                    if (id) {
-                      onChange(id, "", 0);
-                      setOpen(false);
-                      e.currentTarget.value = "";
-                    }
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={(e) => {
-                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                  const id = input.value.trim();
-                  console.log("Manual video ID input:", id);
-                  if (id) {
-                    console.log("Calling onChange with:", { id, title: "", duration: 0 });
-                    onChange(id, "", 0);
-                    setOpen(false);
-                    input.value = "";
-                  }
-                }}
-                className="px-3 py-1.5 bg-[#D4AF37] text-[#0F1C15] text-xs font-bold rounded hover:bg-[#c9a227]"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-          <div className="overflow-y-auto flex-1">
-            {filtered.length === 0 ? (
-              <p className="text-xs text-gray-400 p-3 text-center">No videos found</p>
-            ) : (
-              filtered.map((v) => (
-                <button
-                  key={v.guid}
-                  type="button"
-                  onClick={() => {
-                    onChange(v.guid, v.title, Math.round(v.lengthSeconds / 60));
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left transition-colors ${v.guid === value ? "bg-[#D4AF37]/10" : ""}`}
-                >
-                  {v.thumbnail ? (
-                    <img
-                      src={v.thumbnail}
-                      alt={v.title}
-                      className="w-12 h-8 object-cover rounded shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-8 bg-gray-200 rounded shrink-0 flex items-center justify-center">
-                      <BookOpen className="w-3 h-3 text-gray-400" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{v.title}</p>
-                    <p className="text-xs text-gray-400">{Math.round(v.lengthSeconds / 60)} min</p>
-                  </div>
-                  {v.guid === value && (
-                    <span className="text-[#D4AF37] text-xs font-bold shrink-0">✓</span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-          <div className="p-2 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value.trim(), "", 0)}
+        placeholder="Paste Bunny video ID (UUID format)..."
+        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37] font-mono"
+      />
+      {value && (
+        <p className="text-[10px] text-emerald-600 mt-1 font-medium">
+          ✓ Video ID set: {value.slice(0, 16)}...
+        </p>
       )}
     </div>
   );
@@ -581,6 +450,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
     title: "",
     synopsis: "",
     bunnyVideoId: "",
+    pdfUrl: "",
     durationMinutes: "",
     accessKind: "STANDARD",
     contentType: "VIDEO",
@@ -607,6 +477,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       title: "",
       synopsis: "",
       bunnyVideoId: "",
+      pdfUrl: "",
       durationMinutes: "",
       accessKind: "STANDARD",
       contentType: "VIDEO",
@@ -623,6 +494,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       title: l.title,
       synopsis: l.synopsis,
       bunnyVideoId: l.bunnyVideoId ?? "",
+      pdfUrl: l.pdfUrl ?? "",
       durationMinutes: l.durationMinutes ? String(l.durationMinutes) : "",
       accessKind: l.accessKind,
       contentType: l.contentType,
@@ -641,7 +513,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
     const payload = {
       title: form.title,
       synopsis: form.synopsis,
-      bunnyVideoId: form.bunnyVideoId || undefined,
+      bunnyVideoId: form.bunnyVideoId || "",
+      pdfUrl: form.pdfUrl || undefined,
       durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined,
       accessKind: form.accessKind,
       contentType: form.contentType,
@@ -755,6 +628,18 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                 }}
               />
             </div>
+            {(form.contentType === "PDF" ||
+              form.learningMode === "RESOURCE" ||
+              form.contentType === "VIDEO") && (
+              <div className="col-span-2">
+                <InputField
+                  label="PDF / Resource URL (optional)"
+                  value={form.pdfUrl}
+                  onChange={(v) => setForm((p) => ({ ...p, pdfUrl: v }))}
+                  placeholder="https://cdn.thecolonelsacademy.com/images/courses_pdf/file.pdf"
+                />
+              </div>
+            )}
             <InputField
               label="Duration (minutes)"
               value={form.durationMinutes}
