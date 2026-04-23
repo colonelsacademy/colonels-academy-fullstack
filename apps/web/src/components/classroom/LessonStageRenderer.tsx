@@ -129,11 +129,19 @@ export default function LessonStageRenderer({
   }
 
   if (lesson.contentType === "VIDEO") {
+    // If no video but has a PDF, show the PDF inline where the video would be
+    if (!lesson.videoId && lesson.pdfUrl) {
+      return (
+        <div className="relative w-full aspect-video bg-white overflow-hidden">
+          <iframe src={lesson.pdfUrl} className="w-full h-full border-0" title={lesson.title} />
+        </div>
+      );
+    }
     return (
       <VideoPlayer
         {...(lesson.videoId ? { videoId: lesson.videoId } : {})}
         {...(poster ? { poster } : {})}
-        autoplay={false}
+        autoplay={true}
         className="rounded-none shadow-none"
       />
     );
