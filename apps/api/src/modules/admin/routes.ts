@@ -169,9 +169,22 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       const user = await requireAdmin(request, reply);
       if (!user) return;
 
+      const updateData: Record<string, unknown> = { ...(request.body ?? {}) };
+      if ("priceNpr" in updateData) {
+        const price = updateData.priceNpr;
+        if (
+          typeof price !== "number" ||
+          !Number.isFinite(price) ||
+          !Number.isInteger(price) ||
+          price < 0
+        ) {
+          return reply.badRequest("priceNpr must be a non-negative integer.");
+        }
+      }
+
       const course = await fastify.prisma.course.update({
         where: { slug: request.params.slug },
-        data: request.body
+        data: updateData
       });
 
       // ✅ OPTIMIZED: Invalidate course caches
@@ -194,8 +207,22 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
     if (!course) return reply.notFound("Course not found.");
 
-    // Delete in correct order to avoid FK constraint violations
-    // PurchaseOrderItem has onDelete: Restrict so must be removed first
+    // Keep historical order integrity: paid/refunded orders must retain line items.
+    const settledOrderItemCount = await fastify.prisma.purchaseOrderItem.count({
+      where: {
+        courseId: course.id,
+        order: {
+          status: { in: ["PAID", "REFUNDED"] }
+        }
+      }
+    });
+    if (settledOrderItemCount > 0) {
+      return reply.conflict(
+        "Cannot delete course with paid/refunded order history. Archive or hide the course instead."
+      );
+    }
+
+    // Safe to remove non-settled order items, then delete the course.
     await fastify.prisma.$transaction([
       fastify.prisma.purchaseOrderItem.deleteMany({ where: { courseId: course.id } }),
       fastify.prisma.course.delete({ where: { id: course.id } })
