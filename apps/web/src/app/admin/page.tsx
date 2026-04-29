@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { ToastContainer } from "@/components/admin/Toast";
+import { useToast } from "@/hooks/useToast";
 import {
   Activity,
   BarChart2,
@@ -412,6 +414,11 @@ interface Lesson {
   bunnyVideoId: string | null;
   pdfUrl: string | null;
   moduleId: string | null;
+  module?: {
+    id: string;
+    title: string;
+    chapterNumber: number | null;
+  } | null;
 }
 
 function BunnyVideoPicker({
@@ -441,6 +448,7 @@ function BunnyVideoPicker({
 
 function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: () => void }) {
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [chapters, setChapters] = useState<{ id: string; title: string; chapterNumber: number | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -454,15 +462,22 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
     durationMinutes: "",
     accessKind: "STANDARD",
     contentType: "VIDEO",
-    learningMode: "LESSON"
+    learningMode: "LESSON",
+    moduleId: ""
   });
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/courses/${courseSlug}/lessons`);
-      const data = await res.json();
-      if (data.lessons) setLessons(data.lessons);
+      const [lessonsRes, chaptersRes] = await Promise.all([
+        fetch(`/api/admin/courses/${courseSlug}/lessons`),
+        fetch(`/api/admin/courses/${courseSlug}/chapters`)
+      ]);
+      const lessonsData = await lessonsRes.json();
+      const chaptersData = await chaptersRes.json();
+      
+      if (lessonsData.lessons) setLessons(lessonsData.lessons);
+      if (chaptersData.chapters) setChapters(chaptersData.chapters);
     } finally {
       setLoading(false);
     }
@@ -481,7 +496,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       durationMinutes: "",
       accessKind: "STANDARD",
       contentType: "VIDEO",
-      learningMode: "LESSON"
+      learningMode: "LESSON",
+      moduleId: ""
     });
     setEditingId(null);
     setShowForm(false);
@@ -498,7 +514,8 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       durationMinutes: l.durationMinutes ? String(l.durationMinutes) : "",
       accessKind: l.accessKind,
       contentType: l.contentType,
-      learningMode: l.learningMode ?? "LESSON"
+      learningMode: l.learningMode ?? "LESSON",
+      moduleId: l.moduleId ?? ""
     });
     setShowForm(true);
   };
@@ -518,11 +535,9 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined,
       accessKind: form.accessKind,
       contentType: form.contentType,
-      learningMode: form.learningMode
+      learningMode: form.learningMode,
+      moduleId: form.moduleId || null
     };
-
-    // Debug: Log what we're sending
-    console.log("Submitting lesson update:", { editingId, payload });
 
     try {
       if (editingId) {
@@ -532,7 +547,6 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        console.log("Update response:", data);
         if (!res.ok) throw new Error(data.message);
       } else {
         const res = await fetch(`/api/admin/courses/${courseSlug}/lessons`, {
@@ -596,6 +610,22 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                 value={form.title}
                 onChange={(v) => setForm((p) => ({ ...p, title: v }))}
                 placeholder="e.g. Introduction to Command Writing"
+              />
+            </div>
+            <div className="col-span-2">
+              <SelectField
+                label="Chapter / Module"
+                value={form.moduleId}
+                onChange={(v) => setForm((p) => ({ ...p, moduleId: v }))}
+                options={[
+                  { value: "", label: "-- No Chapter (General) --" },
+                  ...chapters.map((ch) => ({
+                    value: ch.id,
+                    label: ch.chapterNumber 
+                      ? `Chapter ${ch.chapterNumber}: ${ch.title}` 
+                      : ch.title
+                  }))
+                ]}
               />
             </div>
             <div className="col-span-2">
@@ -726,11 +756,21 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                       Preview
                     </span>
                   )}
+                  {l.module && (
+                    <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold uppercase">
+                      {l.module.chapterNumber ? `Ch ${l.module.chapterNumber}` : l.module.title}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400">
                   <span className="uppercase">{l.contentType}</span>
                   <span className="uppercase">{l.learningMode ?? "LESSON"}</span>
                   {l.durationMinutes && <span>{l.durationMinutes} min</span>}
+                  {l.module && (
+                    <span className="text-gray-500">
+                      📚 {l.module.title}
+                    </span>
+                  )}
                   {l.bunnyVideoId ? (
                     <span className="text-emerald-600 font-medium">
                       ✓ Video: {l.bunnyVideoId.slice(0, 8)}...
@@ -766,7 +806,17 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
 
 // ─── Training Modules Tab (Add/Edit Courses) ──────────────────────────────────
 
-function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
+function TrainingModulesTab({ 
+  onRefresh, 
+  toast 
+}: { 
+  onRefresh: () => void;
+  toast: {
+    success: (msg: string) => void;
+    error: (msg: string) => void;
+    info: (msg: string) => void;
+  };
+}) {
   const [courses, setCourses] = useState<DBCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -782,7 +832,8 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
     description: "",
     thumbnail: "",
     comingSoon: false,
-    featured: false
+    featured: false,
+    hidden: false
   });
   const [uploading, setUploading] = useState(false);
 
@@ -806,6 +857,7 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
       setError("File too large. Max 5MB.");
+      toast.error("File too large. Maximum size is 5MB");
       return;
     }
     setUploading(true);
@@ -817,8 +869,11 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setForm((p) => ({ ...p, thumbnail: data.url }));
+      toast.success("Image uploaded successfully");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+      const errorMsg = err instanceof Error ? err.message : "Upload failed";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setUploading(false);
     }
@@ -833,7 +888,8 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
       description: c.summary,
       thumbnail: c.heroImageUrl ?? "",
       comingSoon: c.isComingSoon ?? false,
-      featured: c.isFeatured
+      featured: c.isFeatured,
+      hidden: (c as any).isHidden ?? false
     });
     setShowForm(true);
   };
@@ -847,7 +903,8 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
       description: "",
       thumbnail: "",
       comingSoon: false,
-      featured: false
+      featured: false,
+      hidden: false
     });
     setShowForm(false);
     setError("");
@@ -856,6 +913,7 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
   const handleSubmit = async () => {
     if (!form.title.trim() || !form.price) {
       setError("Title and price are required.");
+      toast.error("Please fill in all required fields");
       return;
     }
     setSaving(true);
@@ -881,10 +939,12 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
             heroImageUrl: form.thumbnail || null,
             isFeatured: form.featured,
             isComingSoon: form.comingSoon,
+            isHidden: form.hidden,
             accentColor: accentMap[form.track] ?? "#D4AF37"
           })
         });
         if (!res.ok) throw new Error((await res.json()).message);
+        toast.success(`Course "${form.title}" updated successfully`);
       } else {
         const slug = form.title
           .toLowerCase()
@@ -906,16 +966,20 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
             accentColor: accentMap[form.track] ?? "#D4AF37",
             heroImageUrl: form.thumbnail || undefined,
             isFeatured: form.featured,
-            isComingSoon: form.comingSoon
+            isComingSoon: form.comingSoon,
+            isHidden: form.hidden
           })
         });
         if (!res.ok) throw new Error((await res.json()).message);
+        toast.success(`Course "${form.title}" created successfully`);
       }
       resetForm();
       load();
       onRefresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      const errorMsg = err instanceof Error ? err.message : "Save failed";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -923,21 +987,31 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
 
   const deleteCourse = async (slug: string) => {
     if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
-    await fetch(`/api/admin/courses/${slug}`, { method: "DELETE" });
-    await fetch("/api/admin/revalidate", { method: "POST" });
-    load();
-    onRefresh();
+    try {
+      await fetch(`/api/admin/courses/${slug}`, { method: "DELETE" });
+      await fetch("/api/admin/revalidate", { method: "POST" });
+      toast.success(`Course "${slug}" deleted successfully`);
+      load();
+      onRefresh();
+    } catch (err) {
+      toast.error("Failed to delete course");
+    }
   };
 
   const deleteSelected = async () => {
     if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} course(s)?`)) return;
-    await Promise.all(
-      selectedIds.map((slug) => fetch(`/api/admin/courses/${slug}`, { method: "DELETE" }))
-    );
-    await fetch("/api/admin/revalidate", { method: "POST" });
-    setSelectedIds([]);
-    load();
-    onRefresh();
+    try {
+      await Promise.all(
+        selectedIds.map((slug) => fetch(`/api/admin/courses/${slug}`, { method: "DELETE" }))
+      );
+      await fetch("/api/admin/revalidate", { method: "POST" });
+      toast.success(`${selectedIds.length} course(s) deleted successfully`);
+      setSelectedIds([]);
+      load();
+      onRefresh();
+    } catch (err) {
+      toast.error("Failed to delete selected courses");
+    }
   };
 
   const toggleSelect = (slug: string) =>
@@ -957,16 +1031,21 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <div className="space-y-6">
+      {/* Header with Actions */}
       <div className="flex items-center justify-between">
-        <SectionTitle>Training Modules ({courses.length})</SectionTitle>
-        <div className="flex gap-2">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Training Modules</h2>
+          <p className="text-sm text-gray-500 mt-1">{courses.length} courses available</p>
+        </div>
+        <div className="flex gap-3">
           {selectedIds.length > 0 && (
             <button
               type="button"
               onClick={deleteSelected}
-              className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 border border-red-200 font-bold rounded-lg text-xs hover:bg-red-100"
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 font-medium rounded-lg text-sm hover:bg-red-100 transition-colors"
             >
-              <Trash2 className="w-3 h-3" /> Delete ({selectedIds.length})
+              <Trash2 className="w-4 h-4" />
+              Delete {selectedIds.length} selected
             </button>
           )}
           <button
@@ -975,214 +1054,335 @@ function TrainingModulesTab({ onRefresh }: { onRefresh: () => void }) {
               resetForm();
               setShowForm((v) => !v);
             }}
-            className="flex items-center gap-1 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-xs hover:bg-[#c9a227]"
+            className="flex items-center gap-2 px-5 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] transition-colors shadow-sm"
           >
-            <Plus className="w-3 h-3" /> {editingSlug ? "Edit Course" : "Add Course"}
+            <Plus className="w-4 h-4" />
+            New Course
           </button>
         </div>
       </div>
 
+      {/* Course Form - Cleaner Layout */}
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700">
-              {editingSlug ? `Edit: ${editingSlug}` : "New Training Module"}
-            </h3>
-            <button type="button" onClick={resetForm}>
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField
-              label="Title"
-              value={form.title}
-              onChange={(v) => setForm((p) => ({ ...p, title: v }))}
-              placeholder="Course title"
-            />
-            <InputField
-              label="Price (NPR)"
-              value={form.price}
-              onChange={(v) => setForm((p) => ({ ...p, price: v }))}
-              type="number"
-              placeholder="4500"
-            />
-            <SelectField
-              label="Wing / Track"
-              value={form.track}
-              onChange={(v) => setForm((p) => ({ ...p, track: v }))}
-              options={TRACK_OPTIONS}
-            />
-            <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">
-                Course Image
-              </label>
-              <label
-                className={`flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 rounded-lg px-3 py-3 cursor-pointer hover:border-[#D4AF37] transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""}`}
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-[#D4AF37]/10 to-transparent px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  {editingSlug ? "Edit Course" : "Create New Course"}
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {editingSlug ? `Editing: ${editingSlug}` : "Fill in the details below"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                />
-                {uploading ? (
-                  <span className="text-[#D4AF37] text-xs">Uploading to Bunny CDN...</span>
-                ) : form.thumbnail ? (
-                  <span className="text-emerald-600 text-xs truncate">
-                    ✓ {form.thumbnail.split("/").pop()}
-                  </span>
-                ) : (
-                  <span className="text-gray-400 text-xs">Click to upload → Bunny CDN</span>
-                )}
-              </label>
-              {form.thumbnail && (
-                <img
-                  src={form.thumbnail}
-                  alt="preview"
-                  className="mt-2 h-20 w-full object-cover rounded-lg"
-                />
-              )}
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
           </div>
-          <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">
-              Description / Summary
-            </label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              rows={3}
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#D4AF37] outline-none text-sm resize-none"
-            />
-          </div>
-          <div className="flex gap-6">
-            <label className="flex items-center gap-2 cursor-pointer text-sm">
-              <input
-                type="checkbox"
-                checked={form.featured}
-                onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
-                className="accent-[#D4AF37]"
-              />
-              Featured Course
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer text-sm">
-              <input
-                type="checkbox"
-                checked={form.comingSoon}
-                onChange={(e) => setForm((p) => ({ ...p, comingSoon: e.target.checked }))}
-                className="accent-[#D4AF37]"
-              />
-              Coming Soon
-            </label>
-          </div>
-          {error && <p className="text-red-500 text-xs">{error}</p>}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={saving}
-              className="px-6 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] disabled:opacity-50 flex items-center gap-2"
-            >
-              <Save className="w-4 h-4" />{" "}
-              {saving ? "Saving..." : editingSlug ? "Update Course" : "Deploy Course"}
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-lg text-sm hover:bg-gray-200"
-            >
-              Cancel
-            </button>
+
+          <div className="p-6 space-y-6">
+            {/* Basic Information */}
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-[#D4AF37]" />
+                Basic Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <InputField
+                    label="Course Title"
+                    value={form.title}
+                    onChange={(v) => setForm((p) => ({ ...p, title: v }))}
+                    placeholder="e.g. Army Command & Staff Course Preparation"
+                  />
+                </div>
+                <SelectField
+                  label="Track / Wing"
+                  value={form.track}
+                  onChange={(v) => setForm((p) => ({ ...p, track: v }))}
+                  options={TRACK_OPTIONS}
+                />
+                <InputField
+                  label="Price (NPR)"
+                  value={form.price}
+                  onChange={(v) => setForm((p) => ({ ...p, price: v }))}
+                  type="number"
+                  placeholder="4500"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <Palette className="w-4 h-4 text-[#D4AF37]" />
+                Description & Media
+              </h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-2 block">
+                    Course Description
+                  </label>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none text-sm resize-none"
+                    placeholder="Brief description of what this course covers..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-2 block">
+                    Course Thumbnail
+                  </label>
+                  <div className="flex gap-4">
+                    <label
+                      className={`flex-1 flex items-center justify-center gap-2 border-2 border-dashed rounded-lg px-4 py-6 cursor-pointer transition-all ${
+                        uploading
+                          ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+                          : form.thumbnail
+                            ? "border-emerald-300 bg-emerald-50"
+                            : "border-gray-300 hover:border-[#D4AF37] hover:bg-[#D4AF37]/5"
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                        disabled={uploading}
+                      />
+                      {uploading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 text-[#D4AF37] animate-spin" />
+                          <span className="text-sm text-gray-600">Uploading to CDN...</span>
+                        </>
+                      ) : form.thumbnail ? (
+                        <>
+                          <CheckSquare className="w-5 h-5 text-emerald-600" />
+                          <span className="text-sm text-emerald-700 font-medium">
+                            Image uploaded
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Palette className="w-5 h-5 text-gray-400" />
+                          <span className="text-sm text-gray-500">
+                            Click to upload image
+                          </span>
+                        </>
+                      )}
+                    </label>
+                    {form.thumbnail && (
+                      <div className="w-32 h-24 rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={form.thumbnail}
+                          alt="preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Settings */}
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-[#D4AF37]" />
+                Course Settings
+              </h4>
+              <div className="flex gap-6 p-4 bg-gray-50 rounded-lg">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={form.featured}
+                    onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
+                    className="w-4 h-4 accent-[#D4AF37] cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                    Featured Course
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={form.comingSoon}
+                    onChange={(e) => setForm((p) => ({ ...p, comingSoon: e.target.checked }))}
+                    className="w-4 h-4 accent-[#D4AF37] cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                    Coming Soon
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={form.hidden}
+                    onChange={(e) => setForm((p) => ({ ...p, hidden: e.target.checked }))}
+                    className="w-4 h-4 accent-red-500 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                    Hidden (Not visible to users)
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={saving}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    {editingSlug ? "Update Course" : "Create Course"}
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg text-sm hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
+      {/* Course List - Card View */}
       {loading ? (
-        <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
-          <Loader2 className="w-5 h-5 animate-spin" /> Loading...
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <Loader2 className="w-8 h-8 animate-spin mb-3" />
+          <p className="text-sm">Loading courses...</p>
+        </div>
+      ) : courses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 bg-white rounded-xl border-2 border-dashed border-gray-200">
+          <BookOpen className="w-12 h-12 text-gray-300 mb-3" />
+          <p className="text-gray-500 font-medium">No courses yet</p>
+          <p className="text-sm text-gray-400 mt-1">Create your first course to get started</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-              <tr>
-                <th className="px-5 py-3 w-8">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.length === courses.length && courses.length > 0}
-                    onChange={toggleAll}
-                    className="accent-[#D4AF37]"
-                  />
-                </th>
-                <th className="text-left px-5 py-3">Title</th>
-                <th className="text-left px-5 py-3">Track</th>
-                <th className="text-left px-5 py-3">Price</th>
-                <th className="text-left px-5 py-3">Enrollments</th>
-                <th className="text-left px-5 py-3">Lessons</th>
-                <th className="text-left px-5 py-3">Featured</th>
-                <th className="px-5 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((c) => (
-                <React.Fragment key={c.slug}>
-                  <tr className="border-t border-gray-100 hover:bg-gray-50">
-                    <td className="px-5 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(c.slug)}
-                        onChange={() => toggleSelect(c.slug)}
-                        className="accent-[#D4AF37]"
-                      />
-                    </td>
-                    <td className="px-5 py-3 font-medium text-gray-900">{c.title}</td>
-                    <td className="px-5 py-3">
-                      <span className="text-xs bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase">
-                        {c.track}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-gray-600">NPR {c.priceNpr.toLocaleString()}</td>
-                    <td className="px-5 py-3 text-gray-600">{c._count.enrollments}</td>
-                    <td className="px-5 py-3 text-gray-600">{c._count.lessons}</td>
-                    <td className="px-5 py-3 text-gray-600">{c.isFeatured ? "✓" : "—"}</td>
-                    <td className="px-5 py-3">
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(c)}
-                          className="p-1.5 hover:bg-blue-50 text-blue-600 rounded"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteCourse(c.slug)}
-                          className="p-1.5 hover:bg-red-50 text-red-500 rounded"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setExpandedSlug(expandedSlug === c.slug ? null : c.slug)}
-                          className={`px-2 py-1 text-xs font-bold rounded transition-colors ${expandedSlug === c.slug ? "bg-[#D4AF37] text-[#0F1C15]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                        >
-                          Lessons
-                        </button>
+        <div className="grid grid-cols-1 gap-4">
+          {courses.map((c) => (
+            <div
+              key={c.slug}
+              className="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow overflow-hidden"
+            >
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  {/* Course Info */}
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(c.slug)}
+                      onChange={() => toggleSelect(c.slug)}
+                      className="mt-1 w-4 h-4 accent-[#D4AF37] cursor-pointer flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-base font-bold text-gray-900 truncate">
+                          {c.title}
+                        </h3>
+                        {c.isFeatured && (
+                          <span className="px-2 py-0.5 bg-[#D4AF37] text-[#0F1C15] text-[10px] font-bold rounded uppercase">
+                            Featured
+                          </span>
+                        )}
+                        {c.isComingSoon && (
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">
+                            Coming Soon
+                          </span>
+                        )}
+                        {(c as any).isHidden && (
+                          <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded uppercase">
+                            Hidden
+                          </span>
+                        )}
                       </div>
-                    </td>
-                  </tr>
-                  {expandedSlug === c.slug && (
-                    <tr>
-                      <td colSpan={8} className="p-0">
-                        <LessonManager courseSlug={c.slug} onClose={() => setExpandedSlug(null)} />
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+                          {c.track.toUpperCase()}
+                        </span>
+                        <span>NPR {c.priceNpr.toLocaleString()}</span>
+                        <span>{c._count.lessons} lessons</span>
+                        <span>{c._count.enrollments} enrolled</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedSlug(expandedSlug === c.slug ? null : c.slug)
+                      }
+                      className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-lg text-xs transition-colors ${
+                        expandedSlug === c.slug
+                          ? "bg-[#D4AF37] text-[#0F1C15]"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      Lessons
+                      <ChevronRight
+                        className={`w-3.5 h-3.5 transition-transform ${expandedSlug === c.slug ? "rotate-90" : ""}`}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(c)}
+                      className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
+                      title="Edit course"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteCourse(c.slug)}
+                      className="p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors"
+                      title="Delete course"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expanded Lessons Section */}
+              {expandedSlug === c.slug && (
+                <div className="border-t border-gray-200 bg-gray-50">
+                  <LessonManager courseSlug={c.slug} onClose={() => setExpandedSlug(null)} />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -2076,6 +2276,7 @@ function EnrollmentsTab() {
 
 export default function AdminPage() {
   const { user, authenticated, loading: authLoading } = useAuth();
+  const { toasts, removeToast, success, error, info } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [stats, setStats] = useState<Stats>({
     userCount: 0,
@@ -2143,7 +2344,7 @@ export default function AdminPage() {
       case "users":
         return <UsersTab onRefresh={loadData} />;
       case "courses":
-        return <TrainingModulesTab onRefresh={loadData} />;
+        return <TrainingModulesTab onRefresh={loadData} toast={{ success, error, info }} />;
       case "staffhq":
         return <StaffHQTab />;
       case "courselist":
@@ -2174,6 +2375,9 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row font-sans">
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      
       {/* Sidebar */}
       <div className="hidden md:flex w-64 bg-[#0F1C15] text-white flex-col flex-shrink-0 min-h-screen">
         <div className="h-20 flex items-center justify-center border-b border-gray-800">

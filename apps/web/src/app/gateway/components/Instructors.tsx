@@ -2,53 +2,30 @@ import { getInstructors } from "@/lib/api";
 import { ChevronRight, Star } from "lucide-react";
 import Link from "next/link";
 
-interface InstructorsProps {
-  activeTab?: string;
-  /** Same as CourseFilter `basePath` — keeps mentor tabs on this hub. */
-  instructorTabsBasePath?: string;
-}
-
-export const Instructors = async ({
-  activeTab = "all",
-  instructorTabsBasePath = "/"
-}: InstructorsProps) => {
+export const Instructors = async () => {
   const instructors = await getInstructors();
-
-  const filtered =
-    activeTab === "all" ? instructors : instructors.filter((i) => i.branch === activeTab);
-
-  const tabs = [
-    { id: "all", label: "All Instructors" },
-    { id: "army", label: "Nepal Army" },
-    { id: "police", label: "Nepal Police" },
-    { id: "apf", label: "APF Nepal" }
-  ];
 
   return (
     <div id="mentors" className="py-12 mt-20">
-      {/* Header & Tabs */}
-      <div className="flex flex-col items-center justify-center gap-6 mb-12 text-center">
-        <div>
-          <h3 className="text-4xl font-bold text-[#0F1C15] font-['Rajdhani'] mb-2">
-            Meet Your Instructors
-          </h3>
-          <p className="text-gray-500 font-medium tracking-wide">
-            Learn from the officers who have been in the selection board.
-          </p>
-        </div>
-
-        <InstructorTabs activeTab={activeTab} tabs={tabs} basePath={instructorTabsBasePath} />
+      {/* Header */}
+      <div className="flex flex-col items-center justify-center gap-3 mb-12 text-center">
+        <h3 className="text-4xl font-bold text-[#0F1C15] font-['Rajdhani'] mb-2">
+          Meet Your Instructors
+        </h3>
+        <p className="text-gray-500 font-medium tracking-wide">
+          Learn from the officers who have been in the selection board.
+        </p>
       </div>
 
       {/* Cards Grid */}
       <div className="max-w-7xl mx-auto px-4 min-h-[400px]">
-        {filtered.length === 0 ? (
+        {instructors.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <p className="font-bold text-lg">No instructors found for this category.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filtered.map((instructor) => (
+            {instructors.map((instructor) => (
               <div
                 key={instructor.slug}
                 className="relative h-[500px] rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500"
@@ -141,6 +118,3 @@ export const Instructors = async ({
     </div>
   );
 };
-
-// Client component for tab switching
-import InstructorTabs from "./InstructorTabs";

@@ -36,7 +36,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // Await searchParams for Next.js 15+ compatibility
   const resolvedParams = await searchParams;
   const activeCategory = (resolvedParams.category as Category) ?? "all";
-  const mentorCategory = (resolvedParams.mentorCategory as Category) ?? "all";
 
   // 1. Fetch from the API (single source of truth across all pages)
   const [apiCourses, apiInstructors, enrollments] = await Promise.all([
@@ -139,9 +138,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <MobilePlatform />
         </Suspense>
 
-        {/* Instructors Section: Now an RSC with URL-based tabs */}
+        {/* Instructors Section */}
         <Suspense fallback={<SectionFallback className="min-h-[720px]" />}>
-          <Instructors activeTab={mentorCategory} />
+          <Instructors />
         </Suspense>
       </div>
 

@@ -21,6 +21,9 @@ import { isPhaseUnlocked, resolveCoursePhaseAccess } from "../../lib/course-phas
 
 async function loadCourseRecords(prisma: DatabaseClient) {
   return prisma.course.findMany({
+    where: {
+      isHidden: false  // Only show non-hidden courses
+    },
     include: {
       instructorLinks: {
         include: {
@@ -153,7 +156,10 @@ export async function getCourseBySlug(
 
   try {
     const record = await prisma.course.findUnique({
-      where: { slug },
+      where: { 
+        slug,
+        isHidden: false  // Don't show hidden courses
+      },
       include: {
         instructorLinks: {
           include: {
