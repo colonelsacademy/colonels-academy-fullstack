@@ -9,6 +9,9 @@
   },
   "scripts": {
     "dev": "docker compose up -d && node ./scripts/run-turbo.mjs dev --parallel --continue --filter=@colonels-academy/web --filter=@colonels-academy/api --filter=@colonels-academy/worker --filter=@colonels-academy/database",
+    "dev:setup": "pnpm run db:up && pnpm run db:generate && pnpm run db:push && pnpm run db:seed",
+    "dev:full": "pnpm run dev:setup && pnpm run dev",
+    "dev:reset": "pnpm run db:down -- -v && pnpm run dev:setup",
     "dev:mobile": "node ./scripts/run-turbo.mjs dev --filter=@colonels-academy/mobile",
     "build": "node ./scripts/run-turbo.mjs build",
     "typecheck": "node ./scripts/run-turbo.mjs typecheck",

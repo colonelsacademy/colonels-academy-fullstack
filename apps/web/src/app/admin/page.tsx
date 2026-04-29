@@ -1795,17 +1795,27 @@ function CourseListTab() {
 
   const handleSaveEdit = async () => {
     if (!editingCourse) return;
+    const parsedPrice = Number.parseInt(String(editFormData.priceNpr ?? ""), 10);
+    if (!Number.isInteger(parsedPrice) || parsedPrice < 0) {
+      alert("Please enter a valid non-negative price.");
+      return;
+    }
     try {
       const res = await fetch(`/api/admin/courses/${editingCourse.slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editFormData)
+        body: JSON.stringify({ ...editFormData, priceNpr: parsedPrice })
       });
       if (res.ok) {
         setCourses(
-          courses.map((c) => (c.slug === editingCourse.slug ? { ...c, ...editFormData } : c))
+          courses.map((c) =>
+            c.slug === editingCourse.slug ? { ...c, ...editFormData, priceNpr: parsedPrice } : c
+          )
         );
         setEditingCourse(null);
+      } else {
+        const error = await res.json().catch(() => null);
+        alert(error?.message ?? "Failed to update course.");
       }
     } catch (error) {
       console.error("Failed to update course:", error);
@@ -1823,6 +1833,9 @@ function CourseListTab() {
         setCourses(courses.filter((c) => c.slug !== slug));
         // Bust Next.js cache for home and courses pages
         await fetch("/api/admin/revalidate", { method: "POST" });
+      } else {
+        const error = await res.json().catch(() => null);
+        alert(error?.message ?? "Failed to delete course.");
       }
     } catch (error) {
       console.error("Failed to delete course:", error);
@@ -1934,7 +1947,15 @@ function CourseListTab() {
                 label="Price (NPR)"
                 type="number"
                 value={String(editFormData.priceNpr || "")}
-                onChange={(v) => setEditFormData({ ...editFormData, priceNpr: Number.parseInt(v) })}
+                onChange={(v) => {
+                  const parsedPrice = Number.parseInt(v, 10);
+                  if (Number.isNaN(parsedPrice)) {
+                    const { priceNpr: _priceNpr, ...rest } = editFormData;
+                    setEditFormData(rest);
+                    return;
+                  }
+                  setEditFormData({ ...editFormData, priceNpr: parsedPrice });
+                }}
               />
               <InputField
                 label="Hero Image URL"

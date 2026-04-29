@@ -401,11 +401,15 @@ async function main() {
   };
 
   for (const [slug, imageUrl] of Object.entries(imageMapping)) {
-    await prisma.course.update({
+    const result = await prisma.course.updateMany({
       where: { slug },
       data: { heroImageUrl: imageUrl }
     });
-    console.log(`  ✅ Updated ${slug} with ${imageUrl}`);
+    if (result.count > 0) {
+      console.log(`  ✅ Updated ${slug} with ${imageUrl}`);
+    } else {
+      console.log(`  ℹ️ Skipped ${slug} (course not present in this dataset)`);
+    }
   }
 
   console.log("\n🎖️  Seeding Army Command & Staff Course 2083...");
