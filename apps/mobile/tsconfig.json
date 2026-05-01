@@ -6,13 +6,5 @@
     "types": ["react", "react-native"],
     "noEmit": true
   },
-  "include": [
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "expo-env.d.ts",
-    ".expo/types/**/*.ts"
-  ],
-  "exclude": ["app.config.ts"]
+  "include": ["app/**/*.ts", "app/**/*.tsx", "src/**/*.ts", "src/**/*.tsx", "expo-env.d.ts"]
 }

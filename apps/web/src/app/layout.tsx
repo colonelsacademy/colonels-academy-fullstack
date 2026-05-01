@@ -1,23 +1,21 @@
-import { AuthProvider } from "@/components/auth/AuthProvider";
-import { SiteShell } from "@/components/site-shell";
-import { CartProvider } from "@/contexts/CartContext";
 import type { Metadata } from "next";
-import { Inter, Rajdhani } from "next/font/google";
-import { Toaster } from "sonner";
+import { Inter, Rajdhani } from 'next/font/google';
+import { SiteShell } from "@/components/site-shell";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 import "./globals.css";
 
 const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter"
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
 });
 
 const rajdhani = Rajdhani({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-rajdhani"
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-rajdhani',
 });
 
 export const metadata: Metadata = {
@@ -28,12 +26,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${rajdhani.variable}`}>
-      <body suppressHydrationWarning>
+      <body>
         <AuthProvider>
-          <CartProvider>
-            <SiteShell>{children}</SiteShell>
-            <Toaster richColors position="top-center" />
-          </CartProvider>
+          <SiteShell>{children}</SiteShell>
         </AuthProvider>
       </body>
     </html>

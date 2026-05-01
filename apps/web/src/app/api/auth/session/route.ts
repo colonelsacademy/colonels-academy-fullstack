@@ -1,16 +1,16 @@
+import { NextResponse, NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/apiClient";
-import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const sessionCookie = request.cookies.get("ca_session");
+  const sessionCookie = request.cookies.get("__session");
 
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/session`, {
       method: "GET",
       cache: "no-store",
       headers: {
-        Cookie: `ca_session=${sessionCookie?.value}`
-      }
+        Cookie: `__session=${sessionCookie?.value}`,
+      },
     });
 
     if (!apiResponse.ok) {

@@ -1,7 +1,5 @@
-import { type FirebaseOptions, getApp, getApps, initializeApp } from "firebase/app";
-import { type Auth, connectAuthEmulator, getAuth } from "firebase/auth";
-
-let authEmulatorConnected = false;
+import { getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 function getFirebaseConfig(): FirebaseOptions | null {
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
@@ -31,50 +29,8 @@ export function getFirebaseClientApp() {
   return getApps().length ? getApp() : initializeApp(firebaseConfig);
 }
 
-function attachAuthEmulator(auth: Auth) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  // Check if emulator should be used
-  const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
-
-  // Only log in development
-  if (process.env.NODE_ENV === "development") {
-    console.debug("Firebase Emulator Config:", {
-      useEmulator,
-      envValue: process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR,
-      authEmulatorConnected
-    });
-  }
-
-  if (!useEmulator) {
-    if (process.env.NODE_ENV === "development") {
-      console.debug("Firebase emulator disabled - using production auth");
-    }
-    return;
-  }
-
-  if (authEmulatorConnected) {
-    return;
-  }
-
-  const url = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL ?? "http://127.0.0.1:9099";
-  if (process.env.NODE_ENV === "development") {
-    console.debug("Connecting to Firebase emulator at:", url);
-  }
-  connectAuthEmulator(auth, url, { disableWarnings: true });
-  authEmulatorConnected = true;
-}
-
 export function getFirebaseClientAuth() {
   const app = getFirebaseClientApp();
 
-  if (!app) {
-    return null;
-  }
-
-  const auth = getAuth(app);
-  attachAuthEmulator(auth);
-  return auth;
+  return app ? getAuth(app) : null;
 }

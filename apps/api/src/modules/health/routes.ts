@@ -1,11 +1,7 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 
 import { loadApiEnv } from "@colonels-academy/config";
-import type {
-  HealthStatusResponse,
-  LivenessStatusResponse,
-  QueueDepthSnapshot
-} from "@colonels-academy/contracts";
+import type { HealthStatusResponse, LivenessStatusResponse, QueueDepthSnapshot } from "@colonels-academy/contracts";
 
 async function readQueueDepths(
   queues: import("../../plugins/infrastructure").QueueRegistry | null
@@ -33,9 +29,6 @@ async function readQueueDepths(
 }
 
 const healthRoutes: FastifyPluginAsync = async (fastify) => {
-  // ── GET /v1/health/live ────────────────────────────────────────────────────
-  // Liveness probe - always returns 200 if server is running
-  // Used by Railway/K8s to know if container should be restarted
   fastify.get("/live", async (request) => {
     const response: LivenessStatusResponse = {
       status: "ok",
@@ -46,16 +39,10 @@ const healthRoutes: FastifyPluginAsync = async (fastify) => {
     return response;
   });
 
-  // ── GET /v1/health & /v1/health/ready ──────────────────────────────────────
-  // Readiness probe - returns 200 if app can serve traffic
-  // Returns 503 if database or redis is down
-  // Used by Railway/K8s to know if traffic should be routed to this instance
   const readinessHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     const env = loadApiEnv();
     let database: HealthStatusResponse["services"]["database"] = "connected";
-    let redis: HealthStatusResponse["services"]["redis"] = fastify.redis
-      ? "configured"
-      : "disabled";
+    let redis: HealthStatusResponse["services"]["redis"] = fastify.redis ? "configured" : "disabled";
     let queues: HealthStatusResponse["services"]["queues"] = null;
 
     try {
@@ -94,8 +81,7 @@ const healthRoutes: FastifyPluginAsync = async (fastify) => {
         firebaseAuth: env.FIREBASE_PROJECT_ID ? "configured" : "pending",
         bunnyStream: fastify.bunny.libraryId ? "configured" : "pending"
       },
-      policy:
-        "WebSockets remain opt-in. Readiness requires the database and configured infrastructure to respond."
+      policy: "WebSockets remain opt-in. Readiness requires the database and configured infrastructure to respond."
     };
 
     void reply.status(status === "ok" ? 200 : 503);

@@ -3,13 +3,8 @@
 @tailwind utilities;
 
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
   .scroll-snap-x {
     overflow-x: auto;
@@ -17,9 +12,7 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
   }
-  .scroll-snap-x > * {
-    scroll-snap-align: start;
-  }
+  .scroll-snap-x > * { scroll-snap-align: start; }
 
   .btn-primary {
     @apply bg-[#D4AF37] text-[#0F1C15] font-bold uppercase tracking-widest text-sm px-5 py-2.5 rounded-lg transition-all duration-300 hover:bg-[#FCD34D] hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2 active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap;
@@ -45,24 +38,24 @@
 
 :root {
   /* Fluid typography scale */
-  --text-fluid-sm: clamp(0.875rem, 0.82rem + 0.18vw, 1rem);
-  --text-fluid-base: clamp(1rem, 0.93rem + 0.23vw, 1.125rem);
-  --text-fluid-lg: clamp(1.125rem, 1.03rem + 0.33vw, 1.25rem);
-  --text-fluid-xl: clamp(1.25rem, 1.07rem + 0.6vw, 1.5rem);
-  --text-fluid-2xl: clamp(1.5rem, 1.24rem + 0.87vw, 1.875rem);
-  --text-fluid-3xl: clamp(1.875rem, 1.5rem + 1.25vw, 2.25rem);
-  --text-fluid-4xl: clamp(2.25rem, 1.72rem + 1.77vw, 3rem);
-  --text-fluid-5xl: clamp(3rem, 2.21rem + 2.63vw, 4rem);
-  --text-fluid-hero: clamp(2rem, 0.95rem + 3.5vw, 4.5rem);
+  --text-fluid-sm:      clamp(0.875rem, 0.82rem + 0.18vw, 1rem);
+  --text-fluid-base:    clamp(1rem, 0.93rem + 0.23vw, 1.125rem);
+  --text-fluid-lg:      clamp(1.125rem, 1.03rem + 0.33vw, 1.25rem);
+  --text-fluid-xl:      clamp(1.25rem, 1.07rem + 0.6vw, 1.5rem);
+  --text-fluid-2xl:     clamp(1.5rem, 1.24rem + 0.87vw, 1.875rem);
+  --text-fluid-3xl:     clamp(1.875rem, 1.5rem + 1.25vw, 2.25rem);
+  --text-fluid-4xl:     clamp(2.25rem, 1.72rem + 1.77vw, 3rem);
+  --text-fluid-5xl:     clamp(3rem, 2.21rem + 2.63vw, 4rem);
+  --text-fluid-hero:    clamp(2rem, 0.95rem + 3.5vw, 4.5rem);
   --text-fluid-display: clamp(3rem, 1.42rem + 5.26vw, 6rem);
 
   /* Fluid spacing scale */
-  --space-fluid-xs: clamp(0.5rem, 0.41rem + 0.3vw, 0.75rem);
-  --space-fluid-sm: clamp(0.75rem, 0.62rem + 0.44vw, 1rem);
-  --space-fluid-md: clamp(1rem, 0.74rem + 0.87vw, 1.5rem);
-  --space-fluid-lg: clamp(1.5rem, 1.06rem + 1.45vw, 2.5rem);
-  --space-fluid-xl: clamp(2rem, 1.3rem + 2.34vw, 3.5rem);
-  --space-fluid-2xl: clamp(3rem, 1.77rem + 4.1vw, 5rem);
+  --space-fluid-xs:      clamp(0.5rem, 0.41rem + 0.3vw, 0.75rem);
+  --space-fluid-sm:      clamp(0.75rem, 0.62rem + 0.44vw, 1rem);
+  --space-fluid-md:      clamp(1rem, 0.74rem + 0.87vw, 1.5rem);
+  --space-fluid-lg:      clamp(1.5rem, 1.06rem + 1.45vw, 2.5rem);
+  --space-fluid-xl:      clamp(2rem, 1.3rem + 2.34vw, 3.5rem);
+  --space-fluid-2xl:     clamp(3rem, 1.77rem + 4.1vw, 5rem);
   --space-fluid-section: clamp(2rem, 1.12rem + 2.92vw, 4rem);
 
   --bg: #f2efe6;
@@ -84,39 +77,34 @@
 }
 
 html {
-  background: radial-gradient(circle at top left, rgba(184, 144, 74, 0.18), transparent 28rem),
-    radial-gradient(circle at top right, rgba(34, 71, 133, 0.14), transparent 26rem), var(--bg);
+  background:
+    radial-gradient(circle at top left, rgba(184, 144, 74, 0.18), transparent 28rem),
+    radial-gradient(circle at top right, rgba(34, 71, 133, 0.14), transparent 26rem),
+    var(--bg);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   color: var(--text);
-  font-family: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 12rem),
-    radial-gradient(circle at 20% 20%, rgba(94, 107, 60, 0.08), transparent 22rem), var(--bg);
+  font-family: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 12rem),
+    radial-gradient(circle at 20% 20%, rgba(94, 107, 60, 0.08), transparent 22rem),
+    var(--bg);
 }
 
 .font-rajdhani {
   font-family: var(--font-rajdhani), "Rajdhani", sans-serif;
 }
 
-h1,
-h2,
-h3,
-h4,
-.brand-text {
+h1, h2, h3, h4, .brand-text {
   /* Scope specific brand fonts in individual components or use Tailwind class */
 }
 
 @keyframes scaleXIn {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 .animate-scale-x-in {
@@ -251,7 +239,8 @@ ul {
   position: relative;
   overflow: hidden;
   padding: 2.5rem;
-  background: radial-gradient(circle at top right, rgba(184, 144, 74, 0.28), transparent 18rem),
+  background:
+    radial-gradient(circle at top right, rgba(184, 144, 74, 0.28), transparent 18rem),
     linear-gradient(140deg, rgba(19, 23, 19, 0.94), rgba(34, 47, 34, 0.88));
   color: #f7f3eb;
 }

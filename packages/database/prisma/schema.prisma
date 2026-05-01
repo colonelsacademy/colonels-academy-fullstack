@@ -10,14 +10,7 @@ datasource db {
 enum UserRole {
   STUDENT
   INSTRUCTOR
-  DS
   ADMIN
-}
-
-enum ProgressStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
 }
 
 enum EnrollmentStatus {
@@ -32,31 +25,6 @@ enum LessonAccessKind {
   STANDARD
   LIVE_REPLAY
   DOWNLOADABLE
-}
-
-enum ContentType {
-  VIDEO
-  PDF
-  LIVE
-  QUIZ
-  TEXT
-}
-
-enum LessonLearningMode {
-  LESSON
-  PRACTICE
-  QUIZ
-  LIVE
-  FEEDBACK
-  RESOURCE
-}
-
-enum SubjectArea {
-  TACTICS_ADMIN
-  CURRENT_AFFAIRS
-  MILITARY_HISTORY_STRATEGY
-  APPRECIATION_PLANS
-  LECTURETTE
 }
 
 enum VideoAssetStatus {
@@ -81,89 +49,16 @@ enum OrderStatus {
   REFUNDED
 }
 
-enum StudySessionSource {
-  WEB
-  MOBILE
-  MANUAL
-}
-
-enum SubmissionType {
-  LECTURETTE
-  ESSAY
-  APPRECIATION_PLAN
-}
-
-enum SubmissionStatus {
-  SUBMITTED
-  REVIEWED
-  REVISION_REQUESTED
-}
-
-enum MilestoneCompletionStatus {
-  PENDING_REVIEW
-  PASSED
-}
-
-enum PaymentMethod {
-  ESEWA
-  KHALTI
-  BANK_TRANSFER
-  MANUAL
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-}
-
-enum BundleType {
-  STANDARD
-  PREMIUM
-}
-
 model User {
-  id                   String                     @id @default(cuid())
-  firebaseUid          String                     @unique
-  email                String?                    @unique
-  displayName          String?
-  role                 UserRole                   @default(STUDENT)
-  createdAt            DateTime                   @default(now())
-  updatedAt            DateTime                   @updatedAt
-  enrollments          Enrollment[]
-  orders               PurchaseOrder[]
-  progress             UserProgress[]
-  cadetIqMockResults   CadetIqMockResult[]
-  quizSessions         QuizSession[]
-  quizAttempts         QuizAttempt[]
-  studySessions        StudySession[]
-  milestoneCompletions PhaseMilestoneCompletion[]
-  milestoneApprovals   PhaseMilestoneCompletion[] @relation("MilestoneApprovals")
-  submissions          LessonSubmission[]
-  reviewedSubmissions  LessonSubmission[]         @relation("SubmissionReviews")
-  // NEW: Chapter-based purchases
-  chapterPurchases     ChapterPurchase[]
-  bundlePurchases      BundlePurchase[]
-  chapterProgress      ChapterProgress[]
-  chapterAchievements  ChapterAchievement[]
-}
-
-/// Cadet IQ / mock assessment attempts (stored in Postgres; replaces legacy Firestore collection).
-model CadetIqMockResult {
-  id         String   @id @default(cuid())
-  userId     String
-  score      Int?
-  totalMarks Int?
-  timeTaken  Int?
-  passed     Boolean?
-  answers    Json     @default("{}")
-  isCleared  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isCleared, createdAt(sort: Desc)])
+  id          String       @id @default(cuid())
+  firebaseUid String       @unique
+  email       String?      @unique
+  displayName String?
+  role        UserRole     @default(STUDENT)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  enrollments Enrollment[]
+  orders      PurchaseOrder[]
 }
 
 model Instructor {
@@ -181,72 +76,28 @@ model Instructor {
 }
 
 model Course {
-  id                   String                     @id @default(cuid())
-  slug                 String                     @unique
-  title                String
-  track                String
-  summary              String
-  description          String                     @db.Text
-  level                String
-  durationLabel        String
-  lessonCount          Int
-  priceNpr             Int
-  originalPriceNpr     Int?
-  accentColor          String
-  heroImageUrl         String?
-  isFeatured           Boolean                    @default(false)
-  isComingSoon         Boolean                    @default(false)
-  isHidden             Boolean                    @default(false) // Hide from public but keep in database
-  assessmentWeighting  Json?
-  createdAt            DateTime                   @default(now())
-  updatedAt            DateTime                   @updatedAt
-  instructorLinks      CourseInstructor[]
-  modules              Module[]
-  lessons              Lesson[]
-  enrollments          Enrollment[]
-  liveSessions         LiveSession[]
-  videoAssets          VideoAsset[]
-  orderItems           PurchaseOrderItem[]
-  userProgress         UserProgress[]
-  quizSessions         QuizSession[]
-  quizAttempts         QuizAttempt[]
-  studySessions        StudySession[]
-  phaseMilestones      PhaseMilestone[]
-  milestoneCompletions PhaseMilestoneCompletion[]
-  submissions          LessonSubmission[]
-  // NEW: Chapter-based purchases
-  chapterPurchases     ChapterPurchase[]
-  bundleOffers         CourseBundleOffer[]
-  bundlePurchases      BundlePurchase[]
-  chapterProgress      ChapterProgress[]
-  chapterAchievements  ChapterAchievement[]
-}
-
-model Module {
-  id                 String            @id @default(cuid())
-  courseId           String
-  phaseNumber        Int?
-  subjectArea        SubjectArea?
-  componentCode      String?
-  componentLabel     String?
-  title              String
-  position           Int
-  // NEW: Chapter-based pricing
-  chapterNumber      Int?
-  chapterPrice       Int?
-  isLocked           Boolean           @default(false)
-  isFreeIntro        Boolean           @default(false) // Free introduction module
-  completionCriteria Json?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  course             Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons            Lesson[]
-  chapterPurchases   ChapterPurchase[]
-  chapterProgress    ChapterProgress[]
-
-  @@unique([courseId, position])
-  @@index([courseId, chapterNumber])
-  @@index([courseId, isFreeIntro])
+  id               String             @id @default(cuid())
+  slug             String             @unique
+  title            String
+  track            String
+  summary          String
+  description      String             @db.Text
+  level            String
+  durationLabel    String
+  lessonCount      Int
+  priceNpr         Int
+  originalPriceNpr Int?
+  accentColor      String
+  heroImageUrl     String?
+  isFeatured       Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  instructorLinks  CourseInstructor[]
+  lessons          Lesson[]
+  enrollments      Enrollment[]
+  liveSessions     LiveSession[]
+  videoAssets      VideoAsset[]
+  orderItems       PurchaseOrderItem[]
 }
 
 model CourseInstructor {
@@ -260,151 +111,21 @@ model CourseInstructor {
 }
 
 model Lesson {
-  id               String             @id @default(cuid())
-  courseId         String
-  moduleId         String?
-  prerequisiteId   String? // The lesson that must be COMPLETED before this one
-  phaseNumber      Int?
-  subjectArea      SubjectArea?
-  componentCode    String?
-  componentLabel   String?
-  title            String
-  synopsis         String
-  position         Int
-  durationMinutes  Int?
-  contentType      ContentType        @default(VIDEO)
-  learningMode     LessonLearningMode @default(LESSON)
-  accessKind       LessonAccessKind   @default(STANDARD)
-  bunnyVideoId     String?
-  videoAssetId     String?
-  meetingUrl       String?
-  pdfUrl           String?
-  lessonContent    Json?
-  // NEW: Progress tracking
-  isRequired       Boolean            @default(true)
-  completionWeight Int                @default(1)
-  referencePages   String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  course           Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  module           Module?            @relation(fields: [moduleId], references: [id], onDelete: SetNull)
-  videoAsset       VideoAsset?        @relation(fields: [videoAssetId], references: [id])
-  quizQuestions    QuizQuestion[]
-  prerequisite     Lesson?            @relation("LessonPrerequisite", fields: [prerequisiteId], references: [id], onDelete: SetNull)
-  dependants       Lesson[]           @relation("LessonPrerequisite")
-  userProgress     UserProgress[]
-  quizAttempts     QuizAttempt[]
-  studySessions    StudySession[]
-  submissions      LessonSubmission[]
+  id              String           @id @default(cuid())
+  courseId        String
+  title           String
+  synopsis        String
+  position        Int
+  durationMinutes Int?
+  accessKind      LessonAccessKind @default(STANDARD)
+  bunnyVideoId    String?
+  videoAssetId    String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  videoAsset      VideoAsset?      @relation(fields: [videoAssetId], references: [id])
 
   @@unique([courseId, position])
-}
-
-model StudySession {
-  id              String             @id @default(cuid())
-  userId          String
-  courseId        String
-  lessonId        String?
-  source          StudySessionSource @default(WEB)
-  deviceSessionId String?
-  startedAt       DateTime           @default(now())
-  endedAt         DateTime?
-  heartbeatAt     DateTime?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course          Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lesson          Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-
-  @@index([userId, courseId])
-  @@index([courseId, startedAt])
-  @@index([userId, endedAt])
-}
-
-model PhaseMilestone {
-  id          String                     @id @default(cuid())
-  courseId    String
-  phaseNumber Int
-  slug        String
-  title       String
-  description String
-  criteria    Json
-  createdAt   DateTime                   @default(now())
-  updatedAt   DateTime                   @updatedAt
-  course      Course                     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  completions PhaseMilestoneCompletion[]
-
-  @@unique([courseId, phaseNumber])
-  @@unique([courseId, slug])
-}
-
-model PhaseMilestoneCompletion {
-  id               String                    @id @default(cuid())
-  milestoneId      String
-  userId           String
-  courseId         String
-  status           MilestoneCompletionStatus @default(PENDING_REVIEW)
-  passedAt         DateTime?
-  approvedByUserId String?
-  notes            String?
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
-  milestone        PhaseMilestone            @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  user             User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course           Course                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  approver         User?                     @relation("MilestoneApprovals", fields: [approvedByUserId], references: [id], onDelete: SetNull)
-
-  @@unique([userId, milestoneId])
-  @@index([userId, courseId])
-  @@index([courseId, status])
-}
-
-model LessonSubmission {
-  id               String           @id @default(cuid())
-  userId           String
-  courseId         String
-  lessonId         String?
-  phaseNumber      Int?
-  subjectArea      SubjectArea?
-  submissionType   SubmissionType
-  title            String
-  body             String?          @db.Text
-  assetUrl         String?
-  status           SubmissionStatus @default(SUBMITTED)
-  score            Int?
-  maxScore         Int?
-  rubricScores     Json?
-  reviewNotes      String?          @db.Text
-  submittedAt      DateTime         @default(now())
-  reviewedAt       DateTime?
-  reviewedByUserId String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course           Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lesson           Lesson?          @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  reviewer         User?            @relation("SubmissionReviews", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
-
-  @@index([userId, courseId])
-  @@index([courseId, status])
-  @@index([courseId, phaseNumber, subjectArea])
-}
-
-model QuizQuestion {
-  id                 String        @id @default(cuid())
-  lessonId           String
-  question           String
-  options            Json
-  correctOptionIndex Int
-  explanation        String?
-  position           Int
-  difficulty         Int           @default(1) // 1–5 scale
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  lesson             Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  attempts           QuizAttempt[]
-
-  @@unique([lessonId, position])
 }
 
 model Enrollment {
@@ -477,205 +198,4 @@ model PurchaseOrderItem {
   createdAt DateTime      @default(now())
   order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   course    Course        @relation(fields: [courseId], references: [id], onDelete: Restrict)
-}
-
-model UserProgress {
-  id          String         @id @default(cuid())
-  userId      String
-  lessonId    String
-  courseId    String
-  status      ProgressStatus @default(NOT_STARTED)
-  startedAt   DateTime?
-  completedAt DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, lessonId])
-  @@index([userId, courseId])
-}
-
-enum QuizSessionKind {
-  PRACTICE
-  WEEKLY_DRILL
-  MOCK_EXAM
-}
-
-model QuizSession {
-  id         String          @id @default(cuid())
-  userId     String
-  courseId   String
-  kind       QuizSessionKind @default(PRACTICE)
-  startedAt  DateTime        @default(now())
-  finishedAt DateTime?
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course     Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  attempts   QuizAttempt[]
-
-  @@index([userId, courseId])
-}
-
-model QuizAttempt {
-  id                  String   @id @default(cuid())
-  userId              String
-  questionId          String
-  lessonId            String
-  courseId            String
-  sessionId           String? // nullable — standalone practice attempts need no session
-  selectedOptionIndex Int
-  isCorrect           Boolean
-  timeTakenMs         Int
-  difficultySnapshot  Int // value of QuizQuestion.difficulty at attempt time
-  attemptedAt         DateTime @default(now())
-
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  lesson   Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  course   Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  session  QuizSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-
-  @@index([userId, courseId])
-  @@index([userId, lessonId])
-}
-
-// ============================================
-// CHAPTER-BASED PURCHASE SYSTEM
-// ============================================
-
-model ChapterPurchase {
-  id            String        @id @default(cuid())
-  userId        String
-  courseId      String
-  moduleId      String
-  chapterNumber Int
-  amount        Int // NPR
-  paymentMethod PaymentMethod
-  paymentStatus PaymentStatus @default(PENDING)
-  transactionId String?
-  isBundle      Boolean       @default(false)
-  bundleId      String?
-  purchaseDate  DateTime      @default(now())
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  module Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  bundle BundlePurchase? @relation(fields: [bundleId], references: [id], onDelete: SetNull)
-
-  @@unique([userId, moduleId])
-  @@index([userId, courseId])
-  @@index([courseId, chapterNumber])
-  @@index([paymentStatus])
-}
-
-model CourseBundleOffer {
-  id                   String     @id @default(cuid())
-  courseId             String
-  bundleType           BundleType
-  title                String
-  description          String     @db.Text
-  includedChapters     Json // Array of chapter numbers [1,2,3,4,5]
-  originalPrice        Int // Sum of individual chapter prices
-  bundlePrice          Int // Discounted price
-  discount             Int // NPR amount saved
-  includesMentorAccess Boolean    @default(false)
-  includesMockExams    Boolean    @default(false)
-  includesCertificate  Boolean    @default(false)
-  includesLiveClasses  Boolean    @default(false)
-  mockExamCount        Int? // Number of mock exams included
-  liveClassCount       Int? // Number of live classes included
-  isActive             Boolean    @default(true)
-  validFrom            DateTime   @default(now())
-  validUntil           DateTime?
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
-
-  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  purchases BundlePurchase[]
-
-  @@index([courseId, isActive])
-  @@index([bundleType])
-}
-
-model BundlePurchase {
-  id               String        @id @default(cuid())
-  userId           String
-  bundleOfferId    String
-  courseId         String
-  amount           Int // NPR
-  paymentMethod    PaymentMethod
-  paymentStatus    PaymentStatus @default(PENDING)
-  transactionId    String?
-  chaptersUnlocked Json // Array of chapter numbers unlocked
-  purchaseDate     DateTime      @default(now())
-  unlockDate       DateTime      @default(now())
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bundleOffer      CourseBundleOffer @relation(fields: [bundleOfferId], references: [id], onDelete: Cascade)
-  course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  chapterPurchases ChapterPurchase[]
-
-  @@unique([userId, bundleOfferId])
-  @@index([userId, courseId])
-  @@index([paymentStatus])
-}
-
-model ChapterProgress {
-  id                      String    @id @default(cuid())
-  userId                  String
-  courseId                String
-  moduleId                String
-  chapterNumber           Int
-  lessonsCompleted        Int       @default(0)
-  totalLessons            Int
-  videosWatched           Int       @default(0)
-  totalVideos             Int
-  quizzesCompleted        Int       @default(0)
-  totalQuizzes            Int
-  assignmentsSubmitted    Int       @default(0)
-  totalAssignments        Int
-  completionPercentage    Float     @default(0)
-  isChapterCompleted      Boolean   @default(false)
-  completionDate          DateTime?
-  allVideosWatched        Boolean   @default(false)
-  allQuizzesPassed        Boolean   @default(false)
-  allAssignmentsSubmitted Boolean   @default(false)
-  chapterAssessmentPassed Boolean   @default(false)
-  nextChapterUnlocked     Boolean   @default(false)
-  unlockedDate            DateTime?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, moduleId])
-  @@index([userId, courseId])
-  @@index([courseId, chapterNumber])
-}
-
-model ChapterAchievement {
-  id              String   @id @default(cuid())
-  userId          String
-  courseId        String
-  chapterNumber   Int
-  achievementType String // "CHAPTER_COMPLETED", "PERFECT_SCORE", "FAST_COMPLETION"
-  title           String
-  description     String
-  badgeIcon       String?
-  earnedDate      DateTime @default(now())
-  createdAt       DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@index([userId, courseId])
-  @@index([courseId, chapterNumber])
 }

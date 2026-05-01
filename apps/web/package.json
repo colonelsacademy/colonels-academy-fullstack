@@ -3,26 +3,23 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "next dev --turbo",
-    "build": "pnpm --filter @colonels-academy/database run db:generate && next build",
-    "start": "pnpm --filter @colonels-academy/database run db:push && pnpm --filter @colonels-academy/database run db:seed && next start -p ${PORT:-3000} -H 0.0.0.0",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@colonels-academy/api-client": "workspace:*",
+    "@colonels-academy/database": "workspace:*",
     "@colonels-academy/config": "workspace:*",
     "@colonels-academy/contracts": "workspace:*",
-    "@colonels-academy/database": "workspace:*",
     "@colonels-academy/ui": "workspace:*",
-    "@sentry/nextjs": "^10.50.0",
     "firebase": "^11.4.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
     "next": "^15.2.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "recharts": "^3.8.1",
-    "sonner": "^2.0.7"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5",

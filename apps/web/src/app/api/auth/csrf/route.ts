@@ -1,11 +1,11 @@
-import { API_BASE_URL } from "@/lib/apiClient";
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/apiClient";
 
 export async function GET() {
   try {
     const apiResponse = await fetch(`${API_BASE_URL}/v1/auth/csrf`, {
       method: "GET",
-      cache: "no-store"
+      cache: "no-store",
     });
 
     if (!apiResponse.ok) {
@@ -18,9 +18,9 @@ export async function GET() {
 
     // Forward Set-Cookie headers from Fastify to the browser
     const setCookieHeaders = apiResponse.headers.getSetCookie();
-    for (const cookie of setCookieHeaders) {
+    setCookieHeaders.forEach((cookie) => {
       response.headers.append("Set-Cookie", cookie);
-    }
+    });
 
     return response;
   } catch (error) {

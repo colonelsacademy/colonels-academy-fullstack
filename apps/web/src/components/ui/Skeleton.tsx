@@ -1,13 +1,13 @@
 interface SkeletonProps {
   className?: string;
-  variant?: "rectangle" | "circle" | "text";
+  variant?: 'rectangle' | 'circle' | 'text';
 }
 
-const Skeleton = ({ className = "", variant = "rectangle" }: SkeletonProps) => {
+const Skeleton = ({ className = '', variant = 'rectangle' }: SkeletonProps) => {
   const variantClasses = {
-    rectangle: "rounded-lg",
-    circle: "rounded-full",
-    text: "rounded h-4"
+    rectangle: 'rounded-lg',
+    circle: 'rounded-full',
+    text: 'rounded h-4',
   };
 
   return (

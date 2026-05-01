@@ -2,7 +2,7 @@
 
 export default function AdminError({
   error,
-  reset
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -16,7 +16,6 @@ export default function AdminError({
         <h2 className="section-title mt-2">Could not load admin panel</h2>
         <p className="text-gray-500 mt-2 text-sm">{error.message}</p>
         <button
-          type="button"
           onClick={reset}
           className="mt-6 px-6 py-2.5 bg-[#0F1C15] text-white font-['Rajdhani'] font-bold text-sm uppercase tracking-[0.2em] rounded-lg hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-all"
         >

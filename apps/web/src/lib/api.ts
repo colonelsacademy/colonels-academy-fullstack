@@ -1,18 +1,12 @@
 import { createApiClient } from "@colonels-academy/api-client";
-import { getAssetUrl, readPublicWebEnv } from "@colonels-academy/config";
 import {
-  courseCatalog,
-  dashboardSnapshot,
-  instructors as fallbackInstructors
+  type CatalogCoursesResponse,
+  type CatalogInstructorsResponse,
+  type DashboardOverviewResponse,
+  type CourseDetail,
+  type InstructorProfile,
 } from "@colonels-academy/contracts";
-import type {
-  CatalogCoursesResponse,
-  CatalogInstructorsResponse,
-  CourseDetail,
-  DashboardOverviewResponse,
-  EnrolledCourse,
-  InstructorProfile
-} from "@colonels-academy/contracts";
+import { readPublicWebEnv } from "@colonels-academy/config";
 
 const API_BASE_URL =
   process.env.API_BASE_URL ??
@@ -21,117 +15,29 @@ const API_BASE_URL =
 
 const apiClient = createApiClient({
   baseUrl: API_BASE_URL,
-  fetcher: (input, init) => {
-    // next: { revalidate } is a server-only Next.js option - strip it on the client
-    const { next, ...restInit } = init ?? {};
-    const options =
-      typeof window === "undefined"
-        ? { ...restInit, next: { revalidate: next?.revalidate ?? 60 } }
-        : { ...restInit, cache: "no-store" as RequestCache };
-    return fetch(input, options);
-  }
+  fetcher: (input, init) =>
+    fetch(input, {
+      ...init,
+      next: {
+        revalidate: init?.next?.revalidate ?? 60,
+      },
+    }),
 });
 
 export async function getCourses(): Promise<CourseDetail[]> {
-  try {
-    const data: CatalogCoursesResponse = await apiClient.getCourses();
-    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
-    return data.items.map((course) => ({
-      ...course,
-      ...(course.heroImageUrl ? { heroImageUrl: getAssetUrl(course.heroImageUrl, cdnUrl) } : {})
-    }));
-  } catch (error) {
-    console.error("Failed to fetch courses, using fallback:", error);
-    return courseCatalog;
-  }
+  const data: CatalogCoursesResponse = await apiClient.getCourses();
+  return data.items;
 }
 
 export async function getCourseBySlug(slug: string): Promise<CourseDetail | null> {
-  try {
-    // On the client, go through the Next.js proxy to avoid CORS/network issues
-    if (typeof window !== "undefined") {
-      const res = await fetch(`/api/catalog/courses/${slug}`, { cache: "no-store" });
-      if (!res.ok) return courseCatalog.find((c) => c.slug === slug) ?? null;
-      return await res.json();
-    }
-    const course = await apiClient.getCourseBySlug(slug);
-    if (!course) return null;
-    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
-    return {
-      ...course,
-      ...(course.heroImageUrl ? { heroImageUrl: getAssetUrl(course.heroImageUrl, cdnUrl) } : {})
-    };
-  } catch (error) {
-    console.error(`Failed to fetch course ${slug}, using fallback:`, error);
-    return courseCatalog.find((c) => c.slug === slug) ?? null;
-  }
+  return apiClient.getCourseBySlug(slug);
 }
 
 export async function getInstructors(): Promise<InstructorProfile[]> {
-  try {
-    const data: CatalogInstructorsResponse = await apiClient.getInstructors();
-    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
-    return data.items.map((instructor) => ({
-      ...instructor,
-      ...(instructor.avatarUrl ? { avatarUrl: getAssetUrl(instructor.avatarUrl, cdnUrl) } : {})
-    }));
-  } catch (error) {
-    console.error("Failed to fetch instructors, using fallback:", error);
-    return fallbackInstructors;
-  }
+  const data: CatalogInstructorsResponse = await apiClient.getInstructors();
+  return data.items;
 }
 
 export async function getDashboardOverview(): Promise<DashboardOverviewResponse> {
-  try {
-    return await apiClient.getDashboardOverview();
-  } catch (error) {
-    console.error("Failed to fetch dashboard overview, using fallback:", error);
-    return {
-      authenticated: false,
-      user: null,
-      overview: {
-        progressPercent: dashboardSnapshot.progressPercent,
-        enrolledCourses: dashboardSnapshot.enrolledCourses,
-        upcomingSessionCount: dashboardSnapshot.upcomingSessionCount,
-        pendingTasks: dashboardSnapshot.pendingTasks,
-        completionTarget: dashboardSnapshot.completionTarget
-      },
-      note: "Data is currently served from the local starter snapshot (API unreachable)."
-    };
-  }
-}
-
-export async function getEnrollments(): Promise<EnrolledCourse[]> {
-  try {
-    let res: Response;
-
-    if (typeof window !== "undefined") {
-      // Client-side: cookies sent automatically
-      res = await fetch("/api/learning/enrollments", {
-        credentials: "include",
-        cache: "no-store"
-      });
-    } else {
-      // Server-side: manually forward the session cookie
-      const { cookies } = await import("next/headers");
-      const cookieStore = await cookies();
-      const sessionCookie = cookieStore.get("ca_session");
-
-      res = await fetch(`${API_BASE_URL}/v1/learning/enrollments`, {
-        cache: "no-store",
-        headers: sessionCookie ? { Cookie: `ca_session=${sessionCookie.value}` } : {}
-      });
-    }
-
-    if (!res.ok) return [];
-    const data = await res.json();
-    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
-    return (data.items ?? []).map((e: EnrolledCourse) => ({
-      ...e,
-      ...(e.heroImageUrl ? { heroImageUrl: getAssetUrl(e.heroImageUrl, cdnUrl) } : {})
-    }));
-  } catch (error) {
-    console.error("Failed to fetch enrollments:", error);
-    return [];
-  }
+  return apiClient.getDashboardOverview();
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import type { AuthSessionUser } from "@colonels-academy/contracts";
-import type React from "react";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { type AuthSessionUser } from "@colonels-academy/contracts";
 
 interface AuthContextType {
   user: AuthSessionUser | null;
@@ -65,9 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          [headerName]: token
+          [headerName]: token,
         },
-        body: JSON.stringify({ idToken })
+        body: JSON.stringify({ idToken }),
       });
 
       // Retry once if 403 (possibly stale CSRF token)
@@ -80,9 +79,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            [headerName]: token
+            [headerName]: token,
           },
-          body: JSON.stringify({ idToken })
+          body: JSON.stringify({ idToken }),
         });
       }
 
@@ -109,8 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let res = await fetch("/api/auth/session-logout", {
         method: "POST",
         headers: {
-          [headerName]: token
-        }
+          [headerName]: token,
+        },
       });
 
       // Retry once if 403
@@ -122,8 +121,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         res = await fetch("/api/auth/session-logout", {
           method: "POST",
           headers: {
-            [headerName]: token
-          }
+            [headerName]: token,
+          },
         });
       }
 
@@ -148,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authenticated,
         login,
         logout,
-        refresh: fetchSession
+        refresh: fetchSession,
       }}
     >
       {children}

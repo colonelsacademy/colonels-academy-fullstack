@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { getOptimizedResponsiveImageUrl } from "@colonels-academy/config";
-import type React from "react";
+import React from 'react';
+import { getOptimizedResponsiveImageUrl } from '@/utils/assetUtils';
 
 const DEFAULT_WIDTHS = [640, 1080, 1600, 2560];
 
@@ -12,7 +12,7 @@ interface ResponsiveImageProps extends React.ImgHTMLAttributes<HTMLImageElement>
   widths?: number[];
   fallbackWidth?: number;
   sizes?: string;
-  fetchPriority?: "high" | "low" | "auto";
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
@@ -21,36 +21,33 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   quality = 80,
   widths = DEFAULT_WIDTHS,
   fallbackWidth,
-  sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 75vw, 50vw",
-  loading = "lazy",
+  sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 75vw, 50vw',
+  loading = 'lazy',
   decoding,
   ...rest
 }) => {
-  const effectiveDecoding = decoding ?? (loading === "eager" ? "auto" : "async");
+  const effectiveDecoding = decoding ?? (loading === 'eager' ? 'auto' : 'async');
   const normalizedWidths = Array.from(new Set(widths)).sort((a, b) => a - b);
-  const CDN_URL = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
-  const buildUrl = (width: number) =>
-    getOptimizedResponsiveImageUrl(src, { width, quality }, CDN_URL);
+  const buildUrl = (width: number) => getOptimizedResponsiveImageUrl(src, { width, quality });
 
   const variants = normalizedWidths.map((width) => ({ width, url: buildUrl(width) }));
   const uniqueUrls = new Set(variants.map((v) => v.url));
   const fallbackTarget = fallbackWidth ?? 1600;
-  const fallbackVariant =
-    variants.find((v) => v.width >= fallbackTarget) ?? variants[variants.length - 1];
+  const fallbackVariant = variants.find((v) => v.width >= fallbackTarget) ?? variants[variants.length - 1];
   const fallbackSrc = fallbackVariant?.url ?? src;
-  const srcSet =
-    uniqueUrls.size > 1 ? variants.map((v) => `${v.url} ${v.width}w`).join(", ") : undefined;
+  const srcSet = uniqueUrls.size > 1
+    ? variants.map((v) => `${v.url} ${v.width}w`).join(', ')
+    : undefined;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    // biome-ignore lint/a11y/useAltText: alt is a required prop enforced by the interface
     <img
       src={fallbackSrc}
       srcSet={srcSet}
       sizes={srcSet ? sizes : undefined}
       alt={alt}
       loading={loading}
-      decoding={effectiveDecoding as "auto" | "async" | "sync"}
+      decoding={effectiveDecoding as 'auto' | 'async' | 'sync'}
       {...rest}
     />
   );

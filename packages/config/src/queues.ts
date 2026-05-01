@@ -1,9 +1,6 @@
 export const queueNames = {
   videoSync: "video-sync",
-  notifications: "notifications",
-  progressRecalc: "progress-recalc",
-  quizMastery: "quiz-mastery",
-  studySessionReconcile: "study-session-reconcile"
+  notifications: "notifications"
 } as const;
 
 export const defaultJobOptions = {
