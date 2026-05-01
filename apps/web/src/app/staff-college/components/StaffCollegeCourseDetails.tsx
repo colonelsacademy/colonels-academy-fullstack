@@ -178,7 +178,7 @@ export const StaffCollegeCourseDetails = ({ course, faculty }: StaffCollegeCours
         </div>
 
         {/* Course Content */}
-        <CourseContentAccordion syllabusTitleList={course.syllabus} />
+        <CourseContentAccordion course={course} />
 
         {/* Requirements */}
         <div>

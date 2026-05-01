@@ -644,7 +644,6 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
               <BunnyVideoPicker
                 value={form.bunnyVideoId}
                 onChange={(id, title, duration) => {
-                  console.log("BunnyVideoPicker onChange called:", { id, title, duration });
                   setForm((p) => {
                     const newForm = {
                       ...p,
@@ -652,7 +651,6 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                       title: p.title || title || "Untitled Lesson",
                       durationMinutes: duration > 0 ? String(duration) : p.durationMinutes
                     };
-                    console.log("Updated form state:", newForm);
                     return newForm;
                   });
                 }}

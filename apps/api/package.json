@@ -7,7 +7,10 @@
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "build": "pnpm --filter @colonels-academy/database run db:generate && tsup --config tsup.config.ts",
     "start": "pnpm --filter @colonels-academy/database run db:push && pnpm --filter @colonels-academy/database run db:seed:direct && node dist/index.cjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@colonels-academy/config": "workspace:*",
@@ -19,6 +22,8 @@
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/sensible": "^6.0.3",
     "@prisma/client": "^6.19.3",
+    "@sentry/node": "^10.50.0",
+    "@sentry/profiling-node": "^10.50.0",
     "bullmq": "^5.46.1",
     "fastify": "^5.2.1",
     "fastify-plugin": "^5.0.1",
@@ -27,8 +32,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
+    "@vitest/coverage-v8": "^2.1.8",
     "tsup": "^8.4.0",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
   }
 }

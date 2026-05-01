@@ -118,7 +118,7 @@ const GatewayHero = () => {
               </MagneticButton>
 
               <MagneticButton
-                onClick={() => router.push("/demo-class")}
+                onClick={() => router.push("/classroom/army-command-staff-2083")}
                 className="group w-full sm:w-auto px-8 py-5 bg-white/50 backdrop-blur-sm text-gray-900 border border-gray-200 rounded-xl font-bold text-base tracking-wider uppercase shadow-sm hover:shadow-md hover:bg-white flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
                 <PlayCircle className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />

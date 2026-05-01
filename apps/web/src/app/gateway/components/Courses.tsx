@@ -373,7 +373,7 @@ export const CourseSection = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <div className={`py-10 ${className}`}>
+  <div id="courses" className={`py-10 ${className}`}>
     <div className="mb-8 text-center max-w-3xl mx-auto">
       <h2 className="text-fluid-2xl font-bold text-gray-900 font-rajdhani uppercase tracking-tight">
         {title}
@@ -405,11 +405,11 @@ export const CourseFilter = ({ activeCategory, basePath = "/" }: CourseFilterPro
     const href =
       basePath === "/"
         ? queryString
-          ? `/?${queryString}`
-          : "/"
+          ? `/?${queryString}#courses`
+          : "/#courses"
         : queryString
-          ? `${basePath}?${queryString}`
-          : basePath;
+          ? `${basePath}?${queryString}#courses`
+          : `${basePath}#courses`;
     router.push(href, { scroll: false });
   };
 

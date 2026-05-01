@@ -87,6 +87,88 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
     };
   });
 
+  // ── GET /v1/catalog/courses/:slug/curriculum ───────────────────────────────
+  fastify.get<{ Params: { slug: string } }>("/courses/:slug/curriculum", async (request, reply) => {
+    const { slug } = request.params;
+
+    // Get course with modules and lessons
+    const course = await fastify.prisma.course.findUnique({
+      where: { slug },
+      include: {
+        modules: {
+          orderBy: { position: "asc" },
+          include: {
+            lessons: {
+              select: {
+                id: true,
+                title: true,
+                contentType: true,
+                durationMinutes: true,
+                accessKind: true,
+                position: true
+              },
+              orderBy: { position: "asc" }
+            }
+          }
+        }
+      }
+    });
+
+    if (!course) {
+      return reply.notFound("Course not found");
+    }
+
+    // Return modules with lessons
+    return {
+      modules: course.modules
+    };
+  });
+
+  // ── GET /v1/catalog/courses/:slug/lessons/:lessonId ────────────────────────
+  fastify.get<{ Params: { slug: string; lessonId: string } }>(
+    "/courses/:slug/lessons/:lessonId",
+    async (request, reply) => {
+      const { slug, lessonId } = request.params;
+
+      // Get the lesson with full details
+      const lesson = await fastify.prisma.lesson.findFirst({
+        where: {
+          id: lessonId,
+          module: {
+            course: {
+              slug
+            }
+          }
+        },
+        select: {
+          id: true,
+          title: true,
+          contentType: true,
+          durationMinutes: true,
+          accessKind: true,
+          position: true,
+          bunnyVideoId: true,
+          lessonContent: true
+        }
+      });
+
+      if (!lesson) {
+        return reply.notFound("Lesson not found");
+      }
+
+      // Return lesson with videoId in the expected format
+      return {
+        ...lesson,
+        lessonContent: {
+          ...(typeof lesson.lessonContent === 'object' && lesson.lessonContent !== null 
+            ? lesson.lessonContent 
+            : {}),
+          videoId: lesson.bunnyVideoId
+        }
+      };
+    }
+  );
+
   // ── GET /v1/catalog/courses/:slug/chapters ─────────────────────────────────
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/chapters", async (request, reply) => {
     const { slug } = request.params;

@@ -7,9 +7,9 @@ import StaffCollegeHero from "./components/StaffCollegeHero";
 import { StaffCollegeIntake } from "./components/StaffCollegeIntake";
 
 export default async function StaffCollegePage() {
-  // Fetch both the course and the faculty to feed into the course detail layout
+  // Fetch the Army Command Staff 2083 course (the real Staff College course)
   const [course, faculty] = await Promise.all([
-    getCourseBySlug("staff-college-command"),
+    getCourseBySlug("army-command-staff-2083"),
     getInstructors()
   ]);
   if (!course) {

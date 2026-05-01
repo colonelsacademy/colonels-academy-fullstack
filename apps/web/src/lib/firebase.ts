@@ -39,14 +39,19 @@ function attachAuthEmulator(auth: Auth) {
   // Check if emulator should be used
   const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
-  console.log("Firebase Emulator Config:", {
-    useEmulator,
-    envValue: process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR,
-    authEmulatorConnected
-  });
+  // Only log in development
+  if (process.env.NODE_ENV === "development") {
+    console.debug("Firebase Emulator Config:", {
+      useEmulator,
+      envValue: process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR,
+      authEmulatorConnected
+    });
+  }
 
   if (!useEmulator) {
-    console.log("Firebase emulator disabled - using production auth");
+    if (process.env.NODE_ENV === "development") {
+      console.debug("Firebase emulator disabled - using production auth");
+    }
     return;
   }
 
@@ -55,7 +60,9 @@ function attachAuthEmulator(auth: Auth) {
   }
 
   const url = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL ?? "http://127.0.0.1:9099";
-  console.log("Connecting to Firebase emulator at:", url);
+  if (process.env.NODE_ENV === "development") {
+    console.debug("Connecting to Firebase emulator at:", url);
+  }
   connectAuthEmulator(auth, url, { disableWarnings: true });
   authEmulatorConnected = true;
 }

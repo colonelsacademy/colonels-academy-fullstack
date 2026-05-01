@@ -110,7 +110,6 @@ function LoginForm() {
         throw new Error("Firebase is not configured.");
       }
 
-      console.log("Starting Google sign-in...");
       const provider = new GoogleAuthProvider();
 
       // Add additional scopes if needed
@@ -122,17 +121,14 @@ function LoginForm() {
         // Try popup first
         const result = await signInWithPopup(auth, provider);
         user = result.user;
-        console.log("Google sign-in successful via popup");
       } catch (popupError: unknown) {
         const firebaseErr = popupError as { code?: string; message?: string };
-        console.error("Popup error:", firebaseErr);
 
         // If popup is blocked, try redirect
         if (
           firebaseErr.code === "auth/popup-blocked" ||
           firebaseErr.code === "auth/popup-closed-by-user"
         ) {
-          console.log("Popup blocked, trying redirect...");
           await signInWithRedirect(auth, provider);
           return; // Exit here, redirect will handle the rest
         }
@@ -143,31 +139,24 @@ function LoginForm() {
         throw new Error("No user returned from sign-in");
       }
 
-      console.log("Getting ID token...");
       const token = await user.getIdToken();
-
-      console.log("Logging in with backend...");
       await login(token);
 
       // Check if trying to access admin route
       if (next.startsWith("/admin")) {
-        console.log("Checking admin access...");
         const sessionRes = await fetch("/api/auth/session");
         if (sessionRes.ok) {
           const sessionData = await sessionRes.json();
           if (sessionData.user?.role !== "ADMIN") {
-            console.log("Not an admin, redirecting to my-learning");
             router.push("/my-learning");
             return;
           }
         }
       }
 
-      console.log("Redirecting to:", next);
       router.push(next);
     } catch (err: unknown) {
       const firebaseErr = err as { code?: string; message?: string };
-      console.error("Google sign-in error:", firebaseErr);
 
       let errorMessage = "Sign-in failed. Please try again.";
 
