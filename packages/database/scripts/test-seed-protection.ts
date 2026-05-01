@@ -45,16 +45,16 @@ async function testSeedProtection() {
 
     // Show lesson distribution
     const lessonsByChapter: Record<string, number> = {};
-    course.lessons.forEach((lesson) => {
+    for (const lesson of course.lessons) {
       const chapter = course.modules.find((m) => m.id === lesson.moduleId);
       const key = chapter ? `Chapter ${chapter.chapterNumber}: ${chapter.title}` : "No Chapter";
       lessonsByChapter[key] = (lessonsByChapter[key] || 0) + 1;
-    });
+    }
 
     console.log("📊 Current Lesson Distribution:");
-    Object.entries(lessonsByChapter).forEach(([chapter, count]) => {
+    for (const [chapter, count] of Object.entries(lessonsByChapter)) {
       console.log(`   ${chapter}: ${count} lessons`);
-    });
+    }
 
     console.log("\n💡 What happens if you run seed:");
     console.log("   1. Seed checks: 'Does course have lessons?'");

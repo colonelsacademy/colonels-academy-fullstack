@@ -63,7 +63,7 @@ async function exportLessonStructure() {
     Array<{ id: string; title: string; position: number }>
   > = {};
 
-  course.lessons.forEach((lesson) => {
+  for (const lesson of course.lessons) {
     const chapterKey = lesson.module?.chapterNumber
       ? `Chapter ${lesson.module.chapterNumber}`
       : "No Chapter";
@@ -83,7 +83,7 @@ async function exportLessonStructure() {
       accessKind: lesson.accessKind,
       moduleId: lesson.moduleId
     });
-  });
+  }
 
   // Generate TypeScript code
   let output = `/**
@@ -98,7 +98,7 @@ export const currentLessonStructure = {\n`;
 
   for (const [chapter, lessons] of Object.entries(lessonsByChapter)) {
     output += `  "${chapter}": [\n`;
-    lessons.forEach((lesson) => {
+    for (const lesson of lessons) {
       output += "    {\n";
       output += `      position: ${lesson.position},\n`;
       output += `      title: "${lesson.title}",\n`;
@@ -108,7 +108,7 @@ export const currentLessonStructure = {\n`;
         output += `      referencePages: "${lesson.referencePages}",\n`;
       }
       output += "    },\n";
-    });
+    }
     output += "  ],\n";
   }
 

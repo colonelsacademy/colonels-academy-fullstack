@@ -79,7 +79,7 @@ async function verifySeedSafety() {
 
     const lessonsByChapter: Record<string, { count: number; lessons: string[] }> = {};
 
-    course.lessons.forEach((lesson) => {
+    for (const lesson of course.lessons) {
       const chapterKey = lesson.module
         ? `Ch ${lesson.module.chapterNumber}: ${lesson.module.title}`
         : "No Chapter Assigned";
@@ -90,18 +90,18 @@ async function verifySeedSafety() {
 
       lessonsByChapter[chapterKey].count++;
       lessonsByChapter[chapterKey].lessons.push(lesson.title);
-    });
+    }
 
-    Object.entries(lessonsByChapter).forEach(([chapter, data]) => {
+    for (const [chapter, data] of Object.entries(lessonsByChapter)) {
       console.log(`\n   ${chapter}: ${data.count} lessons`);
       // Show first 3 lessons as examples
-      data.lessons.slice(0, 3).forEach((title) => {
+      for (const title of data.lessons.slice(0, 3)) {
         console.log(`      • ${title}`);
-      });
+      }
       if (data.lessons.length > 3) {
         console.log(`      ... and ${data.lessons.length - 3} more`);
       }
-    });
+    }
     console.log("");
   }
 
