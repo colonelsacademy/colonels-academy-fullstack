@@ -3,12 +3,12 @@
  * Runs before all tests
  */
 
-import { beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll } from "vitest";
 
 beforeAll(async () => {
   // Ensure test environment variables are set
   if (!process.env.DATABASE_URL && !process.env.DATABASE_URL_TEST) {
-    throw new Error('DATABASE_URL or DATABASE_URL_TEST must be set for testing');
+    throw new Error("DATABASE_URL or DATABASE_URL_TEST must be set for testing");
   }
 });
 

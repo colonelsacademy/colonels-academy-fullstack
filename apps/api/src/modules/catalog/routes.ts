@@ -160,8 +160,8 @@ const catalogRoutes: FastifyPluginAsync = async (fastify) => {
       return {
         ...lesson,
         lessonContent: {
-          ...(typeof lesson.lessonContent === 'object' && lesson.lessonContent !== null 
-            ? lesson.lessonContent 
+          ...(typeof lesson.lessonContent === "object" && lesson.lessonContent !== null
+            ? lesson.lessonContent
             : {}),
           videoId: lesson.bunnyVideoId
         }

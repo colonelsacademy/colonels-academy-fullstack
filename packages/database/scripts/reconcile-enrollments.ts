@@ -1,13 +1,13 @@
 /**
  * Enrollment Reconciliation Script
- * 
+ *
  * Ensures all PAID orders have corresponding ACTIVE enrollments.
  * Safe to run multiple times (idempotent).
- * 
+ *
  * Usage: pnpm --filter @colonels-academy/database exec tsx scripts/reconcile-enrollments.ts
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -25,20 +25,20 @@ async function reconcileEnrollments(): Promise<ReconciliationStats> {
     enrollmentsCreated: 0,
     enrollmentsUpdated: 0,
     alreadyActive: 0,
-    errors: 0,
+    errors: 0
   };
 
   // Find all PAID orders with their items
   const paidOrders = await prisma.purchaseOrder.findMany({
-    where: { status: 'PAID' },
+    where: { status: "PAID" },
     include: {
       user: { select: { id: true, email: true } },
       items: {
         include: {
-          course: { select: { id: true, title: true, slug: true } },
-        },
-      },
-    },
+          course: { select: { id: true, title: true, slug: true } }
+        }
+      }
+    }
   });
 
   stats.totalPaidOrders = paidOrders.length;
@@ -51,9 +51,9 @@ async function reconcileEnrollments(): Promise<ReconciliationStats> {
           where: {
             userId_courseId: {
               userId: order.userId,
-              courseId: item.courseId,
-            },
-          },
+              courseId: item.courseId
+            }
+          }
         });
 
         if (!existingEnrollment) {
@@ -62,22 +62,22 @@ async function reconcileEnrollments(): Promise<ReconciliationStats> {
             data: {
               userId: order.userId,
               courseId: item.courseId,
-              status: 'ACTIVE',
+              status: "ACTIVE",
               progressPercent: 0,
-              purchasedAt: order.createdAt,
-            },
+              purchasedAt: order.createdAt
+            }
           });
           stats.enrollmentsCreated++;
-        } else if (existingEnrollment.status !== 'ACTIVE') {
+        } else if (existingEnrollment.status !== "ACTIVE") {
           // Update enrollment status
           await prisma.enrollment.update({
             where: {
               userId_courseId: {
                 userId: order.userId,
-                courseId: item.courseId,
-              },
+                courseId: item.courseId
+              }
             },
-            data: { status: 'ACTIVE' },
+            data: { status: "ACTIVE" }
           });
           stats.enrollmentsUpdated++;
         } else {
@@ -100,11 +100,11 @@ async function reconcileEnrollments(): Promise<ReconciliationStats> {
 
 async function main() {
   try {
-    process.stdout.write('🔄 Starting enrollment reconciliation...\n\n');
+    process.stdout.write("🔄 Starting enrollment reconciliation...\n\n");
 
     const stats = await reconcileEnrollments();
 
-    process.stdout.write('\n📊 Reconciliation Summary:\n');
+    process.stdout.write("\n📊 Reconciliation Summary:\n");
     process.stdout.write(`   Total PAID orders: ${stats.totalPaidOrders}\n`);
     process.stdout.write(`   Enrollments created: ${stats.enrollmentsCreated}\n`);
     process.stdout.write(`   Enrollments updated: ${stats.enrollmentsUpdated}\n`);
@@ -112,14 +112,16 @@ async function main() {
     process.stdout.write(`   Errors: ${stats.errors}\n\n`);
 
     if (stats.errors > 0) {
-      process.stdout.write('⚠️  Some errors occurred. Check stderr for details.\n');
+      process.stdout.write("⚠️  Some errors occurred. Check stderr for details.\n");
       process.exit(1);
     } else {
-      process.stdout.write('✅ Reconciliation completed successfully\n');
+      process.stdout.write("✅ Reconciliation completed successfully\n");
       process.exit(0);
     }
   } catch (error) {
-    process.stderr.write(`❌ Fatal error: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `❌ Fatal error: ${error instanceof Error ? error.message : String(error)}\n`
+    );
     process.exit(1);
   } finally {
     await prisma.$disconnect();

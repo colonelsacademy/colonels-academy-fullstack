@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const cookie = request.headers.get("cookie");
 
   // Development-only logging
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.log("Session login request:", {
       hasIdToken: !!body.idToken,
       hasCsrfToken: !!csrfToken,
@@ -26,13 +26,13 @@ export async function POST(request: Request) {
       body: JSON.stringify(body)
     });
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.log("API response status:", apiResponse.status);
     }
 
     if (!apiResponse.ok) {
       const error = await apiResponse.json();
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.error("API error response:", error);
       }
       return NextResponse.json(error, { status: apiResponse.status });
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     // Forward Set-Cookie headers from Fastify to the browser
     const setCookieHeaders = apiResponse.headers.getSetCookie();
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.log("Setting cookies:", setCookieHeaders.length);
     }
     for (const cookie of setCookieHeaders) {
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.error("Auth bridge error:", error);
     }
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });

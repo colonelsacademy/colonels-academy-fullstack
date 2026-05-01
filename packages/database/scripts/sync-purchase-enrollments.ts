@@ -1,9 +1,9 @@
 /**
  * Sync Purchase Enrollments
- * 
+ *
  * This script finds all PAID orders and ensures enrollments exist.
  * Useful when purchases succeed but enrollments aren't created.
- * 
+ *
  * Usage: pnpm --filter @colonels-academy/database exec tsx scripts/sync-purchase-enrollments.ts
  */
 
@@ -43,10 +43,10 @@ async function syncPurchaseEnrollments() {
 
   for (const order of paidOrders) {
     console.log(`\n📦 Order ${order.id} - ${order.user.email}`);
-    
+
     for (const item of order.items) {
       const courseTitle = item.course.title;
-      
+
       // Check if enrollment exists
       const existingEnrollment = await prisma.enrollment.findUnique({
         where: {
@@ -80,7 +80,9 @@ async function syncPurchaseEnrollments() {
             status: "ACTIVE"
           }
         });
-        console.log(`   🔄 Updated enrollment status: ${courseTitle} (${existingEnrollment.status} → ACTIVE)`);
+        console.log(
+          `   🔄 Updated enrollment status: ${courseTitle} (${existingEnrollment.status} → ACTIVE)`
+        );
         updated++;
       } else {
         console.log(`   ⏭️  Enrollment already exists: ${courseTitle}`);
@@ -89,7 +91,7 @@ async function syncPurchaseEnrollments() {
     }
   }
 
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log("SUMMARY");
   console.log("=".repeat(60));
   console.log(`✅ Created: ${created} enrollments`);

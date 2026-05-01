@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@/components/auth/AuthProvider";
 import { ToastContainer } from "@/components/admin/Toast";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/hooks/useToast";
 import {
   Activity,
@@ -26,7 +26,8 @@ import {
   Wifi,
   X
 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -448,7 +449,9 @@ function BunnyVideoPicker({
 
 function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: () => void }) {
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [chapters, setChapters] = useState<{ id: string; title: string; chapterNumber: number | null }[]>([]);
+  const [chapters, setChapters] = useState<
+    { id: string; title: string; chapterNumber: number | null }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -475,7 +478,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
       ]);
       const lessonsData = await lessonsRes.json();
       const chaptersData = await chaptersRes.json();
-      
+
       if (lessonsData.lessons) setLessons(lessonsData.lessons);
       if (chaptersData.chapters) setChapters(chaptersData.chapters);
     } finally {
@@ -621,9 +624,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                   { value: "", label: "-- No Chapter (General) --" },
                   ...chapters.map((ch) => ({
                     value: ch.id,
-                    label: ch.chapterNumber 
-                      ? `Chapter ${ch.chapterNumber}: ${ch.title}` 
-                      : ch.title
+                    label: ch.chapterNumber ? `Chapter ${ch.chapterNumber}: ${ch.title}` : ch.title
                   }))
                 ]}
               />
@@ -764,11 +765,7 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
                   <span className="uppercase">{l.contentType}</span>
                   <span className="uppercase">{l.learningMode ?? "LESSON"}</span>
                   {l.durationMinutes && <span>{l.durationMinutes} min</span>}
-                  {l.module && (
-                    <span className="text-gray-500">
-                      📚 {l.module.title}
-                    </span>
-                  )}
+                  {l.module && <span className="text-gray-500">📚 {l.module.title}</span>}
                   {l.bunnyVideoId ? (
                     <span className="text-emerald-600 font-medium">
                       ✓ Video: {l.bunnyVideoId.slice(0, 8)}...
@@ -804,10 +801,10 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
 
 // ─── Training Modules Tab (Add/Edit Courses) ──────────────────────────────────
 
-function TrainingModulesTab({ 
-  onRefresh, 
-  toast 
-}: { 
+function TrainingModulesTab({
+  onRefresh,
+  toast
+}: {
   onRefresh: () => void;
   toast: {
     success: (msg: string) => void;
@@ -991,7 +988,7 @@ function TrainingModulesTab({
       toast.success(`Course "${slug}" deleted successfully`);
       load();
       onRefresh();
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to delete course");
     }
   };
@@ -1007,7 +1004,7 @@ function TrainingModulesTab({
       setSelectedIds([]);
       load();
       onRefresh();
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to delete selected courses");
     }
   };
@@ -1016,7 +1013,7 @@ function TrainingModulesTab({
     setSelectedIds((prev) =>
       prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
     );
-  const toggleAll = () =>
+  const _toggleAll = () =>
     setSelectedIds(selectedIds.length === courses.length ? [] : courses.map((c) => c.slug));
 
   const TRACK_OPTIONS = [
@@ -1171,9 +1168,7 @@ function TrainingModulesTab({
                       ) : (
                         <>
                           <Palette className="w-5 h-5 text-gray-400" />
-                          <span className="text-sm text-gray-500">
-                            Click to upload image
-                          </span>
+                          <span className="text-sm text-gray-500">Click to upload image</span>
                         </>
                       )}
                     </label>
@@ -1303,9 +1298,7 @@ function TrainingModulesTab({
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-base font-bold text-gray-900 truncate">
-                          {c.title}
-                        </h3>
+                        <h3 className="text-base font-bold text-gray-900 truncate">{c.title}</h3>
                         {c.isFeatured && (
                           <span className="px-2 py-0.5 bg-[#D4AF37] text-[#0F1C15] text-[10px] font-bold rounded uppercase">
                             Featured
@@ -1338,9 +1331,7 @@ function TrainingModulesTab({
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       type="button"
-                      onClick={() =>
-                        setExpandedSlug(expandedSlug === c.slug ? null : c.slug)
-                      }
+                      onClick={() => setExpandedSlug(expandedSlug === c.slug ? null : c.slug)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-lg text-xs transition-colors ${
                         expandedSlug === c.slug
                           ? "bg-[#D4AF37] text-[#0F1C15]"
@@ -2396,7 +2387,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row font-sans">
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      
+
       {/* Sidebar */}
       <div className="hidden md:flex w-64 bg-[#0F1C15] text-white flex-col flex-shrink-0 min-h-screen">
         <div className="h-20 flex items-center justify-center border-b border-gray-800">

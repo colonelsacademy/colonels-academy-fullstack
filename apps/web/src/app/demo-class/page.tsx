@@ -14,7 +14,8 @@ const DEMO_COURSES = [
     slug: "staff-college-command",
     description: "Complete preparation for Officer Cadet selection",
     videoId: "49fdfae8-953b-4477-aa41-c3853564d4de",
-    poster: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600",
+    poster:
+      "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1600",
     duration: "12 weeks",
     lessons: 45,
     students: 1200,
@@ -31,16 +32,13 @@ const DEMO_COURSES = [
     slug: "inspector-preparation",
     description: "Comprehensive training for Police Inspector exam",
     videoId: "49fdfae8-953b-4477-aa41-c3853564d4de", // Replace with actual video ID
-    poster: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600",
+    poster:
+      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600",
     duration: "10 weeks",
     lessons: 38,
     students: 850,
     rating: 4.8,
-    highlights: [
-      "Written Exam Strategy",
-      "Physical Test Preparation",
-      "Interview Techniques"
-    ]
+    highlights: ["Written Exam Strategy", "Physical Test Preparation", "Interview Techniques"]
   },
   {
     id: "asi-training",
@@ -48,16 +46,13 @@ const DEMO_COURSES = [
     slug: "asi-training",
     description: "Focused preparation for Assistant Sub-Inspector",
     videoId: "49fdfae8-953b-4477-aa41-c3853564d4de", // Replace with actual video ID
-    poster: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1600",
+    poster:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1600",
     duration: "8 weeks",
     lessons: 32,
     students: 650,
     rating: 4.7,
-    highlights: [
-      "Exam Pattern Analysis",
-      "Time Management Skills",
-      "Mock Test Series"
-    ]
+    highlights: ["Exam Pattern Analysis", "Time Management Skills", "Mock Test Series"]
   }
 ];
 
@@ -76,7 +71,8 @@ export default function DemoClassPage() {
             Experience Our <span className="text-[#D4AF37]">Training</span>
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-            Watch free demo classes from our top-rated courses. See why thousands of aspirants trust Colonel&apos;s Academy.
+            Watch free demo classes from our top-rated courses. See why thousands of aspirants trust
+            Colonel&apos;s Academy.
           </p>
         </div>
 
@@ -107,14 +103,14 @@ export default function DemoClassPage() {
                 poster={selectedCourse.poster}
                 autoplay={false}
               />
-              
+
               {/* Video Info */}
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-2 font-['Rajdhani']">
                   {selectedCourse.title}
                 </h2>
                 <p className="text-gray-400 mb-4">{selectedCourse.description}</p>
-                
+
                 {/* Stats */}
                 <div className="flex flex-wrap gap-6 text-sm">
                   <div className="flex items-center gap-2">

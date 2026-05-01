@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import type { ToastType } from "@/components/admin/Toast";
+import { useCallback, useState } from "react";
 
 interface Toast {
   id: string;

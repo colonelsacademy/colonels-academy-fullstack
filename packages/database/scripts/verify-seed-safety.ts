@@ -1,9 +1,9 @@
 /**
  * Verify Seed Safety - Pre-Seed Check
- * 
+ *
  * This script checks your current database state and predicts
  * what will happen if you run the seed.
- * 
+ *
  * Usage: npx tsx packages/database/scripts/verify-seed-safety.ts
  */
 
@@ -62,7 +62,7 @@ async function verifySeedSafety() {
 
   console.log("✅ COURSE FOUND");
   console.log(`   Title: ${course.title}`);
-  console.log(`   Slug: army-command-staff-2083`);
+  console.log("   Slug: army-command-staff-2083");
   console.log("");
 
   // Step 2: Analyze current state
@@ -76,18 +76,18 @@ async function verifySeedSafety() {
   if (course.lessons.length > 0) {
     console.log("📚 LESSON DISTRIBUTION BY CHAPTER");
     console.log("-".repeat(70));
-    
+
     const lessonsByChapter: Record<string, { count: number; lessons: string[] }> = {};
-    
-    course.lessons.forEach(lesson => {
-      const chapterKey = lesson.module 
+
+    course.lessons.forEach((lesson) => {
+      const chapterKey = lesson.module
         ? `Ch ${lesson.module.chapterNumber}: ${lesson.module.title}`
         : "No Chapter Assigned";
-      
+
       if (!lessonsByChapter[chapterKey]) {
         lessonsByChapter[chapterKey] = { count: 0, lessons: [] };
       }
-      
+
       lessonsByChapter[chapterKey].count++;
       lessonsByChapter[chapterKey].lessons.push(lesson.title);
     });
@@ -95,7 +95,7 @@ async function verifySeedSafety() {
     Object.entries(lessonsByChapter).forEach(([chapter, data]) => {
       console.log(`\n   ${chapter}: ${data.count} lessons`);
       // Show first 3 lessons as examples
-      data.lessons.slice(0, 3).forEach(title => {
+      data.lessons.slice(0, 3).forEach((title) => {
         console.log(`      • ${title}`);
       });
       if (data.lessons.length > 3) {
@@ -108,11 +108,11 @@ async function verifySeedSafety() {
   // Step 4: Check for manual changes
   console.log("🔍 CHECKING FOR MANUAL CHANGES");
   console.log("-".repeat(70));
-  
+
   // Check if any lessons have been moved to different chapters
-  const lessonsWithChapters = course.lessons.filter(l => l.moduleId !== null);
-  const lessonsWithoutChapters = course.lessons.filter(l => l.moduleId === null);
-  
+  const lessonsWithChapters = course.lessons.filter((l) => l.moduleId !== null);
+  const lessonsWithoutChapters = course.lessons.filter((l) => l.moduleId === null);
+
   console.log(`   Lessons assigned to chapters: ${lessonsWithChapters.length}`);
   console.log(`   Lessons without chapters: ${lessonsWithoutChapters.length}`);
   console.log("");
@@ -120,7 +120,7 @@ async function verifySeedSafety() {
   // Step 5: SEED PROTECTION CHECK
   console.log("🛡️  SEED PROTECTION STATUS");
   console.log("-".repeat(70));
-  
+
   if (course.lessons.length > 0) {
     console.log("   ✅ PROTECTION ACTIVE");
     console.log("");
@@ -142,7 +142,7 @@ async function verifySeedSafety() {
   // Step 6: PREDICTION
   console.log("🔮 WHAT WILL HAPPEN IF YOU RUN SEED NOW");
   console.log("=".repeat(70));
-  
+
   if (course.lessons.length > 0) {
     console.log("");
     console.log("   1️⃣  Seed starts running...");
@@ -193,7 +193,7 @@ async function verifySeedSafety() {
   // Step 8: RECOMMENDATIONS
   console.log("💡 RECOMMENDATIONS");
   console.log("=".repeat(70));
-  
+
   if (course.lessons.length > 0) {
     console.log("");
     console.log("   ✅ Safe to run seed - it will skip automatically");
@@ -219,7 +219,7 @@ async function verifySeedSafety() {
   // Step 9: Summary Box
   const status = course.lessons.length > 0 ? "PROTECTED ✅" : "UNPROTECTED ⚠️";
   const safe = course.lessons.length > 0 ? "YES" : "NO";
-  
+
   console.log("┌─────────────────────────────────────────────────────────────────┐");
   console.log("│                         SUMMARY                                 │");
   console.log("├─────────────────────────────────────────────────────────────────┤");

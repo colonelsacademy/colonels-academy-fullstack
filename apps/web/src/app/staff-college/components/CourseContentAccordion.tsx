@@ -1,9 +1,9 @@
 "use client";
 
-import type { CourseDetail } from "@colonels-academy/contracts";
-import { ChevronDown, ChevronUp, Lock, PlayCircle, X, Award } from "lucide-react";
-import { useEffect, useState } from "react";
 import VideoPlayer from "@/components/ui/VideoPlayer";
+import type { CourseDetail } from "@colonels-academy/contracts";
+import { Award, ChevronDown, ChevronUp, Lock, PlayCircle, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Module {
   id: string;
@@ -116,13 +116,11 @@ export const CourseContentAccordion = ({ course }: CourseContentAccordionProps) 
   if (loading) {
     return (
       <div id="course-syllabus">
-        <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">
-          Course content
-        </h3>
+        <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">Course content</h3>
         <div className="animate-pulse space-y-4">
-          <div className="h-12 bg-gray-200 rounded"></div>
-          <div className="h-12 bg-gray-200 rounded"></div>
-          <div className="h-12 bg-gray-200 rounded"></div>
+          <div className="h-12 bg-gray-200 rounded" />
+          <div className="h-12 bg-gray-200 rounded" />
+          <div className="h-12 bg-gray-200 rounded" />
         </div>
       </div>
     );
@@ -186,9 +184,7 @@ export const CourseContentAccordion = ({ course }: CourseContentAccordionProps) 
                           onClick={() => handleLessonClick(lesson)}
                           disabled={isLocked}
                           className={`w-full flex items-start sm:items-center justify-between py-3 px-4 sm:px-8 transition-colors text-left ${
-                            isPreview
-                              ? "hover:bg-blue-50 cursor-pointer"
-                              : "cursor-not-allowed"
+                            isPreview ? "hover:bg-blue-50 cursor-pointer" : "cursor-not-allowed"
                           }`}
                         >
                           <div className="flex items-start sm:items-center gap-4 flex-1">
@@ -267,10 +263,7 @@ export const CourseContentAccordion = ({ course }: CourseContentAccordionProps) 
               </div>
 
               {previewLesson.lessonContent?.videoId ? (
-                <VideoPlayer
-                  videoId={previewLesson.lessonContent.videoId}
-                  autoplay={true}
-                />
+                <VideoPlayer videoId={previewLesson.lessonContent.videoId} autoplay={true} />
               ) : (
                 <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
                   <p className="text-white">Video preview not available</p>
@@ -280,7 +273,8 @@ export const CourseContentAccordion = ({ course }: CourseContentAccordionProps) 
               {/* CTA */}
               <div className="mt-6 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-gray-200">
                 <p className="text-sm text-gray-700 mb-4 font-medium">
-                  This is a free preview. Enroll to access all {totalLessons} lectures and unlock the full course.
+                  This is a free preview. Enroll to access all {totalLessons} lectures and unlock
+                  the full course.
                 </p>
                 <button
                   onClick={closePreview}

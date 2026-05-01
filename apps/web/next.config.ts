@@ -1,9 +1,9 @@
-import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
-    instrumentationHook: true,
+    instrumentationHook: true
   },
   transpilePackages: [
     "@colonels-academy/api-client",
@@ -66,7 +66,7 @@ const sentryWebpackPluginOptions = {
   // Suppresses source map uploading logs during build
   silent: true,
   org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  project: process.env.SENTRY_PROJECT
 };
 
 const sentryOptions = {
@@ -86,7 +86,7 @@ const sentryOptions = {
   disableLogger: true,
 
   // Enables automatic instrumentation of Vercel Cron Monitors
-  automaticVercelMonitors: true,
+  automaticVercelMonitors: true
 };
 
 export default process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN

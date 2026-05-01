@@ -1,9 +1,9 @@
 /**
  * Migration Script: Update Lesson Chapter Assignments
- * 
+ *
  * Use this script when you need to bulk-update lesson chapter assignments
  * without losing other lesson data.
- * 
+ *
  * Usage:
  * 1. Modify the lessonUpdates array below
  * 2. Run: npx tsx packages/database/prisma/migrations/update-lesson-chapters.ts
@@ -40,8 +40,8 @@ async function updateLessonChapters() {
   }
 
   for (const update of lessonUpdates) {
-    const lesson = course.lessons.find(l => l.title === update.lessonTitle);
-    const targetChapter = course.modules.find(m => m.chapterNumber === update.newChapterNumber);
+    const lesson = course.lessons.find((l) => l.title === update.lessonTitle);
+    const targetChapter = course.modules.find((m) => m.chapterNumber === update.newChapterNumber);
 
     if (!lesson) {
       console.warn(`⚠️  Lesson not found: ${update.lessonTitle}`);

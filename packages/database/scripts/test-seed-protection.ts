@@ -1,9 +1,9 @@
 /**
  * Test Seed Protection
- * 
+ *
  * This script verifies that the seed protection is working correctly.
  * It checks if your lessons are safe from being overwritten.
- * 
+ *
  * Usage: npx tsx packages/database/scripts/test-seed-protection.ts
  */
 
@@ -45,11 +45,9 @@ async function testSeedProtection() {
 
     // Show lesson distribution
     const lessonsByChapter: Record<string, number> = {};
-    course.lessons.forEach(lesson => {
-      const chapter = course.modules.find(m => m.id === lesson.moduleId);
-      const key = chapter 
-        ? `Chapter ${chapter.chapterNumber}: ${chapter.title}` 
-        : "No Chapter";
+    course.lessons.forEach((lesson) => {
+      const chapter = course.modules.find((m) => m.id === lesson.moduleId);
+      const key = chapter ? `Chapter ${chapter.chapterNumber}: ${chapter.title}` : "No Chapter";
       lessonsByChapter[key] = (lessonsByChapter[key] || 0) + 1;
     });
 
@@ -64,21 +62,22 @@ async function testSeedProtection() {
     console.log("   3. Exits immediately with message:");
     console.log("      '⚠️  Course already has lessons. Skipping seed...'");
     console.log("   4. Your data remains UNCHANGED");
-
   } else {
     console.log("⚠️  NO PROTECTION");
     console.log("   Course exists but has 0 lessons");
     console.log("   Seed WILL run and create lessons");
   }
 
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log("SUMMARY");
   console.log("=".repeat(60));
   console.log(`Course: ${course.title}`);
   console.log(`Lessons: ${course.lessons.length}`);
   console.log(`Chapters: ${course.modules.length}`);
   console.log(`Protected: ${course.lessons.length > 0 ? "YES ✅" : "NO ⚠️"}`);
-  console.log(`Safe to run seed: ${course.lessons.length > 0 ? "YES (will skip)" : "NO (will create)"}`);
+  console.log(
+    `Safe to run seed: ${course.lessons.length > 0 ? "YES (will skip)" : "NO (will create)"}`
+  );
   console.log("=".repeat(60));
 }
 

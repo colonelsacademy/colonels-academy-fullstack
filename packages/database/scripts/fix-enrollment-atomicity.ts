@@ -1,11 +1,11 @@
 /**
  * Fix Enrollment Atomicity Issue
- * 
+ *
  * This script improves the purchase → enrollment flow to ensure atomicity.
  * It also provides a function to sync existing purchases with missing enrollments.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -14,12 +14,12 @@ const prisma = new PrismaClient();
  * This fixes the current issue where users have paid but don't have enrollments
  */
 async function syncPurchasesWithEnrollments() {
-  console.log('🔍 Finding PAID orders without enrollments...\n');
+  console.log("🔍 Finding PAID orders without enrollments...\n");
 
   // Find all PAID orders
   const paidOrders = await prisma.purchaseOrder.findMany({
     where: {
-      status: 'PAID'
+      status: "PAID"
     },
     include: {
       items: {
@@ -52,12 +52,14 @@ async function syncPurchasesWithEnrollments() {
 
         if (existingEnrollment) {
           // Enrollment exists - check if it's ACTIVE
-          if (existingEnrollment.status !== 'ACTIVE') {
+          if (existingEnrollment.status !== "ACTIVE") {
             await prisma.enrollment.update({
               where: { id: existingEnrollment.id },
-              data: { status: 'ACTIVE' }
+              data: { status: "ACTIVE" }
             });
-            console.log(`✅ Updated enrollment status to ACTIVE for user ${order.user.email} - ${item.course.title}`);
+            console.log(
+              `✅ Updated enrollment status to ACTIVE for user ${order.user.email} - ${item.course.title}`
+            );
             fixed++;
           } else {
             alreadyEnrolled++;
@@ -68,11 +70,13 @@ async function syncPurchasesWithEnrollments() {
             data: {
               userId: order.userId,
               courseId: item.courseId,
-              status: 'ACTIVE',
+              status: "ACTIVE",
               purchasedAt: order.createdAt
             }
           });
-          console.log(`✅ Created missing enrollment for user ${order.user.email} - ${item.course.title}`);
+          console.log(
+            `✅ Created missing enrollment for user ${order.user.email} - ${item.course.title}`
+          );
           fixed++;
         }
       } catch (error) {
@@ -82,7 +86,7 @@ async function syncPurchasesWithEnrollments() {
     }
   }
 
-  console.log('\n📊 Summary:');
+  console.log("\n📊 Summary:");
   console.log(`   Fixed/Created: ${fixed}`);
   console.log(`   Already enrolled: ${alreadyEnrolled}`);
   console.log(`   Errors: ${errors}`);
@@ -105,9 +109,9 @@ async function createPurchaseWithEnrollment(
     const order = await tx.purchaseOrder.create({
       data: {
         userId,
-        status: 'PENDING_PAYMENT',
+        status: "PENDING_PAYMENT",
         totalNpr: priceNpr,
-        currency: 'NPR',
+        currency: "NPR",
         provider,
         items: {
           create: {
@@ -137,7 +141,7 @@ async function confirmPaymentAndEnroll(orderId: string) {
     // 1. Update order status
     const order = await tx.purchaseOrder.update({
       where: { id: orderId },
-      data: { status: 'PAID' },
+      data: { status: "PAID" },
       include: {
         items: true,
         user: true
@@ -159,10 +163,10 @@ async function confirmPaymentAndEnroll(orderId: string) {
 
       if (existing) {
         // Update to ACTIVE if not already
-        if (existing.status !== 'ACTIVE') {
+        if (existing.status !== "ACTIVE") {
           const updated = await tx.enrollment.update({
             where: { id: existing.id },
-            data: { status: 'ACTIVE' }
+            data: { status: "ACTIVE" }
           });
           enrollments.push(updated);
         } else {
@@ -174,7 +178,7 @@ async function confirmPaymentAndEnroll(orderId: string) {
           data: {
             userId: order.userId,
             courseId: item.courseId,
-            status: 'ACTIVE',
+            status: "ACTIVE",
             purchasedAt: new Date()
           }
         });
@@ -190,11 +194,11 @@ async function confirmPaymentAndEnroll(orderId: string) {
 if (require.main === module) {
   syncPurchasesWithEnrollments()
     .then(() => {
-      console.log('✅ Sync completed successfully');
+      console.log("✅ Sync completed successfully");
       process.exit(0);
     })
     .catch((error) => {
-      console.error('❌ Sync failed:', error);
+      console.error("❌ Sync failed:", error);
       process.exit(1);
     })
     .finally(() => {
@@ -203,8 +207,4 @@ if (require.main === module) {
 }
 
 // Export functions for use in API
-export {
-  syncPurchasesWithEnrollments,
-  createPurchaseWithEnrollment,
-  confirmPaymentAndEnroll
-};
+export { syncPurchasesWithEnrollments, createPurchaseWithEnrollment, confirmPaymentAndEnroll };
