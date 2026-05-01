@@ -59,6 +59,10 @@ const DEMO_COURSES = [
 export default function DemoClassPage() {
   const [selectedCourse, setSelectedCourse] = useState(DEMO_COURSES[0]);
 
+  if (!selectedCourse) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0B1120] to-[#1a2332] text-white pt-24 pb-12 font-sans">
       <div className="max-w-7xl mx-auto px-6">

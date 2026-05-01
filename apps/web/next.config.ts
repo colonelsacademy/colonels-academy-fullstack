@@ -2,9 +2,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    instrumentationHook: true
-  },
   transpilePackages: [
     "@colonels-academy/api-client",
     "@colonels-academy/config",
@@ -65,8 +62,8 @@ const nextConfig: NextConfig = {
 const sentryWebpackPluginOptions = {
   // Suppresses source map uploading logs during build
   silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT
+  ...(process.env.SENTRY_ORG && { org: process.env.SENTRY_ORG }),
+  ...(process.env.SENTRY_PROJECT && { project: process.env.SENTRY_PROJECT })
 };
 
 const sentryOptions = {
@@ -90,5 +87,5 @@ const sentryOptions = {
 };
 
 export default process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
-  ? withSentryConfig(nextConfig, sentryWebpackPluginOptions, sentryOptions)
+  ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
   : nextConfig;
