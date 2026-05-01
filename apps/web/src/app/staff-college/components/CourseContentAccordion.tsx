@@ -246,6 +246,7 @@ export const CourseContentAccordion = ({ course }: CourseContentAccordionProps) 
                 <h2 className="text-xl font-bold text-gray-900">{course.title}</h2>
               </div>
               <button
+                type="button"
                 onClick={closePreview}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
@@ -277,6 +278,7 @@ export const CourseContentAccordion = ({ course }: CourseContentAccordionProps) 
                   the full course.
                 </p>
                 <button
+                  type="button"
                   onClick={closePreview}
                   className="w-full py-4 px-6 bg-gradient-to-r from-[#0B1120] to-[#1a2838] text-white font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-3 text-base uppercase tracking-wider group shadow-lg"
                 >

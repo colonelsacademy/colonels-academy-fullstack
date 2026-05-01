@@ -67,6 +67,7 @@ export function Toast({ message, type, onClose, duration = 4000 }: ToastProps) {
       <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0`} />
       <p className={`text-sm font-medium ${textColor} flex-1`}>{message}</p>
       <button
+        type="button"
         onClick={handleClose}
         className={`p-1 hover:bg-white/50 rounded transition-colors ${iconColor}`}
       >

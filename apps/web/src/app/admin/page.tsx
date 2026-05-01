@@ -884,7 +884,7 @@ function TrainingModulesTab({
       thumbnail: c.heroImageUrl ?? "",
       comingSoon: c.isComingSoon ?? false,
       featured: c.isFeatured,
-      hidden: (c as any).isHidden ?? false
+      hidden: (c as { isHidden?: boolean }).isHidden ?? false
     });
     setShowForm(true);
   };
@@ -1309,7 +1309,7 @@ function TrainingModulesTab({
                             Coming Soon
                           </span>
                         )}
-                        {(c as any).isHidden && (
+                        {(c as { isHidden?: boolean }).isHidden && (
                           <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded uppercase">
                             Hidden
                           </span>

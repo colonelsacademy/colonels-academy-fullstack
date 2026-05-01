@@ -80,6 +80,7 @@ export default function DemoClassPage() {
         <div className="flex flex-wrap justify-center gap-4 mb-8">
           {DEMO_COURSES.map((course) => (
             <button
+              type="button"
               key={course.id}
               onClick={() => setSelectedCourse(course)}
               className={`px-6 py-3 rounded-xl font-bold transition-all ${
