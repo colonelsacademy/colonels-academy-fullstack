@@ -133,6 +133,9 @@ importers:
       '@colonels-academy/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@colonels-academy/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@colonels-academy/ui':
         specifier: workspace:*
         version: link:../../packages/ui
