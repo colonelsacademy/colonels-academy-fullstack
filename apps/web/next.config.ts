@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -11,10 +12,60 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ca-assets.b-cdn.net",
+        hostname: "ca-assets.b-cdn.net"
       },
+      {
+        protocol: "https",
+        hostname: "dev.thecolonelsacademy.com"
+      },
+      {
+        protocol: "https",
+        hostname: "uat.thecolonelsacademy.com"
+      },
+      {
+        protocol: "https",
+        hostname: "colonels-alpha.b-cdn.net"
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com"
+      }
     ],
+    // Image optimization settings
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Configure quality levels
+    qualities: [50, 75, 90, 100]
   },
+  async redirects() {
+    return [
+      {
+        source: "/courses/staff-college-command",
+        destination: "/staff-college",
+        permanent: true
+      },
+      {
+        source: "/courses/staff-college-command/:path*",
+        destination: "/staff-college",
+        permanent: true
+      }
+    ];
+  }
 };
 
-export default nextConfig;
+// Sentry configuration
+const sentryWebpackPluginOptions = {
+  // Suppresses source map uploading logs during build
+  silent: true,
+  ...(process.env.SENTRY_ORG && { org: process.env.SENTRY_ORG }),
+  ...(process.env.SENTRY_PROJECT && { project: process.env.SENTRY_PROJECT })
+};
+
+export default process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
+  : nextConfig;

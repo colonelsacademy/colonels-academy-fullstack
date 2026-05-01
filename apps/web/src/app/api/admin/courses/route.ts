@@ -1,0 +1,15 @@
+import { proxyFastifyRequest } from "@/app/api/_lib/fastify-proxy";
+import type { NextRequest } from "next/server";
+
+export async function GET(request: NextRequest) {
+  return proxyFastifyRequest(request, "/v1/admin/courses");
+}
+
+export async function POST(request: NextRequest) {
+  const body = await request.text();
+  return proxyFastifyRequest(request, "/v1/admin/courses", {
+    method: "POST",
+    body,
+    contentType: "application/json"
+  });
+}

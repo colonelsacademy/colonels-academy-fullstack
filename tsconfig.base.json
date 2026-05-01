@@ -11,6 +11,13 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "baseUrl": "."
+    "paths": {
+      "@colonels-academy/config": ["./packages/config/src/index.ts"],
+      "@colonels-academy/contracts": ["./packages/contracts/src/index.ts"],
+      "@colonels-academy/database": ["./packages/database/src/index.ts"],
+      "@colonels-academy/api-client": ["./packages/api-client/src/index.ts"],
+      "@colonels-academy/ui": ["./packages/ui/src/index.ts"],
+      "@colonels-academy/design-tokens": ["./packages/design-tokens/src/index.ts"]
+    }
   }
 }

@@ -45,13 +45,17 @@ The web app is not allowed to import backend internals. That rule is enforced lo
 ## Getting started
 
 1. Copy `.env.example` to `.env` and fill in Firebase and Bunny credentials.
-2. Start Postgres and Redis with `docker compose -f compose.yaml up -d`.
-3. Install dependencies with `corepack pnpm install`.
-4. Generate Prisma client with `corepack pnpm db:generate`.
-5. Apply local schema changes with `corepack pnpm db:push`.
-6. Seed starter data with `corepack pnpm db:seed`.
-7. Start the apps with `corepack pnpm dev`.
-8. Start the mobile app separately with `corepack pnpm dev:mobile`.
+2. Install dependencies with `corepack pnpm install`.
+3. Run one-time local bootstrap with `corepack pnpm dev:setup` (starts DB containers, generates Prisma client, pushes schema, seeds data).
+4. Start the apps with `corepack pnpm dev`.
+5. Start the mobile app separately with `corepack pnpm dev:mobile`.
+
+Local DB helper commands:
+
+- `corepack pnpm dev:setup`: start DB + apply schema + seed data
+- `corepack pnpm dev:full`: run setup, then start all dev servers
+- `corepack pnpm dev:reset`: wipe local DB volumes, recreate schema, reseed
+- `corepack pnpm db:studio`: open Prisma Studio
 
 Default local endpoints:
 
@@ -91,6 +95,21 @@ Mobile env:
 - Team development should move to named migrations with `corepack pnpm db:migrate`.
 - Staging and production must use `corepack pnpm db:deploy`.
 - Before any release, inspect migration state with `corepack pnpm db:status`.
+
+## DB + Git workflow
+
+Use this when changing database schema in this repo:
+
+1. Create schema changes in `packages/database/prisma/schema.prisma`.
+2. Generate a migration with `corepack pnpm db:migrate` (creates SQL in `packages/database/prisma/migrations/...`).
+3. Run `corepack pnpm db:seed` if seed data needs updates.
+4. Commit these together in Git:
+   - `packages/database/prisma/schema.prisma`
+   - new migration directory under `packages/database/prisma/migrations/`
+   - seed changes in `packages/database/prisma/seed.ts` (if any)
+5. Do **not** commit local env secrets (`.env`, `.env.local`).
+
+For simple local-only experiments, `corepack pnpm db:push` is fine, but before sharing work open a proper migration with `corepack pnpm db:migrate`.
 
 ## Architectural stance
 

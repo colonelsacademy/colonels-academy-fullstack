@@ -1,13 +1,20 @@
-import fp from "fastify-plugin";
 import { Queue } from "bullmq";
+import fp from "fastify-plugin";
 import Redis from "ioredis";
 
 import { defaultJobOptions, loadApiEnv, queueNames } from "@colonels-academy/config";
-import type { NotificationJob, VideoSyncJob } from "@colonels-academy/contracts";
+import type {
+  NotificationJob,
+  StudySessionReconcileJob,
+  VideoSyncJob
+} from "@colonels-academy/contracts";
+
+import { CacheManager } from "../lib/cache";
 
 export interface QueueRegistry {
   videoSync: Queue<VideoSyncJob>;
   notifications: Queue<NotificationJob>;
+  studySessionReconcile: Queue<StudySessionReconcileJob>;
 }
 
 export interface BunnyConfig {
@@ -22,6 +29,7 @@ declare module "fastify" {
     redis: Redis | null;
     queues: QueueRegistry | null;
     bunny: BunnyConfig;
+    cache: CacheManager;
   }
 }
 
@@ -42,7 +50,14 @@ export default fp(async (fastify) => {
         notifications: new Queue<NotificationJob>(queueNames.notifications, {
           connection: redis,
           defaultJobOptions
-        })
+        }),
+        studySessionReconcile: new Queue<StudySessionReconcileJob>(
+          queueNames.studySessionReconcile,
+          {
+            connection: redis,
+            defaultJobOptions
+          }
+        )
       }
     : null;
 
@@ -66,9 +81,24 @@ export default fp(async (fastify) => {
   fastify.decorate("queues", queues);
   fastify.decorate("bunny", bunny);
 
+  // Initialize cache manager
+  const cache = new CacheManager(redis, fastify.log);
+  fastify.decorate("cache", cache);
+
+  // Log cache availability
+  if (cache.isAvailable()) {
+    fastify.log.info("Redis cache enabled");
+  } else {
+    fastify.log.warn("Redis cache disabled - performance will be degraded");
+  }
+
   fastify.addHook("onClose", async () => {
     if (queues) {
-      await Promise.all([queues.videoSync.close(), queues.notifications.close()]);
+      await Promise.all([
+        queues.videoSync.close(),
+        queues.notifications.close(),
+        queues.studySessionReconcile.close()
+      ]);
     }
 
     if (redis) {

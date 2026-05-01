@@ -1,0 +1,6 @@
+[build]
+builder = "nixpacks"
+watchPatterns = ["apps/worker/**", "packages/**"]
+
+[deploy]
+startCommand = "node apps/worker/dist/index.js"

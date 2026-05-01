@@ -1,0 +1,46 @@
+name: Database Backup
+
+on:
+  # Run daily at 2 AM UTC (7:45 AM Nepal Time)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Run backup script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          chmod +x scripts/backup-database.sh
+          ./scripts/backup-database.sh
+
+      - name: Upload backup to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ github.run_number }}
+          path: backups/*.sql.gz
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Database backup failed!"
+          echo "Check the workflow logs for details"
+          # Add Slack/Discord notification here if needed

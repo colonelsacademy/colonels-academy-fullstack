@@ -1,30 +1,31 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
+import { cookies } from "next/headers";
+import Link from "next/link";
+import { Suspense } from "react";
 
-import { type Category, type Course, DEFAULT_COURSES } from '@/data/gateway';
-import { db } from '@colonels-academy/database';
+import type { Category, Course } from "@/data/gateway";
+import { getCourses, getEnrollments, getInstructors } from "@/lib/api";
 
-import GatewayHero from './gateway/components/GatewayHero';
-import IntakeBanner from './gateway/components/IntakeBanner';
-import { CourseFilter, CourseGrid, CourseSection } from './gateway/components/Courses';
-import { FeaturedCourse } from './gateway/components/FeaturedCourse';
-import { MobilePlatform } from './gateway/components/MobilePlatform';
-import { Instructors } from './gateway/components/Instructors';
-import { GatewayCTA } from './gateway/components/GatewayFooter';
-import { Footer } from '@/components/Footer';
+import { Footer } from "@/components/Footer";
+import {
+  CourseFilter,
+  CourseGrid,
+  CourseGridSkeleton,
+  CourseSection
+} from "./gateway/components/Courses";
+import { FeaturedCourse } from "./gateway/components/FeaturedCourse";
+import { GatewayCTA } from "./gateway/components/GatewayFooter";
+import GatewayHero from "./gateway/components/GatewayHero";
+import { Instructors } from "./gateway/components/Instructors";
+import IntakeBanner from "./gateway/components/IntakeBanner";
+import { MobilePlatform } from "./gateway/components/MobilePlatform";
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from "lucide-react";
 
-const SectionFallback = ({ className = '' }: { className?: string }) => (
-  <div aria-hidden="true" className={`w-full rounded-[2.5rem] border border-gray-200/70 bg-white/70 animate-pulse ${className}`} />
-);
-
-const CourseGridSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-Fluid-md">
-    {[...Array(4)].map((_, i) => (
-      <div key={i} className="h-[400px] rounded-xl border border-gray-100 bg-white/50 animate-pulse" />
-    ))}
-  </div>
+const SectionFallback = ({ className = "" }: { className?: string }) => (
+  <div
+    aria-hidden="true"
+    className={`w-full rounded-[2.5rem] border border-gray-200/70 bg-white/70 animate-pulse ${className}`}
+  />
 );
 
 interface HomePageProps {
@@ -34,67 +35,60 @@ interface HomePageProps {
 export default async function HomePage({ searchParams }: HomePageProps) {
   // Await searchParams for Next.js 15+ compatibility
   const resolvedParams = await searchParams;
-  const activeCategory = (resolvedParams.category as Category) ?? 'all';
-  const mentorCategory = (resolvedParams.mentorCategory as Category) ?? 'all';
+  const activeCategory = (resolvedParams.category as Category) ?? "all";
 
-  // 1. Fetch courses directly from the database based on the URL parameter
-  const whereClause = activeCategory !== 'all' ? { track: activeCategory } : {};
-  
-  const dbCourses = await db.course.findMany({
-    where: { ...whereClause },
-    include: { 
-      instructorLinks: {
-        include: { instructor: true }
-      }
-    },
-    take: 8, // Fetch more for variety if needed
-  });
+  // 1. Fetch from the API (single source of truth across all pages)
+  const [apiCourses, apiInstructors, enrollments] = await Promise.all([
+    getCourses(),
+    getInstructors(),
+    getEnrollments()
+  ]);
 
-  // 2. Map the DB data to match our UI CourseGrid props
-  const mappedCourses: Course[] = dbCourses.map(course => ({
-    id: course.id,
+  const instructorNameBySlug = new Map(apiInstructors.map((i) => [i.slug, i.name]));
+  const enrolledCourseIds = new Set(enrollments.map((e) => e.courseSlug));
+
+  // 2. Map to UI shape and apply category filter
+  const allMappedCourses: Course[] = apiCourses.map((course) => ({
+    id: course.slug,
     title: course.title,
     category: course.track as Category,
     description: course.summary,
-    instructor: course.instructorLinks[0]?.instructor.name || 'Expert Faculty',
+    instructor: course.instructorSlugs[0]
+      ? (instructorNameBySlug.get(course.instructorSlugs[0]) ?? "Expert Faculty")
+      : "Expert Faculty",
     rating: 4.8,
     ratingCount: 1200,
     students: 1500,
     duration: course.durationLabel,
     lessons: course.lessonCount,
-    iconId: 'Target',
-    thumbnail: course.heroImageUrl || '/images/placeholder.jpg',
+    iconId: "Target",
+    thumbnail: course.heroImageUrl ?? "",
     price: course.priceNpr,
-    originalPrice: course.originalPriceNpr || course.priceNpr,
-    color: course.accentColor || '#D4AF37',
-    lightColor: '#FEFCE8',
+    originalPrice: course.originalPriceNpr ?? course.priceNpr,
+    color: course.accentColor ?? "#D4AF37",
+    lightColor: "#FEFCE8",
     tag: course.track.toUpperCase(),
     level: course.level,
-    isBestseller: course.isFeatured,
-    comingSoon: false,
+    isBestseller: course.featured,
+    comingSoon: course.isComingSoon ?? false
   }));
 
-  // 3. Fallback to static data if database is empty (for resilience during seeding)
-  const finalCourses: Course[] = mappedCourses.length > 0 ? mappedCourses : (
-    activeCategory === 'all'
-      ? DEFAULT_COURSES
-      : DEFAULT_COURSES.filter(
-        (c) => c.category === activeCategory || (activeCategory === 'army' && c.category === 'cadet')
-      )
-  );
+  const mappedCourses =
+    activeCategory !== "all"
+      ? allMappedCourses.filter((c) => c.category === activeCategory)
+      : allMappedCourses;
 
-  const mainCourses = finalCourses.slice(0, 4);
-  const topPick = (mappedCourses.find(c => c.isBestseller) as Course | undefined) || DEFAULT_COURSES.find(c => c.id === 'military-history');
+  // 3. Selection for UI components
+  const mainCourses = mappedCourses.slice(0, 8);
+  const topPick = mappedCourses.find((c) => c.isBestseller) ?? mappedCourses[0];
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans selection:bg-blue-100 selection:text-blue-900">
-
       {/* Hero: Renders instantly (Client Component Leaf) */}
       <GatewayHero />
 
       {/* Content */}
       <div className="max-w-[1400px] mx-auto px-4 space-y-2">
-
         {/* Intake Banner: Renders instantly (Client Component Leaf) */}
         <IntakeBanner />
 
@@ -105,26 +99,24 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           className="pt-12"
         >
           <div className="mb-6">
-            <Suspense fallback={<div className="h-12 bg-white rounded-2xl animate-pulse w-full max-w-2xl mx-auto" />}>
+            <Suspense
+              fallback={
+                <div className="h-12 bg-white rounded-2xl animate-pulse w-full max-w-2xl mx-auto" />
+              }
+            >
               <CourseFilter activeCategory={activeCategory} />
             </Suspense>
           </div>
-          
+
           <Suspense fallback={<CourseGridSkeleton />}>
-            <CourseGrid
-              courses={mainCourses}
-              enrolledCourseIds={new Set()}
-            />
+            <CourseGrid courses={mainCourses} enrolledCourseIds={enrolledCourseIds} />
           </Suspense>
         </CourseSection>
 
         {/* Top Pick (Featured Course): Now an RSC */}
         {topPick && (
           <Suspense fallback={<SectionFallback className="min-h-[640px]" />}>
-            <FeaturedCourse
-              course={topPick}
-              isEnrolled={false}
-            />
+            <FeaturedCourse course={topPick} isEnrolled={enrolledCourseIds.has(topPick.id)} />
           </Suspense>
         )}
 
@@ -146,11 +138,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <MobilePlatform />
         </Suspense>
 
-        {/* Instructors Section: Now an RSC with URL-based tabs */}
+        {/* Instructors Section */}
         <Suspense fallback={<SectionFallback className="min-h-[720px]" />}>
-          <Instructors activeTab={mentorCategory} />
+          <Instructors />
         </Suspense>
-
       </div>
 
       {/* Footer sections: Now RSCs */}
