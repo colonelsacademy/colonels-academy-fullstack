@@ -58,7 +58,10 @@ async function exportLessonStructure() {
   }
 
   // Group lessons by chapter
-  const lessonsByChapter: Record<string, Array<{ id: string; title: string; position: number }>> = {};
+  const lessonsByChapter: Record<
+    string,
+    Array<{ id: string; title: string; position: number }>
+  > = {};
 
   course.lessons.forEach((lesson) => {
     const chapterKey = lesson.module?.chapterNumber
