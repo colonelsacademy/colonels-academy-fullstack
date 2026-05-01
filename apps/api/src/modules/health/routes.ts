@@ -33,6 +33,9 @@ async function readQueueDepths(
 }
 
 const healthRoutes: FastifyPluginAsync = async (fastify) => {
+  // ── GET /v1/health/live ────────────────────────────────────────────────────
+  // Liveness probe - always returns 200 if server is running
+  // Used by Railway/K8s to know if container should be restarted
   fastify.get("/live", async (request) => {
     const response: LivenessStatusResponse = {
       status: "ok",
@@ -43,6 +46,10 @@ const healthRoutes: FastifyPluginAsync = async (fastify) => {
     return response;
   });
 
+  // ── GET /v1/health & /v1/health/ready ──────────────────────────────────────
+  // Readiness probe - returns 200 if app can serve traffic
+  // Returns 503 if database or redis is down
+  // Used by Railway/K8s to know if traffic should be routed to this instance
   const readinessHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     const env = loadApiEnv();
     let database: HealthStatusResponse["services"]["database"] = "connected";

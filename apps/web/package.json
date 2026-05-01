@@ -14,6 +14,7 @@
     "@colonels-academy/contracts": "workspace:*",
     "@colonels-academy/database": "workspace:*",
     "@colonels-academy/ui": "workspace:*",
+    "@sentry/nextjs": "^10.50.0",
     "firebase": "^11.4.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",

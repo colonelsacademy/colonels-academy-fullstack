@@ -16,12 +16,21 @@ export async function seedArmyCommandStaff2083(prisma: PrismaClient) {
 
   // Step 1: Check for existing course - if it exists, just update it
   const existingCourse = await prisma.course.findUnique({
-    where: { slug: "army-command-staff-2083" }
+    where: { slug: "army-command-staff-2083" },
+    include: {
+      lessons: { select: { id: true } }
+    }
   });
 
+  if (existingCourse && existingCourse.lessons.length > 0) {
+    console.log("⚠️  Course already has lessons. Skipping seed to preserve manual changes.");
+    console.log(`   Found ${existingCourse.lessons.length} existing lessons.`);
+    console.log("   To reseed, delete all lessons first or use --force flag.");
+    return;
+  }
+
   if (existingCourse) {
-    console.log("ℹ️  Existing course found, updating...");
-    // Just update the course without deleting to preserve purchase history
+    console.log("ℹ️  Existing course found (no lessons), will seed...");
   } else {
     console.log("ℹ️  No existing course found, will create new one");
   }

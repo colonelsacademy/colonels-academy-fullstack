@@ -19,6 +19,7 @@ import ordersRoutes from "./modules/orders/routes";
 import authPlugin from "./plugins/auth";
 import infrastructurePlugin from "./plugins/infrastructure";
 import prismaPlugin from "./plugins/prisma";
+import sentryPlugin from "./plugins/sentry";
 
 export function buildApp() {
   const env = loadApiEnv();
@@ -52,6 +53,7 @@ export function buildApp() {
     timeWindow: env.API_RATE_LIMIT_WINDOW
   });
   void app.register(sensible);
+  void app.register(sentryPlugin);
   void app.register(prismaPlugin);
   void app.register(infrastructurePlugin);
   void app.register(authPlugin);

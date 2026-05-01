@@ -295,6 +295,31 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     return { ok: true };
   });
 
+  // ── GET /v1/admin/courses/:slug/chapters ───────────────────────────────────
+  fastify.get<{ Params: { slug: string } }>("/courses/:slug/chapters", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    const course = await fastify.prisma.course.findUnique({
+      where: { slug: request.params.slug },
+      select: { id: true }
+    });
+    if (!course) return reply.notFound("Course not found.");
+
+    const chapters = await fastify.prisma.module.findMany({
+      where: { courseId: course.id },
+      orderBy: [{ chapterNumber: "asc" }, { position: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        chapterNumber: true,
+        position: true
+      }
+    });
+
+    return { chapters };
+  });
+
   // ── GET /v1/admin/courses/:slug/lessons ────────────────────────────────────
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/lessons", async (request, reply) => {
     const user = await requireAdmin(request, reply);
@@ -321,7 +346,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         bunnyVideoId: true,
         pdfUrl: true,
         lessonContent: true,
-        moduleId: true
+        moduleId: true,
+        module: {
+          select: {
+            id: true,
+            title: true,
+            chapterNumber: true
+          }
+        }
       }
     });
 
@@ -335,11 +367,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       title: string;
       synopsis?: string;
       bunnyVideoId?: string;
+      pdfUrl?: string;
       durationMinutes?: number;
       accessKind?: string;
       contentType?: string;
       learningMode?: string;
       lessonContent?: unknown;
+      moduleId?: string | null;
     };
   }>("/courses/:slug/lessons", async (request, reply) => {
     const user = await requireAdmin(request, reply);
@@ -362,10 +396,12 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     const lesson = await fastify.prisma.lesson.create({
       data: {
         courseId: course.id,
+        moduleId: request.body.moduleId || null,
         title: request.body.title,
         synopsis: request.body.synopsis ?? "",
         position,
         bunnyVideoId: request.body.bunnyVideoId ?? null,
+        pdfUrl: request.body.pdfUrl ?? null,
         durationMinutes: request.body.durationMinutes ?? null,
         contentType:
           (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
@@ -407,24 +443,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       learningMode?: string;
       position?: number;
       lessonContent?: unknown;
+      moduleId?: string | null;
     };
   }>("/lessons/:id", async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
     const body = request.body || {};
-
-    // Debug: Log the raw request body
-    fastify.log.info(
-      {
-        lessonId: request.params.id,
-        rawBody: body,
-        bunnyVideoId: body.bunnyVideoId,
-        bunnyVideoIdType: typeof body.bunnyVideoId,
-        bunnyVideoIdUndefined: body.bunnyVideoId === undefined
-      },
-      "PATCH lesson - raw request body"
-    );
 
     // Build update data object explicitly
     const updateData: Record<string, unknown> = {};
@@ -442,19 +467,10 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     if (body.contentType) updateData.contentType = body.contentType;
     if (body.learningMode) updateData.learningMode = body.learningMode;
     if (body.position !== undefined) updateData.position = body.position;
+    if (body.moduleId !== undefined) updateData.moduleId = body.moduleId || null;
     if (body.lessonContent !== undefined) {
       updateData.lessonContent = body.lessonContent as Prisma.InputJsonValue;
     }
-
-    // Debug logging
-    fastify.log.info(
-      {
-        lessonId: request.params.id,
-        updateData,
-        bodyBunnyVideoId: body.bunnyVideoId
-      },
-      "Updating lesson"
-    );
 
     const lesson = await fastify.prisma.lesson.update({
       where: { id: request.params.id },

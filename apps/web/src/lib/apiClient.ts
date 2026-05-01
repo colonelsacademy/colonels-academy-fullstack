@@ -10,5 +10,5 @@ export const API_BASE_URL =
 
 // Log the resolved URL in development for debugging
 if (process.env.NODE_ENV === "development" && typeof window === "undefined") {
-  console.log("[API Client] Resolved API_BASE_URL:", API_BASE_URL);
+  console.debug("[API Client] Resolved API_BASE_URL:", API_BASE_URL);
 }

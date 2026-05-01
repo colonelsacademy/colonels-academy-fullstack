@@ -97,6 +97,7 @@ async function syncStaffCollegeCurriculum(courseId: string) {
           position: moduleSeed.position
         }
       },
+      // Only update structural metadata, never overwrite admin-managed content
       update: {
         phaseNumber: moduleSeed.phaseNumber,
         title: moduleSeed.title,
@@ -125,70 +126,65 @@ async function syncStaffCollegeCurriculum(courseId: string) {
     });
 
     for (const lessonSeed of moduleSeed.lessons) {
-      await prisma.lesson.upsert({
-        where: {
-          courseId_position: {
-            courseId,
-            position: lessonSeed.position
-          }
-        },
-        update: {
-          moduleId: moduleRecord.id,
-          phaseNumber: lessonSeed.phaseNumber,
-          title: lessonSeed.title,
-          synopsis: lessonSeed.synopsis,
-          contentType: lessonSeed.contentType,
-          learningMode: lessonSeed.learningMode,
-          accessKind: lessonSeed.accessKind,
-          durationMinutes: lessonSeed.durationMinutes ?? null,
-          lessonContent: lessonSeed.lessonContent as unknown as Prisma.InputJsonValue,
-          ...(lessonSeed.subjectArea
-            ? { subjectArea: lessonSeed.subjectArea }
-            : { subjectArea: null }),
-          ...(lessonSeed.componentCode
-            ? { componentCode: lessonSeed.componentCode }
-            : { componentCode: null }),
-          ...(lessonSeed.componentLabel
-            ? { componentLabel: lessonSeed.componentLabel }
-            : { componentLabel: null })
-        },
-        create: {
-          courseId,
-          moduleId: moduleRecord.id,
-          position: lessonSeed.position,
-          phaseNumber: lessonSeed.phaseNumber,
-          title: lessonSeed.title,
-          synopsis: lessonSeed.synopsis,
-          contentType: lessonSeed.contentType,
-          learningMode: lessonSeed.learningMode,
-          accessKind: lessonSeed.accessKind,
-          lessonContent: lessonSeed.lessonContent as unknown as Prisma.InputJsonValue,
-          ...(lessonSeed.durationMinutes ? { durationMinutes: lessonSeed.durationMinutes } : {}),
-          ...(lessonSeed.subjectArea ? { subjectArea: lessonSeed.subjectArea } : {}),
-          ...(lessonSeed.componentCode ? { componentCode: lessonSeed.componentCode } : {}),
-          ...(lessonSeed.componentLabel ? { componentLabel: lessonSeed.componentLabel } : {})
-        }
+      // Check if lesson already exists — if so, skip to preserve admin edits
+      const existing = await prisma.lesson.findUnique({
+        where: { courseId_position: { courseId, position: lessonSeed.position } },
+        select: { id: true }
       });
+
+      if (existing) {
+        // Only update structural fields, never overwrite bunnyVideoId, pdfUrl, or title edits
+        await prisma.lesson.update({
+          where: { id: existing.id },
+          data: {
+            moduleId: moduleRecord.id,
+            phaseNumber: lessonSeed.phaseNumber,
+            contentType: lessonSeed.contentType,
+            learningMode: lessonSeed.learningMode,
+            accessKind: lessonSeed.accessKind,
+            ...(lessonSeed.subjectArea ? { subjectArea: lessonSeed.subjectArea } : {}),
+            ...(lessonSeed.componentCode ? { componentCode: lessonSeed.componentCode } : {}),
+            ...(lessonSeed.componentLabel ? { componentLabel: lessonSeed.componentLabel } : {})
+          }
+        });
+      } else {
+        await prisma.lesson.create({
+          data: {
+            courseId,
+            moduleId: moduleRecord.id,
+            position: lessonSeed.position,
+            phaseNumber: lessonSeed.phaseNumber,
+            title: lessonSeed.title,
+            synopsis: lessonSeed.synopsis,
+            contentType: lessonSeed.contentType,
+            learningMode: lessonSeed.learningMode,
+            accessKind: lessonSeed.accessKind,
+            lessonContent: lessonSeed.lessonContent as unknown as Prisma.InputJsonValue,
+            ...(lessonSeed.durationMinutes ? { durationMinutes: lessonSeed.durationMinutes } : {}),
+            ...(lessonSeed.subjectArea ? { subjectArea: lessonSeed.subjectArea } : {}),
+            ...(lessonSeed.componentCode ? { componentCode: lessonSeed.componentCode } : {}),
+            ...(lessonSeed.componentLabel ? { componentLabel: lessonSeed.componentLabel } : {})
+          }
+        });
+      }
     }
   }
 
-  await prisma.lesson.deleteMany({
-    where: {
-      courseId,
-      position: {
-        gt: staffCollegeCurriculumSeed.lessonCount
+  // Only delete orphaned lessons if explicitly requested
+  if (process.env.SEED_RESET_CURRICULUM === "true") {
+    await prisma.lesson.deleteMany({
+      where: {
+        courseId,
+        position: { gt: staffCollegeCurriculumSeed.lessonCount }
       }
-    }
-  });
-
-  await prisma.module.deleteMany({
-    where: {
-      courseId,
-      position: {
-        gt: staffCollegeCurriculumSeed.modules.length
+    });
+    await prisma.module.deleteMany({
+      where: {
+        courseId,
+        position: { gt: staffCollegeCurriculumSeed.modules.length }
       }
-    }
-  });
+    });
+  }
 }
 
 async function main() {
