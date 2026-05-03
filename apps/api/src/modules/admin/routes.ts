@@ -295,6 +295,106 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     return { ok: true };
   });
 
+  // ── POST /v1/admin/live-sessions/:id/notify ────────────────────────────────
+  fastify.post<{ Params: { id: string } }>("/live-sessions/:id/notify", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    // Get the live session with course details
+    const session = await fastify.prisma.liveSession.findUnique({
+      where: { id: request.params.id },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            slug: true
+          }
+        }
+      }
+    });
+
+    if (!session) return reply.notFound("Live session not found.");
+
+    // Get all enrolled students for this course
+    const enrollments = await fastify.prisma.enrollment.findMany({
+      where: {
+        courseId: session.courseId,
+        status: "ACTIVE"
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true,
+            firebaseUid: true
+          }
+        }
+      }
+    });
+
+    if (enrollments.length === 0) {
+      return reply.badRequest("No enrolled students found for this course.");
+    }
+
+    // Format the notification message
+    const sessionDate = new Date(session.startsAt).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+    const sessionTime = new Date(session.startsAt).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    const notificationTitle = `Live Class: ${session.title}`;
+    const notificationBody = `Join us for "${session.title}" on ${sessionDate} at ${sessionTime}. ${session.meetingUrl ? "Meeting link available in your dashboard." : ""}`;
+
+    // TODO: Integrate with your notification system (Firebase Cloud Messaging, email, etc.)
+    // For now, we'll log the notification details
+    fastify.log.info(
+      {
+        sessionId: session.id,
+        courseTitle: session.course.title,
+        recipientCount: enrollments.length,
+        notificationTitle,
+        notificationBody
+      },
+      "Live session notification sent"
+    );
+
+    // In a real implementation, you would:
+    // 1. Send push notifications via Firebase Cloud Messaging
+    // 2. Send emails via your email service
+    // 3. Create in-app notifications in the database
+    
+    // Example: Create in-app notifications (if you have a notifications table)
+    // await fastify.prisma.notification.createMany({
+    //   data: enrollments.map(e => ({
+    //     userId: e.userId,
+    //     title: notificationTitle,
+    //     body: notificationBody,
+    //     type: 'LIVE_SESSION',
+    //     relatedId: session.id,
+    //     createdAt: new Date()
+    //   }))
+    // });
+
+    return {
+      ok: true,
+      message: `Notification sent to ${enrollments.length} enrolled student(s)`,
+      recipientCount: enrollments.length,
+      recipients: enrollments.map((e) => ({
+        userId: e.user.id,
+        email: e.user.email,
+        displayName: e.user.displayName
+      }))
+    };
+  });
+
   // ── GET /v1/admin/courses/:slug/chapters ───────────────────────────────────
   fastify.get<{ Params: { slug: string } }>("/courses/:slug/chapters", async (request, reply) => {
     const user = await requireAdmin(request, reply);

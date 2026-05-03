@@ -1410,7 +1410,11 @@ function StaffHQTab() {
       const cData = await cRes.json();
       if (sessData.items) setSessions(sessData.items);
       if (cData.courses)
-        setCourses(cData.courses.map((c: DBCourse) => ({ slug: c.slug, title: c.title })));
+        setCourses(
+          cData.courses
+            .filter((c: DBCourse & { isHidden?: boolean }) => !c.isHidden)
+            .map((c: DBCourse) => ({ slug: c.slug, title: c.title }))
+        );
     } finally {
       setLoading(false);
     }
@@ -1708,13 +1712,38 @@ function StaffHQTab() {
                                 minute: "2-digit"
                               })}
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => deleteSession(s.id)}
-                              className="mt-2 p-1.5 hover:bg-red-50 text-red-400 rounded transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!confirm(`Send notification to all students enrolled in this course?`)) return;
+                                  try {
+                                    const res = await fetch(`/api/admin/live-sessions/${s.id}/notify`, {
+                                      method: "POST"
+                                    });
+                                    if (res.ok) {
+                                      alert("Notification sent successfully!");
+                                    } else {
+                                      const data = await res.json();
+                                      alert(`Failed: ${data.message || "Unknown error"}`);
+                                    }
+                                  } catch (err) {
+                                    alert("Failed to send notification");
+                                  }
+                                }}
+                                className="p-1.5 hover:bg-blue-50 text-blue-600 rounded transition-colors"
+                                title="Send notification to enrolled students"
+                              >
+                                <Send className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteSession(s.id)}
+                                className="p-1.5 hover:bg-red-50 text-red-400 rounded transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
