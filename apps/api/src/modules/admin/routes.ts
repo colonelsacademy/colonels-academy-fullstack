@@ -3,7 +3,13 @@ import type { FastifyPluginAsync } from "fastify";
 
 import { getAssetUrl } from "@colonels-academy/config";
 
+import { AuditLogService } from "../../lib/audit-log";
+import { createAuditLogHook } from "../../lib/audit-log-middleware";
+
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
+  // Initialize audit log service
+  const auditLogService = new AuditLogService(fastify.prisma);
+
   // ── Auth guard helper ──────────────────────────────────────────────────────
   async function requireAdmin(
     request: Parameters<typeof fastify.authenticateRequest>[0],
@@ -65,6 +71,27 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── PATCH /v1/admin/users/:id/role ─────────────────────────────────────────
   fastify.patch<{ Params: { id: string }; Body: { role: string } }>(
     "/users/:id/role",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "ROLE_CHANGE",
+        resourceType: "User",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const user = await fastify.prisma.user.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: { id: true, email: true, role: true, displayName: true }
+          });
+          return user;
+        },
+        getAfterState: async (request) => {
+          const user = await fastify.prisma.user.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: { id: true, email: true, role: true, displayName: true }
+          });
+          return user;
+        }
+      })
+    },
     async (request, reply) => {
       const user = await requireAdmin(request, reply);
       if (!user) return;
@@ -127,7 +154,32 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       isFeatured?: boolean;
       isComingSoon?: boolean;
     };
-  }>("/courses", async (request, reply) => {
+  }>(
+    "/courses",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "CREATE",
+        resourceType: "Course",
+        getResourceId: (request) => (request.body as { slug: string }).slug,
+        getAfterState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.body as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true,
+              priceNpr: true,
+              isFeatured: true,
+              isComingSoon: true
+            }
+          });
+          return course;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
@@ -165,11 +217,66 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── PATCH /v1/admin/courses/:slug ──────────────────────────────────────────
   fastify.patch<{ Params: { slug: string }; Body: Record<string, unknown> }>(
     "/courses/:slug",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "UPDATE",
+        resourceType: "Course",
+        getResourceId: (request) => (request.params as { slug: string }).slug,
+        getBeforeState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.params as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true,
+              priceNpr: true,
+              isFeatured: true,
+              isComingSoon: true
+            }
+          });
+          return course;
+        },
+        getAfterState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.params as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true,
+              priceNpr: true,
+              isFeatured: true,
+              isComingSoon: true
+            }
+          });
+          return course;
+        }
+      })
+    },
     async (request, reply) => {
       const user = await requireAdmin(request, reply);
       if (!user) return;
 
-      const updateData: Record<string, unknown> = { ...(request.body ?? {}) };
+      // Only allow specific fields to be updated, filter out computed fields like _count
+      const allowedFields = [
+        'title', 'track', 'summary', 'description', 'level', 'durationLabel', 
+        'lessonCount', 'priceNpr', 'originalPriceNpr', 'accentColor', 'heroImageUrl',
+        'isFeatured', 'isComingSoon', 'isHidden', 'assessmentWeighting'
+      ];
+      
+      const requestBody = request.body as Record<string, unknown> ?? {};
+      const updateData: Record<string, unknown> = {};
+      
+      // Only include allowed fields in update data
+      for (const field of allowedFields) {
+        if (field in requestBody) {
+          updateData[field] = requestBody[field];
+        }
+      }
+
       if ("priceNpr" in updateData) {
         const price = updateData.priceNpr;
         if (
@@ -196,7 +303,29 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   );
 
   // ── DELETE /v1/admin/courses/:slug ─────────────────────────────────────────
-  fastify.delete<{ Params: { slug: string } }>("/courses/:slug", async (request, reply) => {
+  fastify.delete<{ Params: { slug: string } }>(
+    "/courses/:slug",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "DELETE",
+        resourceType: "Course",
+        getResourceId: (request) => (request.params as { slug: string }).slug,
+        getBeforeState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.params as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true
+            }
+          });
+          return course;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
@@ -262,7 +391,24 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       deliveryMode: string;
       meetingUrl?: string;
     };
-  }>("/live-sessions", async (request, reply) => {
+  }>(
+    "/live-sessions",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "CREATE",
+        resourceType: "LiveSession",
+        getResourceId: (request) => {
+          // The ID is generated by the database, so we need to extract it from the response
+          // For now, use the title as a temporary identifier
+          return (request.body as { title: string }).title;
+        },
+        getAfterState: async (request) => {
+          // Return the request body as the after state
+          return request.body as Record<string, unknown>;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
@@ -287,7 +433,29 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // ── DELETE /v1/admin/live-sessions/:id ─────────────────────────────────────
-  fastify.delete<{ Params: { id: string } }>("/live-sessions/:id", async (request, reply) => {
+  fastify.delete<{ Params: { id: string } }>(
+    "/live-sessions/:id",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "DELETE",
+        resourceType: "LiveSession",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const session = await fastify.prisma.liveSession.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              startsAt: true,
+              endsAt: true,
+              deliveryMode: true
+            }
+          });
+          return session;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
@@ -475,7 +643,19 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       lessonContent?: unknown;
       moduleId?: string | null;
     };
-  }>("/courses/:slug/lessons", async (request, reply) => {
+  }>(
+    "/courses/:slug/lessons",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "CREATE",
+        resourceType: "Lesson",
+        getResourceId: (request) => (request.body as { title: string }).title,
+        getAfterState: async (request) => {
+          return request.body as Record<string, unknown>;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
@@ -545,7 +725,44 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       lessonContent?: unknown;
       moduleId?: string | null;
     };
-  }>("/lessons/:id", async (request, reply) => {
+  }>(
+    "/lessons/:id",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "UPDATE",
+        resourceType: "Lesson",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const lesson = await fastify.prisma.lesson.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              synopsis: true,
+              contentType: true,
+              accessKind: true,
+              position: true
+            }
+          });
+          return lesson;
+        },
+        getAfterState: async (request) => {
+          const lesson = await fastify.prisma.lesson.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              synopsis: true,
+              contentType: true,
+              accessKind: true,
+              position: true
+            }
+          });
+          return lesson;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
@@ -591,7 +808,28 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // ── DELETE /v1/admin/lessons/:id ───────────────────────────────────────────
-  fastify.delete<{ Params: { id: string } }>("/lessons/:id", async (request, reply) => {
+  fastify.delete<{ Params: { id: string } }>(
+    "/lessons/:id",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "DELETE",
+        resourceType: "Lesson",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const lesson = await fastify.prisma.lesson.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              synopsis: true,
+              contentType: true
+            }
+          });
+          return lesson;
+        }
+      })
+    },
+    async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 

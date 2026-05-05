@@ -611,7 +611,9 @@ function LessonManager({ courseSlug, onClose }: { courseSlug: string; onClose: (
               <InputField
                 label="Title"
                 value={form.title}
-                onChange={(v) => setForm((p) => ({ ...p, title: v }))}
+                onChange={(v) => {
+                  setForm((p) => ({ ...p, title: v }));
+                }}
                 placeholder="e.g. Introduction to Command Writing"
               />
             </div>
@@ -1808,7 +1810,9 @@ function CourseListTab() {
 
   const handleEdit = (course: DBCourse) => {
     setEditingCourse(course);
-    setEditFormData(course);
+    // Only include updatable fields, exclude _count and other computed/system fields
+    const { _count, id, ...editableFields } = course;
+    setEditFormData(editableFields);
   };
 
   const handleSaveEdit = async () => {
@@ -2184,7 +2188,11 @@ function MissionLogTab() {
 
 // ─── Analytics Tab ────────────────────────────────────────────────────────────
 
+// ─── Analytics Tab ────────────────────────────────────────────────────────────
+
 function AnalyticsTab({ stats }: { stats: Stats }) {
+  const [activeSection, setActiveSection] = useState<"audit" | "attendance" | "payments">("audit");
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -2198,11 +2206,657 @@ function AnalyticsTab({ stats }: { stats: Stats }) {
         />
         <StatCard label="Paid Orders" value={stats.orderCount} icon={Activity} color="gold" />
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
-        <BarChart2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p className="text-sm font-medium">Detailed analytics charts coming soon</p>
-        <p className="text-xs mt-1">Revenue, enrollment trends, and course performance</p>
+
+      {/* Analytics Section Tabs */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex border-b border-gray-200">
+          <button
+            type="button"
+            onClick={() => setActiveSection("audit")}
+            className={`flex-1 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              activeSection === "audit"
+                ? "bg-[#D4AF37] text-[#0F1C15] border-b-2 border-[#D4AF37]"
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4 inline-block mr-2" />
+            Audit Log
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection("attendance")}
+            className={`flex-1 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              activeSection === "attendance"
+                ? "bg-[#D4AF37] text-[#0F1C15] border-b-2 border-[#D4AF37]"
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            <Users className="w-4 h-4 inline-block mr-2" />
+            User Activity
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection("payments")}
+            className={`flex-1 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              activeSection === "payments"
+                ? "bg-[#D4AF37] text-[#0F1C15] border-b-2 border-[#D4AF37]"
+                : "text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            <Activity className="w-4 h-4 inline-block mr-2" />
+            Payments
+          </button>
+        </div>
+
+        <div className="p-6">
+          {activeSection === "audit" && <AuditLogSection />}
+          {activeSection === "attendance" && <AttendanceSection />}
+          {activeSection === "payments" && <PaymentsSection />}
+        </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Audit Log Section ────────────────────────────────────────────────────────
+
+function AuditLogSection() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({
+    action: "",
+    resourceType: "",
+    timePeriod: "7" // Default to last 7 days
+  });
+
+  const loadLogs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Calculate date range based on time period
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - parseInt(filters.timePeriod));
+
+      const paramsObj: Record<string, string> = {
+        page: String(page),
+        limit: "20",
+        startDate: startDate.toISOString().split('T')[0] || "",
+        endDate: endDate.toISOString().split('T')[0] || ""
+      };
+
+      if (filters.action) paramsObj.action = filters.action;
+      if (filters.resourceType) paramsObj.resourceType = filters.resourceType;
+
+      const params = new URLSearchParams(paramsObj);
+
+      const [logsRes, statsRes] = await Promise.all([
+        fetch(`/api/admin/audit-logs?${params}`),
+        fetch("/api/admin/audit-logs/stats")
+      ]);
+
+      if (!logsRes.ok || !statsRes.ok) {
+        throw new Error("Failed to fetch audit logs");
+      }
+
+      const logsData = await logsRes.json();
+      const statsData = await statsRes.json();
+
+      if (logsData.logs) setLogs(logsData.logs);
+      if (statsData) setStats(statsData);
+    } catch (err) {
+      console.error("Failed to load audit logs:", err);
+      setError(err instanceof Error ? err.message : "Failed to load audit logs");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, filters]);
+
+  useEffect(() => {
+    loadLogs();
+  }, [loadLogs]);
+
+  return (
+    <div className="space-y-4">
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+          <ShieldAlert className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-red-900">{error}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="text-red-400 hover:text-red-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-2xl font-bold text-gray-900">{stats.totalEntries || 0}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">Total Entries</div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-2xl font-bold text-gray-900">
+              {Object.keys(stats.byAction || {}).length}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">Action Types</div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-2xl font-bold text-gray-900">
+              {Object.keys(stats.byResourceType || {}).length}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">Resource Types</div>
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">Filters</h3>
+          {(filters.action || filters.resourceType || filters.timePeriod !== "7") && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilters({ action: "", resourceType: "", timePeriod: "7" });
+                setPage(1);
+              }}
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+        <div className="space-y-3">
+          {/* Action and Resource Type Filters */}
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              value={filters.action}
+              onChange={(e) => {
+                setFilters((f) => ({ ...f, action: e.target.value }));
+                setPage(1);
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#D4AF37] outline-none"
+            >
+              <option value="">All Actions</option>
+              <option value="CREATE">Create</option>
+              <option value="UPDATE">Update</option>
+              <option value="DELETE">Delete</option>
+              <option value="ROLE_CHANGE">Role Change</option>
+            </select>
+            <select
+              value={filters.resourceType}
+              onChange={(e) => {
+                setFilters((f) => ({ ...f, resourceType: e.target.value }));
+                setPage(1);
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#D4AF37] outline-none"
+            >
+              <option value="">All Resources</option>
+              <option value="Course">Course</option>
+              <option value="Lesson">Lesson</option>
+              <option value="LiveSession">Live Session</option>
+              <option value="User">User</option>
+            </select>
+          </div>
+          
+          {/* Time Period Buttons */}
+          <div>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+              Time Period
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "1", label: "Last 24 hours" },
+                { value: "7", label: "Last 7 days" },
+                { value: "14", label: "Last 14 days" },
+                { value: "30", label: "Last 30 days" },
+                { value: "90", label: "Last 90 days" }
+              ].map((period) => (
+                <button
+                  key={period.value}
+                  type="button"
+                  onClick={() => {
+                    setFilters((f) => ({ ...f, timePeriod: period.value }));
+                    setPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                    filters.timePeriod === period.value
+                      ? "bg-[#D4AF37] text-[#0F1C15] border-[#D4AF37]"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  {period.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Logs Table */}
+      {loading ? (
+        <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
+          <Loader2 className="w-5 h-5 animate-spin" /> Loading audit logs...
+        </div>
+      ) : logs.length === 0 ? (
+        <div className="text-center py-8 text-gray-400">
+          <ShieldAlert className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm">No audit logs found</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th className="text-left px-4 py-3">Timestamp</th>
+                <th className="text-left px-4 py-3">User</th>
+                <th className="text-left px-4 py-3">Action</th>
+                <th className="text-left px-4 py-3">Resource</th>
+                <th className="text-left px-4 py-3">Resource ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr key={log.id} className="border-t border-gray-100 hover:bg-gray-50">
+                  <td className="px-4 py-3 text-xs text-gray-500">
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-900">{log.userName}</div>
+                    <div className="text-xs text-gray-500">{log.userEmail}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded font-bold uppercase ${
+                        log.action === "CREATE"
+                          ? "bg-green-100 text-green-700"
+                          : log.action === "UPDATE"
+                            ? "bg-blue-100 text-blue-700"
+                            : log.action === "DELETE"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-purple-100 text-purple-700"
+                      }`}
+                    >
+                      {log.action}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{log.resourceType}</td>
+                  <td className="px-4 py-3 text-xs text-gray-400 font-mono">
+                    {log.resourceId.slice(0, 12)}...
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="flex justify-between items-center pt-4">
+        <button
+          type="button"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600">Page {page}</span>
+        <button
+          type="button"
+          onClick={() => setPage((p) => p + 1)}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Attendance Section ───────────────────────────────────────────────────────
+
+function AttendanceSection() {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/admin/user-activity/stats")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch user activity stats");
+        return r.json();
+      })
+      .then((data) => setStats(data))
+      .catch((err) => {
+        console.error("Failed to load user activity stats:", err);
+        setError(err instanceof Error ? err.message : "Failed to load user activity data");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
+        <Loader2 className="w-5 h-5 animate-spin" /> Loading user activity...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-center gap-3">
+        <ShieldAlert className="w-6 h-6 text-red-600 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-red-900">{error}</p>
+          <p className="text-xs text-red-600 mt-1">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <p className="text-sm">No user activity data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wider">Total Users</div>
+        </div>
+        <div className="bg-green-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-green-700">{stats.activeUsers}</div>
+          <div className="text-xs text-green-600 uppercase tracking-wider">Active Users</div>
+        </div>
+        <div className="bg-blue-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-blue-700">{stats.newUsers}</div>
+          <div className="text-xs text-blue-600 uppercase tracking-wider">New Users (7 days)</div>
+        </div>
+        <div className="bg-purple-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-purple-700">
+            {Object.keys(stats.usersByRole || {}).length}
+          </div>
+          <div className="text-xs text-purple-600 uppercase tracking-wider">User Roles</div>
+        </div>
+      </div>
+
+      {/* Users by Role */}
+      {stats.usersByRole && Object.keys(stats.usersByRole).length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
+            Users by Role
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(stats.usersByRole).map(([role, count]: [string, any]) => (
+              <div
+                key={role}
+                className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-medium text-gray-900 uppercase text-sm">{role}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {((count / stats.totalUsers) * 100).toFixed(1)}% of total
+                  </div>
+                </div>
+                <div className="text-lg font-bold text-gray-900">{count}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Activity */}
+      {stats.recentActivity && stats.recentActivity.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
+            Recent User Activity
+          </h3>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="max-h-64 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider sticky top-0">
+                  <tr>
+                    <th className="text-left px-4 py-3">User</th>
+                    <th className="text-left px-4 py-3">Role</th>
+                    <th className="text-left px-4 py-3">Activity</th>
+                    <th className="text-left px-4 py-3">Joined</th>
+                    <th className="text-left px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.recentActivity.slice(0, 10).map((user: any) => (
+                    <tr key={user.id} className="border-t border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{user.displayName}</div>
+                        <div className="text-xs text-gray-500">{user.email}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded font-bold uppercase ${
+                            user.role === "ADMIN"
+                              ? "bg-red-100 text-red-700"
+                              : user.role === "INSTRUCTOR"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-600">
+                        {user.enrollmentCount} enrollments • {user.orderCount} orders
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded font-medium ${
+                            user.isActive
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {user.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Active Users */}
+      {stats.topActiveUsers && stats.topActiveUsers.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
+            Most Active Users
+          </h3>
+          <div className="space-y-2">
+            {stats.topActiveUsers.slice(0, 5).map((user: any, index: number) => (
+              <div
+                key={user.userId}
+                className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#D4AF37] text-[#0F1C15] rounded-full flex items-center justify-center text-sm font-bold">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">{user.displayName}</div>
+                    <div className="text-xs text-gray-500">{user.email}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-gray-900">
+                    {user.enrollmentCount + user.orderCount} activities
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {user.enrollmentCount} enrollments • {user.orderCount} orders
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Payments Section ─────────────────────────────────────────────────────────
+
+function PaymentsSection() {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/admin/payments/stats")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch payment stats");
+        return r.json();
+      })
+      .then((data) => setStats(data))
+      .catch((err) => {
+        console.error("Failed to load payment stats:", err);
+        setError(err instanceof Error ? err.message : "Failed to load payment data");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
+        <Loader2 className="w-5 h-5 animate-spin" /> Loading payment data...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-center gap-3">
+        <ShieldAlert className="w-6 h-6 text-red-600 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-red-900">{error}</p>
+          <p className="text-xs text-red-600 mt-1">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        <Activity className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <p className="text-sm">No payment data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-gray-900">{stats.totalAttempts}</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wider">Total Attempts</div>
+        </div>
+        <div className="bg-green-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-green-700">{stats.byStatus.success}</div>
+          <div className="text-xs text-green-600 uppercase tracking-wider">Successful</div>
+        </div>
+        <div className="bg-red-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-red-700">{stats.byStatus.failed}</div>
+          <div className="text-xs text-red-600 uppercase tracking-wider">Failed</div>
+        </div>
+        <div className="bg-blue-50 rounded-lg p-4">
+          <div className="text-2xl font-bold text-blue-700">{stats.successRate.toFixed(1)}%</div>
+          <div className="text-xs text-blue-600 uppercase tracking-wider">Success Rate</div>
+        </div>
+      </div>
+
+      {/* By Provider */}
+      {stats.byProvider && Object.keys(stats.byProvider).length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
+            Payment by Provider
+          </h3>
+          <div className="space-y-2">
+            {Object.entries(stats.byProvider).map(([provider, data]: [string, any]) => (
+              <div
+                key={provider}
+                className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-medium text-gray-900 uppercase">{provider}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {data.total} attempts • {data.success} success • {data.failed} failed
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-900">
+                    {data.successRate.toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-gray-500">success rate</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Common Errors */}
+      {stats.commonErrors && stats.commonErrors.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-3">
+            Common Errors
+          </h3>
+          <div className="space-y-2">
+            {stats.commonErrors.slice(0, 5).map((error: any) => (
+              <div
+                key={error.errorCode}
+                className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-medium text-red-900 font-mono text-sm">
+                    {error.errorCode}
+                  </div>
+                  <div className="text-xs text-red-600 mt-1">{error.count} occurrences</div>
+                </div>
+                <div className="text-lg font-bold text-red-700">{error.percentage.toFixed(1)}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

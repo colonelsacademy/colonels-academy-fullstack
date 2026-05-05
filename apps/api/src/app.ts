@@ -8,6 +8,7 @@ import Fastify from "fastify";
 import { loadApiEnv } from "@colonels-academy/config";
 
 import adminRoutes from "./modules/admin/routes";
+import auditLogRoutes from "./modules/audit-logs/routes";
 import authRoutes from "./modules/auth/routes";
 import catalogRoutes from "./modules/catalog/routes";
 import dsRoutes from "./modules/ds/routes";
@@ -16,6 +17,8 @@ import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
 import mockTestRoutes from "./modules/mock-test/routes";
 import ordersRoutes from "./modules/orders/routes";
+import paymentAnalyticsRoutes from "./modules/payment-analytics/routes";
+import userActivityRoutes from "./modules/user-activity/routes";
 import authPlugin from "./plugins/auth";
 import infrastructurePlugin from "./plugins/infrastructure";
 import prismaPlugin from "./plugins/prisma";
@@ -82,6 +85,15 @@ export function buildApp() {
   });
   void app.register(adminRoutes, {
     prefix: "/v1/admin"
+  });
+  void app.register(auditLogRoutes, {
+    prefix: "/v1/admin/audit-logs"
+  });
+  void app.register(paymentAnalyticsRoutes, {
+    prefix: "/v1/admin/payments"
+  });
+  void app.register(userActivityRoutes, {
+    prefix: "/v1"
   });
   void app.register(ordersRoutes, {
     prefix: "/v1/orders"

@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 
+import { PaymentService } from "../../lib/payment-tracking";
 import { getCachedUserId } from "../../lib/user-cache";
 
 type CreateOrderBody = {
@@ -12,6 +13,9 @@ type CreateOrderBody = {
 type ConfirmOrderParams = { Params: { orderId: string } };
 
 const ordersRoutes: FastifyPluginAsync = async (fastify) => {
+  // Initialize payment tracking service
+  const paymentService = new PaymentService(fastify.prisma);
+
   // ── POST /v1/orders ────────────────────────────────────────────────────────
   // Creates a PurchaseOrder and returns it. Frontend then initiates payment.
   fastify.post<CreateOrderBody>("/", async (request, reply) => {
@@ -68,6 +72,19 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
       },
       include: { items: { include: { course: { select: { slug: true, title: true } } } } }
     });
+
+    // Track payment attempt
+    try {
+      await paymentService.createAttempt({
+        userId,
+        amount: totalNpr,
+        provider: provider === "mock" ? "mock" : provider,
+        orderId: order.id
+      });
+    } catch (error) {
+      // Non-blocking: log error but don't fail order creation
+      fastify.log.error({ error, orderId: order.id }, "Failed to create payment attempt record");
+    }
 
     return {
       orderId: order.id,
@@ -128,6 +145,26 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
     });
+
+    // Track successful payment
+    try {
+      // Find the payment attempt for this order
+      const attempts = await paymentService.queryAttempts({
+        orderId: order.id,
+        limit: 1
+      });
+
+      if (attempts.attempts.length > 0) {
+        await paymentService.updateAttempt({
+          attemptId: attempts.attempts[0]!.id,
+          status: "SUCCESS",
+          transactionId: `mock-${order.id}-${Date.now()}`
+        });
+      }
+    } catch (error) {
+      // Non-blocking: log error but don't fail order confirmation
+      fastify.log.error({ error, orderId: order.id }, "Failed to update payment attempt record");
+    }
 
     // Return the first course slug for redirect
     const firstItem = await fastify.prisma.purchaseOrderItem.findFirst({
@@ -250,6 +287,22 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
         }
       });
 
+      // Track payment attempt
+      try {
+        await paymentService.createAttempt({
+          userId,
+          amount: module.chapterPrice,
+          provider: paymentMethod.toLowerCase(),
+          chapterPurchaseId: chapterPurchase.id
+        });
+      } catch (error) {
+        // Non-blocking: log error but don't fail purchase creation
+        fastify.log.error(
+          { error, chapterPurchaseId: chapterPurchase.id },
+          "Failed to create payment attempt record"
+        );
+      }
+
       // Initialize chapter progress
       await fastify.prisma.chapterProgress.upsert({
         where: {
@@ -371,6 +424,22 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
         }
       });
 
+      // Track payment attempt
+      try {
+        await paymentService.createAttempt({
+          userId,
+          amount: bundleOffer.bundlePrice,
+          provider: paymentMethod.toLowerCase(),
+          bundlePurchaseId: bundlePurchase.id
+        });
+      } catch (error) {
+        // Non-blocking: log error but don't fail purchase creation
+        fastify.log.error(
+          { error, bundlePurchaseId: bundlePurchase.id },
+          "Failed to create payment attempt record"
+        );
+      }
+
       // Return payment initiation data
       return {
         purchaseId: bundlePurchase.id,
@@ -442,6 +511,32 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
           ...(paymentStatus === "COMPLETED" ? { purchaseDate: new Date() } : {})
         }
       });
+
+      // Track payment result
+      try {
+        const attempts = await paymentService.queryAttempts({
+          limit: 1
+        });
+
+        // Find the attempt for this chapter purchase
+        const attempt = attempts.attempts.find((a) => a.orderId === purchaseId);
+
+        if (attempt) {
+          await paymentService.updateAttempt({
+            attemptId: attempt.id,
+            status: paymentStatus === "COMPLETED" ? "SUCCESS" : "FAILED",
+            transactionId: paymentStatus === "COMPLETED" ? transactionId : undefined,
+            errorCode: paymentStatus === "FAILED" ? "PAYMENT_FAILED" : undefined,
+            errorMessage: paymentStatus === "FAILED" ? "Payment was not completed" : undefined
+          });
+        }
+      } catch (error) {
+        // Non-blocking: log error but don't fail payment confirmation
+        fastify.log.error(
+          { error, purchaseId },
+          "Failed to update payment attempt record"
+        );
+      }
 
       if (paymentStatus === "COMPLETED") {
         // Unlock chapter by updating module
@@ -520,6 +615,32 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
             : {})
         }
       });
+
+      // Track payment result
+      try {
+        const attempts = await paymentService.queryAttempts({
+          limit: 1
+        });
+
+        // Find the attempt for this bundle purchase
+        const attempt = attempts.attempts.find((a) => a.orderId === purchaseId);
+
+        if (attempt) {
+          await paymentService.updateAttempt({
+            attemptId: attempt.id,
+            status: paymentStatus === "COMPLETED" ? "SUCCESS" : "FAILED",
+            transactionId: paymentStatus === "COMPLETED" ? transactionId : undefined,
+            errorCode: paymentStatus === "FAILED" ? "PAYMENT_FAILED" : undefined,
+            errorMessage: paymentStatus === "FAILED" ? "Payment was not completed" : undefined
+          });
+        }
+      } catch (error) {
+        // Non-blocking: log error but don't fail payment confirmation
+        fastify.log.error(
+          { error, purchaseId },
+          "Failed to update payment attempt record"
+        );
+      }
 
       if (paymentStatus === "COMPLETED") {
         const includedChapters = bundlePurchase.bundleOffer.includedChapters as number[];
