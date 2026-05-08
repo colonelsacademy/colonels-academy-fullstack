@@ -684,7 +684,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
               courseId: bundlePurchase.courseId,
               moduleId: module.id,
               chapterNumber: module.chapterNumber!,
-              amount: 0, // Part of bundle
+              amount: module.chapterPrice || 0, // Use actual chapter price
               paymentMethod: bundlePurchase.paymentMethod,
               paymentStatus: "COMPLETED",
               isBundle: true,

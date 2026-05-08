@@ -65,6 +65,16 @@ export function buildApp() {
     reply.header("x-request-id", request.id);
   });
 
+  // Root health check endpoint
+  app.get("/", async (request, reply) => {
+    return {
+      status: "ok",
+      service: "colonels-academy-api",
+      timestamp: new Date().toISOString(),
+      requestId: request.id
+    };
+  });
+
   void app.register(authRoutes, {
     prefix: "/v1/auth"
   });

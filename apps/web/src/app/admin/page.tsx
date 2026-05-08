@@ -1,6 +1,7 @@
 "use client";
 
 import { ToastContainer } from "@/components/admin/Toast";
+import { MockTestManager } from "@/components/admin/MockTestManager";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/hooks/useToast";
 import {
@@ -40,6 +41,7 @@ type Tab =
   | "courselist"
   | "enrollments"
   | "notifications"
+  | "mocktests"
   | "cadetiq"
   | "missionlog";
 
@@ -91,6 +93,7 @@ const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "courselist", label: "Courses", icon: BookMarked },
   { id: "enrollments", label: "Enrollments", icon: CheckSquare },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "mocktests", label: "Mock Tests", icon: ClipboardList },
   { id: "cadetiq", label: "Cadet IQ", icon: ClipboardList },
   { id: "missionlog", label: "Mission Log", icon: CheckSquare }
 ];
@@ -3046,6 +3049,8 @@ export default function AdminPage() {
         return <EnrollmentsTab />;
       case "notifications":
         return <NotificationsTab />;
+      case "mocktests":
+        return <MockTestManager />;
       case "cadetiq":
         return <CadetIQTab />;
       case "missionlog":
@@ -3062,6 +3067,7 @@ export default function AdminPage() {
     courselist: "Courses Management",
     enrollments: "Enrollments",
     notifications: "Notification Center",
+    mocktests: "Mock Test Management",
     cadetiq: "Cadet IQ Assessment",
     missionlog: "Mission Log"
   };
