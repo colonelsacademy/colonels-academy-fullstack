@@ -127,7 +127,7 @@ export class MockTestAttemptService {
    */
   private calculateScore(
     answers: Record<string, string>,
-    questions: Array<{ id: string; correctAnswer: string; [key: string]: any }>
+    questions: Array<{ id: string; correctAnswer: string; [key: string]: unknown }>
   ): number {
     let correctCount = 0;
 

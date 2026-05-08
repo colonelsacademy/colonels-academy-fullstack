@@ -104,7 +104,7 @@ export default function MockTestAttemptPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [attempt]);
+  }, [attempt, timeLeft, handleSubmit]);
 
   const handleAnswer = (letter: string) => {
     if (!test) return;
@@ -178,6 +178,7 @@ export default function MockTestAttemptPage() {
           <h2 className="text-xl font-bold text-[#0F1C15] mb-2">Error</h2>
           <p className="text-gray-600 mb-6">{error || "Failed to load test"}</p>
           <button
+            type="button"
             onClick={() => router.back()}
             className="w-full px-4 py-2 bg-[#0F1C15] text-white font-bold rounded-lg hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-colors"
           >
@@ -251,7 +252,7 @@ export default function MockTestAttemptPage() {
                   <div className="mb-6 rounded-lg overflow-hidden border border-gray-200">
                     <img
                       src={currentQuestion.imageUrl}
-                      alt="Question image"
+                      alt="Question"
                       className="w-full h-auto max-h-96 object-contain bg-gray-50"
                     />
                   </div>
@@ -265,7 +266,8 @@ export default function MockTestAttemptPage() {
 
                     return (
                       <button
-                        key={idx}
+                        type="button"
+                        key={`${currentQuestion.id}-${letter}`}
                         onClick={() => handleAnswer(letter)}
                         className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all ${
                           isSelected
@@ -283,6 +285,7 @@ export default function MockTestAttemptPage() {
               {/* Navigation */}
               <div className="flex items-center justify-between pt-8 border-t border-gray-200">
                 <button
+                  type="button"
                   onClick={handlePrev}
                   disabled={currentQuestionIndex === 0}
                   className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -292,6 +295,7 @@ export default function MockTestAttemptPage() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleNext}
                   disabled={currentQuestionIndex === test.questions.length - 1}
                   className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -301,6 +305,7 @@ export default function MockTestAttemptPage() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleSubmit}
                   disabled={submitting}
                   className="px-8 py-3 bg-[#0F1C15] text-white font-bold rounded-lg hover:bg-[#D4AF37] hover:text-[#0F1C15] disabled:opacity-50 disabled:cursor-not-allowed transition-colors uppercase tracking-wider"
@@ -342,6 +347,7 @@ export default function MockTestAttemptPage() {
               <div className="grid grid-cols-5 gap-2">
                 {test.questions.map((q, idx) => (
                   <button
+                    type="button"
                     key={q.id}
                     onClick={() => handleJump(idx)}
                     className={`aspect-square rounded-lg font-bold text-sm transition-all ${

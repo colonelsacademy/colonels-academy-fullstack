@@ -113,6 +113,7 @@ export default function MockExamsPage() {
           <div className="grid md:grid-cols-2 gap-6 max-w-2xl">
             {["Officer Cadet", "ASI"].map((pos) => (
               <button
+                type="button"
                 key={pos}
                 onClick={() => handlePositionSelect(pos)}
                 className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-lg hover:border-[#D4AF37] transition-all text-left"
@@ -140,6 +141,7 @@ export default function MockExamsPage() {
       <div className="min-h-screen bg-[#F3F4F6]">
         <div className="max-w-[1400px] mx-auto px-4 py-12">
           <button
+            type="button"
             onClick={handleBack}
             className="flex items-center gap-2 text-[#0F1C15] font-bold mb-8 hover:text-[#D4AF37] transition-colors"
           >
@@ -168,6 +170,7 @@ export default function MockExamsPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {subjects.map((subject) => (
                 <button
+                  type="button"
                   key={subject.id}
                   onClick={() => handleSubjectSelect(subject)}
                   className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-[#D4AF37] transition-all text-left"
@@ -198,6 +201,7 @@ export default function MockExamsPage() {
       <div className="min-h-screen bg-[#F3F4F6]">
         <div className="max-w-[1400px] mx-auto px-4 py-12">
           <button
+            type="button"
             onClick={handleBack}
             className="flex items-center gap-2 text-[#0F1C15] font-bold mb-8 hover:text-[#D4AF37] transition-colors"
           >
@@ -276,6 +280,7 @@ export default function MockExamsPage() {
                   )}
 
                   <button
+                    type="button"
                     onClick={() => handleStartTest(test.id)}
                     className="w-full px-6 py-3 bg-[#0F1C15] text-white font-bold rounded-xl hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-colors uppercase tracking-wider text-sm"
                   >

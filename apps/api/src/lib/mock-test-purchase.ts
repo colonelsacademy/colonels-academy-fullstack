@@ -49,7 +49,7 @@ export class MockTestPurchaseService {
         userId: data.userId,
         mockTestId: data.mockTestId,
         amount: data.amount,
-        paymentMethod: data.paymentMethod as any,
+        paymentMethod: data.paymentMethod as "ESEWA" | "KHALTI",
         paymentStatus: "PENDING"
       }
     });
