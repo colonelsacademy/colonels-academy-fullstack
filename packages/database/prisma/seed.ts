@@ -133,18 +133,12 @@ async function syncStaffCollegeCurriculum(courseId: string) {
       });
 
       if (existing) {
-        // Only update structural fields, never overwrite bunnyVideoId, pdfUrl, or title edits
+        // Lesson already exists - preserve ALL admin edits
+        // Only ensure it's linked to the correct module (structural relationship)
         await prisma.lesson.update({
           where: { id: existing.id },
           data: {
-            moduleId: moduleRecord.id,
-            phaseNumber: lessonSeed.phaseNumber,
-            contentType: lessonSeed.contentType,
-            learningMode: lessonSeed.learningMode,
-            accessKind: lessonSeed.accessKind,
-            ...(lessonSeed.subjectArea ? { subjectArea: lessonSeed.subjectArea } : {}),
-            ...(lessonSeed.componentCode ? { componentCode: lessonSeed.componentCode } : {}),
-            ...(lessonSeed.componentLabel ? { componentLabel: lessonSeed.componentLabel } : {})
+            moduleId: moduleRecord.id
           }
         });
       } else {
