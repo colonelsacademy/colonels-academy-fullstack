@@ -210,7 +210,7 @@ const REASONING_QUESTIONS: Question[] = [
   {
     questionText: "Find the next figure in the series.",
     options: ["A", "B", "C", "D"],
-    correctAnswer: "C",
+    correctAnswer: "A",
     explanation: "Triangle rotates 90° clockwise.",
     difficulty: 2,
     isImageBased: true,
@@ -219,7 +219,7 @@ const REASONING_QUESTIONS: Question[] = [
   {
     questionText: "Which option completes the pattern?",
     options: ["A", "B", "C", "D"],
-    correctAnswer: "B",
+    correctAnswer: "C",
     explanation: "Dots increase step by step.",
     difficulty: 2,
     isImageBased: true,
@@ -246,7 +246,7 @@ const REASONING_QUESTIONS: Question[] = [
   {
     questionText: "Find the missing figure.",
     options: ["A", "B", "C", "D"],
-    correctAnswer: "C",
+    correctAnswer: "D",
     explanation: "Pattern alternates between shapes.",
     difficulty: 2,
     isImageBased: true,
@@ -264,7 +264,7 @@ const REASONING_QUESTIONS: Question[] = [
   {
     questionText: "If a paper is folded and cut, which figure will be formed when unfolded?",
     options: ["A", "B", "C", "D"],
-    correctAnswer: "D",
+    correctAnswer: "A",
     explanation: "Symmetrical duplication after unfolding.",
     difficulty: 4,
     isImageBased: true,
