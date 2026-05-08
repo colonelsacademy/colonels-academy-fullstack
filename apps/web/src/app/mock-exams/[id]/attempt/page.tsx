@@ -104,7 +104,7 @@ export default function MockTestAttemptPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [attempt, timeLeft, handleSubmit]);
+  }, [attempt, timeLeft]);
 
   const handleAnswer = (letter: string) => {
     if (!test) return;

@@ -1723,7 +1723,7 @@ function StaffHQTab() {
                                 onClick={async () => {
                                   if (
                                     !confirm(
-                                      `Send notification to all students enrolled in this course?`
+                                      "Send notification to all students enrolled in this course?"
                                     )
                                   )
                                     return;
@@ -1740,7 +1740,7 @@ function StaffHQTab() {
                                       const data = await res.json();
                                       alert(`Failed: ${data.message || "Unknown error"}`);
                                     }
-                                  } catch (err) {
+                                  } catch (_err) {
                                     alert("Failed to send notification");
                                   }
                                 }}
