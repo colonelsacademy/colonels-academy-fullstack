@@ -213,7 +213,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "C",
     explanation: "Triangle rotates 90° clockwise.",
     difficulty: 2,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/1.png"
   },
   {
     questionText: "Which option completes the pattern?",
@@ -221,7 +222,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "B",
     explanation: "Dots increase step by step.",
     difficulty: 2,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/2.png"
   },
   {
     questionText: "Find the odd figure.",
@@ -229,7 +231,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "D",
     explanation: "Only one is not a complete shape.",
     difficulty: 2,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/3.png"
   },
   {
     questionText: "Select the correct mirror image.",
@@ -237,7 +240,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "A",
     explanation: "Horizontal flip gives correct mirror.",
     difficulty: 3,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/4.png"
   },
   {
     questionText: "Find the missing figure.",
@@ -245,7 +249,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "C",
     explanation: "Pattern alternates between shapes.",
     difficulty: 2,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/5.png"
   },
   {
     questionText: "Find which option contains the given figure.",
@@ -253,7 +258,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "B",
     explanation: "Hidden shape matches option B.",
     difficulty: 3,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/6.png"
   },
   {
     questionText: "If a paper is folded and cut, which figure will be formed when unfolded?",
@@ -261,7 +267,8 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "D",
     explanation: "Symmetrical duplication after unfolding.",
     difficulty: 4,
-    isImageBased: false
+    isImageBased: true,
+    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/7.png"
   },
   {
     questionText: "Find the synonym of 'Quick'.",
