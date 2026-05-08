@@ -213,8 +213,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "C",
     explanation: "Triangle rotates 90° clockwise.",
     difficulty: 2,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "Which option completes the pattern?",
@@ -222,8 +221,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "B",
     explanation: "Dots increase step by step.",
     difficulty: 2,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "Find the odd figure.",
@@ -231,8 +229,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "D",
     explanation: "Only one is not a complete shape.",
     difficulty: 2,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "Select the correct mirror image.",
@@ -240,8 +237,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "A",
     explanation: "Horizontal flip gives correct mirror.",
     difficulty: 3,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "Find the missing figure.",
@@ -249,8 +245,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "C",
     explanation: "Pattern alternates between shapes.",
     difficulty: 2,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "Find which option contains the given figure.",
@@ -258,8 +253,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "B",
     explanation: "Hidden shape matches option B.",
     difficulty: 3,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "If a paper is folded and cut, which figure will be formed when unfolded?",
@@ -267,8 +261,7 @@ const REASONING_QUESTIONS: Question[] = [
     correctAnswer: "D",
     explanation: "Symmetrical duplication after unfolding.",
     difficulty: 4,
-    isImageBased: false,
-    imageUrl: null
+    isImageBased: false
   },
   {
     questionText: "Find the synonym of 'Quick'.",
