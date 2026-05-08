@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "seed:asi-mock-tests": "tsx src/scripts/seed-asi-mock-tests.ts",
-    "seed:asi-questions": "tsx --env-file=../../.env src/scripts/seed-asi-questions.ts"
+    "seed:asi-questions": "tsx src/scripts/seed-asi-questions.ts"
   },
   "dependencies": {
     "@colonels-academy/config": "workspace:*",
