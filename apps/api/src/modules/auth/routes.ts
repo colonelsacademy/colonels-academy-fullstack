@@ -63,7 +63,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         try {
           const cachedUser = await getCachedUser(fastify, authResult.user.uid);
           if (cachedUser?.role) {
-            authResult.user.role = cachedUser.role.toLowerCase();
+            // Keep role as-is (uppercase from DB), don't convert to lowercase
+            authResult.user.role = cachedUser.role;
+            fastify.log.debug(
+              { uid: authResult.user.uid, role: authResult.user.role },
+              "User role set from cache"
+            );
           }
         } catch (error) {
           // If user not found in cache/db, sync them first
@@ -77,7 +82,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
           try {
             const cachedUser = await getCachedUser(fastify, authResult.user.uid);
             if (cachedUser?.role) {
-              authResult.user.role = cachedUser.role.toLowerCase();
+              authResult.user.role = cachedUser.role;
+              fastify.log.debug(
+                { uid: authResult.user.uid, role: authResult.user.role },
+                "User role set from cache after sync"
+              );
             }
           } catch (retryError) {
             fastify.log.error(
@@ -93,6 +102,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         user: authResult.user ? toSessionUser(authResult.user) : null,
         authMethod: authResult.method
       };
+
+      fastify.log.debug(
+        { authenticated: response.authenticated, role: response.user?.role },
+        "Session response"
+      );
 
       return response;
     }

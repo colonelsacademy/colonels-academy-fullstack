@@ -135,6 +135,7 @@ model User {
   email                String?                    @unique
   displayName          String?
   role                 UserRole                   @default(STUDENT)
+  roleVersion          Int                        @default(0) // Incremented when role changes
   createdAt            DateTime                   @default(now())
   updatedAt            DateTime                   @updatedAt
   enrollments          Enrollment[]

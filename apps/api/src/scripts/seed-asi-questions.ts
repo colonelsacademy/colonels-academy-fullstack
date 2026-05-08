@@ -198,7 +198,7 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Triangle rotates 90° clockwise.",
     difficulty: 2,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/1.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-1.jpg"
   },
   {
     questionText: "Which option completes the pattern?",
@@ -207,7 +207,7 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Dots increase step by step.",
     difficulty: 2,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/2.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-2.jpg"
   },
   {
     questionText: "Find the odd figure.",
@@ -216,7 +216,7 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Only one is not a complete shape.",
     difficulty: 2,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/3.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-3.jpg"
   },
   {
     questionText: "Select the correct mirror image.",
@@ -225,7 +225,7 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Horizontal flip gives correct mirror.",
     difficulty: 3,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/4.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-4.jpg"
   },
   {
     questionText: "Find the missing figure.",
@@ -234,7 +234,7 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Pattern alternates between shapes.",
     difficulty: 2,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/5.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-5.jpg"
   },
   {
     questionText: "Find which option contains the given figure.",
@@ -243,7 +243,7 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Hidden shape matches option B.",
     difficulty: 3,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/6.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-6.jpg"
   },
   {
     questionText: "If a paper is folded and cut, which figure will be formed when unfolded?",
@@ -252,151 +252,133 @@ const REASONING_QUESTIONS: Question[] = [
     explanation: "Symmetrical duplication after unfolding.",
     difficulty: 4,
     isImageBased: true,
-    imageUrl: "https://colonels-alpha.b-cdn.net/images/reasoning%20test/7.png"
+    imageUrl: "https://colonels-academy-cdn.b-cdn.net/questions/reasoning/nonverbal-7.jpg"
   },
   {
     questionText: "Find the synonym of 'Quick'.",
     options: ["Slow", "Fast", "Late", "Weak"],
     correctAnswer: "Fast",
     explanation: "Quick means fast.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Choose the odd word.",
     options: ["Dog", "Cat", "Tiger", "Car"],
     correctAnswer: "Car",
     explanation: "Car is not an animal.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Complete the analogy: Book : Read :: Pen : ?",
     options: ["Write", "Draw", "Ink", "Paper"],
     correctAnswer: "Write",
     explanation: "Pen is used to write.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Find the antonym of 'Strong'.",
     options: ["Powerful", "Weak", "Hard", "Solid"],
     correctAnswer: "Weak",
     explanation: "Weak is opposite of strong.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Rearrange letters: 'LPAET'",
     options: ["Plate", "Petal", "Leap", "Pleat"],
     correctAnswer: "Plate",
     explanation: "Correct arrangement forms 'Plate'.",
-    difficulty: 2,
-    isImageBased: false
+    difficulty: 2
   },
   {
     questionText: "Complete series: A, C, E, ?",
     options: ["F", "G", "H", "I"],
     correctAnswer: "G",
     explanation: "Skipping one letter each time.",
-    difficulty: 2,
-    isImageBased: false
+    difficulty: 2
   },
   {
     questionText: "Choose correct sentence.",
     options: ["He go school", "He goes to school", "He going school", "He gone school"],
     correctAnswer: "He goes to school",
     explanation: "Correct grammar usage.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Find the odd word.",
     options: ["Apple", "Banana", "Carrot", "Mango"],
     correctAnswer: "Carrot",
     explanation: "Carrot is a vegetable.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Find next number: 2, 4, 8, 16, ?",
     options: ["18", "24", "32", "30"],
     correctAnswer: "32",
     explanation: "Multiply by 2.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Find missing number: 3, 9, 27, ?",
     options: ["54", "81", "72", "63"],
     correctAnswer: "81",
     explanation: "Multiply by 3.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "What is 20% of 150?",
     options: ["20", "25", "30", "35"],
     correctAnswer: "30",
     explanation: "20% of 150 = 30.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Find average of 5, 10, 15.",
     options: ["10", "15", "20", "5"],
     correctAnswer: "10",
     explanation: "Average = sum/3.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "Find next: 5, 10, 20, 40, ?",
     options: ["60", "70", "80", "90"],
     correctAnswer: "80",
     explanation: "Doubling pattern.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "What is 25 × 4?",
     options: ["50", "75", "100", "125"],
     correctAnswer: "100",
     explanation: "25 × 4 = 100.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "If 1 dozen = 12, what is 4 dozen?",
     options: ["36", "48", "52", "60"],
     correctAnswer: "48",
     explanation: "4 × 12 = 48.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "What is 100 ÷ 5?",
     options: ["10", "20", "25", "30"],
     correctAnswer: "20",
     explanation: "100 ÷ 5 = 20.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "A man walks 12 km in 3 hours. Speed?",
     options: ["2", "3", "4", "5"],
     correctAnswer: "4",
     explanation: "Speed = 12/3 = 4 km/h.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   },
   {
     questionText: "What is 15 + 5 × 2?",
     options: ["20", "25", "30", "35"],
     correctAnswer: "25",
     explanation: "BODMAS rule.",
-    difficulty: 1,
-    isImageBased: false
+    difficulty: 1
   }
 ];
 

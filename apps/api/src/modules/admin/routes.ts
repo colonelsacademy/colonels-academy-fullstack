@@ -104,13 +104,21 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
       const updated = await fastify.prisma.user.update({
         where: { id: request.params.id },
-        data: { role: newRole as "STUDENT" | "INSTRUCTOR" | "DS" | "ADMIN" },
-        select: { id: true, email: true, role: true, firebaseUid: true }
+        data: { 
+          role: newRole as "STUDENT" | "INSTRUCTOR" | "DS" | "ADMIN",
+          roleVersion: { increment: 1 } // Increment version to trigger cache invalidation
+        },
+        select: { id: true, email: true, role: true, firebaseUid: true, roleVersion: true }
       });
 
-      // ✅ OPTIMIZED: Invalidate user cache when role changes
-      await fastify.cache.del(`user:${updated.firebaseUid}`);
-      fastify.log.info({ userId: updated.id, newRole }, "User cache invalidated after role change");
+      // ✅ CRITICAL: Invalidate user cache when role changes
+      // This ensures the next session check gets fresh data from DB
+      const cacheKey = `user:${updated.firebaseUid}`;
+      await fastify.cache.del(cacheKey);
+      fastify.log.info(
+        { userId: updated.id, newRole, firebaseUid: updated.firebaseUid, newRoleVersion: updated.roleVersion },
+        "User role updated, roleVersion incremented, and cache invalidated"
+      );
 
       return updated;
     }
