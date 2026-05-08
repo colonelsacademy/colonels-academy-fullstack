@@ -5,6 +5,7 @@ import { getAssetUrl } from "@colonels-academy/config";
 
 import { AuditLogService } from "../../lib/audit-log";
 import { createAuditLogHook } from "../../lib/audit-log-middleware";
+import adminMockTestRoutes from "../mock-tests/admin-routes";
 
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // Initialize audit log service
@@ -1233,6 +1234,9 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
     return reply.notFound("Purchase not found");
   });
+
+  // ── Register Mock Test Admin Routes ────────────────────────────────────────
+  await fastify.register(adminMockTestRoutes, { prefix: "/mock-tests" });
 };
 
 export default adminRoutes;
