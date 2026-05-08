@@ -15,7 +15,8 @@ import dsRoutes from "./modules/ds/routes";
 import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
-import mockTestRoutes from "./modules/mock-tests/routes";
+import mockTestRoutes from "./modules/mock-test/routes";
+import mockTestsRoutes from "./modules/mock-tests/routes";
 import ordersRoutes from "./modules/orders/routes";
 import paymentAnalyticsRoutes from "./modules/payment-analytics/routes";
 import userActivityRoutes from "./modules/user-activity/routes";
@@ -109,6 +110,9 @@ export function buildApp() {
     prefix: "/v1/orders"
   });
   void app.register(mockTestRoutes, {
+    prefix: "/v1/mock-test"
+  });
+  void app.register(mockTestsRoutes, {
     prefix: "/v1/mock-tests"
   });
 
