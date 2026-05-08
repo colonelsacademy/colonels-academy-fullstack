@@ -274,30 +274,38 @@ async function main() {
       }
     });
 
-    await prisma.courseInstructor.deleteMany({
-      where: { courseId: record.id }
+    // Only update course instructors if they don't exist (idempotent, safe)
+    // Never delete existing instructors to preserve user enrollments
+    const existingInstructors = await prisma.courseInstructor.findMany({
+      where: { courseId: record.id },
+      select: { instructorId: true }
     });
 
-    await prisma.courseInstructor.createMany({
-      data: course.instructorSlugs
-        .map((slug, index) => {
-          const instructorId = instructorIdsBySlug.get(slug);
+    const existingInstructorIds = new Set(existingInstructors.map((ci) => ci.instructorId));
 
-          if (!instructorId) {
-            return null;
-          }
+    const instructorsToAdd = course.instructorSlugs
+      .map((slug, index) => {
+        const instructorId = instructorIdsBySlug.get(slug);
 
-          return {
-            courseId: record.id,
-            instructorId,
-            displayOrder: index
-          };
-        })
-        .filter(
-          (value): value is { courseId: string; instructorId: string; displayOrder: number } =>
-            Boolean(value)
-        )
-    });
+        if (!instructorId || existingInstructorIds.has(instructorId)) {
+          return null;
+        }
+
+        return {
+          courseId: record.id,
+          instructorId,
+          displayOrder: index
+        };
+      })
+      .filter((value): value is { courseId: string; instructorId: string; displayOrder: number } =>
+        Boolean(value)
+      );
+
+    if (instructorsToAdd.length > 0) {
+      await prisma.courseInstructor.createMany({
+        data: instructorsToAdd
+      });
+    }
 
     if (course.slug === "staff-college-command") {
       await syncStaffCollegeCurriculum(record.id);

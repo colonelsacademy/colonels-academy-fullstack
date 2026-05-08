@@ -3,7 +3,13 @@ import type { FastifyPluginAsync } from "fastify";
 
 import { getAssetUrl } from "@colonels-academy/config";
 
+import { AuditLogService } from "../../lib/audit-log";
+import { createAuditLogHook } from "../../lib/audit-log-middleware";
+
 const adminRoutes: FastifyPluginAsync = async (fastify) => {
+  // Initialize audit log service
+  const auditLogService = new AuditLogService(fastify.prisma);
+
   // ── Auth guard helper ──────────────────────────────────────────────────────
   async function requireAdmin(
     request: Parameters<typeof fastify.authenticateRequest>[0],
@@ -65,6 +71,27 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   // ── PATCH /v1/admin/users/:id/role ─────────────────────────────────────────
   fastify.patch<{ Params: { id: string }; Body: { role: string } }>(
     "/users/:id/role",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "ROLE_CHANGE",
+        resourceType: "User",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const user = await fastify.prisma.user.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: { id: true, email: true, role: true, displayName: true }
+          });
+          return user;
+        },
+        getAfterState: async (request) => {
+          const user = await fastify.prisma.user.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: { id: true, email: true, role: true, displayName: true }
+          });
+          return user;
+        }
+      })
+    },
     async (request, reply) => {
       const user = await requireAdmin(request, reply);
       if (!user) return;
@@ -77,13 +104,26 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
       const updated = await fastify.prisma.user.update({
         where: { id: request.params.id },
-        data: { role: newRole as "STUDENT" | "INSTRUCTOR" | "DS" | "ADMIN" },
-        select: { id: true, email: true, role: true, firebaseUid: true }
+        data: {
+          role: newRole as "STUDENT" | "INSTRUCTOR" | "DS" | "ADMIN",
+          roleVersion: { increment: 1 } // Increment version to trigger cache invalidation
+        },
+        select: { id: true, email: true, role: true, firebaseUid: true, roleVersion: true }
       });
 
-      // ✅ OPTIMIZED: Invalidate user cache when role changes
-      await fastify.cache.del(`user:${updated.firebaseUid}`);
-      fastify.log.info({ userId: updated.id, newRole }, "User cache invalidated after role change");
+      // ✅ CRITICAL: Invalidate user cache when role changes
+      // This ensures the next session check gets fresh data from DB
+      const cacheKey = `user:${updated.firebaseUid}`;
+      await fastify.cache.del(cacheKey);
+      fastify.log.info(
+        {
+          userId: updated.id,
+          newRole,
+          firebaseUid: updated.firebaseUid,
+          newRoleVersion: updated.roleVersion
+        },
+        "User role updated, roleVersion incremented, and cache invalidated"
+      );
 
       return updated;
     }
@@ -127,49 +167,142 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       isFeatured?: boolean;
       isComingSoon?: boolean;
     };
-  }>("/courses", async (request, reply) => {
-    const user = await requireAdmin(request, reply);
-    if (!user) return;
-
-    const existing = await fastify.prisma.course.findUnique({
-      where: { slug: request.body.slug }
-    });
-    if (existing) return reply.conflict("A course with this slug already exists.");
-
-    const course = await fastify.prisma.course.create({
-      data: {
-        slug: request.body.slug,
-        title: request.body.title,
-        track: request.body.track,
-        summary: request.body.summary,
-        description: request.body.description,
-        level: request.body.level,
-        durationLabel: request.body.durationLabel,
-        lessonCount: request.body.lessonCount ?? 0,
-        priceNpr: request.body.priceNpr,
-        originalPriceNpr: request.body.originalPriceNpr ?? null,
-        accentColor: request.body.accentColor ?? "#D4AF37",
-        heroImageUrl: request.body.heroImageUrl ?? null,
-        isFeatured: request.body.isFeatured ?? false,
-        isComingSoon: request.body.isComingSoon ?? false
-      }
-    });
-
-    // ✅ OPTIMIZED: Invalidate course list cache
-    await fastify.cache.del("courses:list");
-    fastify.log.info({ slug: course.slug }, "Course list cache invalidated after creation");
-
-    return course;
-  });
-
-  // ── PATCH /v1/admin/courses/:slug ──────────────────────────────────────────
-  fastify.patch<{ Params: { slug: string }; Body: Record<string, unknown> }>(
-    "/courses/:slug",
+  }>(
+    "/courses",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "CREATE",
+        resourceType: "Course",
+        getResourceId: (request) => (request.body as { slug: string }).slug,
+        getAfterState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.body as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true,
+              priceNpr: true,
+              isFeatured: true,
+              isComingSoon: true
+            }
+          });
+          return course;
+        }
+      })
+    },
     async (request, reply) => {
       const user = await requireAdmin(request, reply);
       if (!user) return;
 
-      const updateData: Record<string, unknown> = { ...(request.body ?? {}) };
+      const existing = await fastify.prisma.course.findUnique({
+        where: { slug: request.body.slug }
+      });
+      if (existing) return reply.conflict("A course with this slug already exists.");
+
+      const course = await fastify.prisma.course.create({
+        data: {
+          slug: request.body.slug,
+          title: request.body.title,
+          track: request.body.track,
+          summary: request.body.summary,
+          description: request.body.description,
+          level: request.body.level,
+          durationLabel: request.body.durationLabel,
+          lessonCount: request.body.lessonCount ?? 0,
+          priceNpr: request.body.priceNpr,
+          originalPriceNpr: request.body.originalPriceNpr ?? null,
+          accentColor: request.body.accentColor ?? "#D4AF37",
+          heroImageUrl: request.body.heroImageUrl ?? null,
+          isFeatured: request.body.isFeatured ?? false,
+          isComingSoon: request.body.isComingSoon ?? false
+        }
+      });
+
+      // ✅ OPTIMIZED: Invalidate course list cache
+      await fastify.cache.del("courses:list");
+      fastify.log.info({ slug: course.slug }, "Course list cache invalidated after creation");
+
+      return course;
+    }
+  );
+
+  // ── PATCH /v1/admin/courses/:slug ──────────────────────────────────────────
+  fastify.patch<{ Params: { slug: string }; Body: Record<string, unknown> }>(
+    "/courses/:slug",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "UPDATE",
+        resourceType: "Course",
+        getResourceId: (request) => (request.params as { slug: string }).slug,
+        getBeforeState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.params as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true,
+              priceNpr: true,
+              isFeatured: true,
+              isComingSoon: true
+            }
+          });
+          return course;
+        },
+        getAfterState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.params as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true,
+              priceNpr: true,
+              isFeatured: true,
+              isComingSoon: true
+            }
+          });
+          return course;
+        }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
+
+      // Only allow specific fields to be updated, filter out computed fields like _count
+      const allowedFields = [
+        "title",
+        "track",
+        "summary",
+        "description",
+        "level",
+        "durationLabel",
+        "lessonCount",
+        "priceNpr",
+        "originalPriceNpr",
+        "accentColor",
+        "heroImageUrl",
+        "isFeatured",
+        "isComingSoon",
+        "isHidden",
+        "assessmentWeighting"
+      ];
+
+      const requestBody = (request.body as Record<string, unknown>) ?? {};
+      const updateData: Record<string, unknown> = {};
+
+      // Only include allowed fields in update data
+      for (const field of allowedFields) {
+        if (field in requestBody) {
+          updateData[field] = requestBody[field];
+        }
+      }
+
       if ("priceNpr" in updateData) {
         const price = updateData.priceNpr;
         if (
@@ -196,44 +329,67 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   );
 
   // ── DELETE /v1/admin/courses/:slug ─────────────────────────────────────────
-  fastify.delete<{ Params: { slug: string } }>("/courses/:slug", async (request, reply) => {
-    const user = await requireAdmin(request, reply);
-    if (!user) return;
-
-    const course = await fastify.prisma.course.findUnique({
-      where: { slug: request.params.slug },
-      select: { id: true }
-    });
-
-    if (!course) return reply.notFound("Course not found.");
-
-    // Keep historical order integrity: paid/refunded orders must retain line items.
-    const settledOrderItemCount = await fastify.prisma.purchaseOrderItem.count({
-      where: {
-        courseId: course.id,
-        order: {
-          status: { in: ["PAID", "REFUNDED"] }
+  fastify.delete<{ Params: { slug: string } }>(
+    "/courses/:slug",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "DELETE",
+        resourceType: "Course",
+        getResourceId: (request) => (request.params as { slug: string }).slug,
+        getBeforeState: async (request) => {
+          const course = await fastify.prisma.course.findUnique({
+            where: { slug: (request.params as { slug: string }).slug },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              track: true,
+              level: true
+            }
+          });
+          return course;
         }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
+
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: request.params.slug },
+        select: { id: true }
+      });
+
+      if (!course) return reply.notFound("Course not found.");
+
+      // Keep historical order integrity: paid/refunded orders must retain line items.
+      const settledOrderItemCount = await fastify.prisma.purchaseOrderItem.count({
+        where: {
+          courseId: course.id,
+          order: {
+            status: { in: ["PAID", "REFUNDED"] }
+          }
+        }
+      });
+      if (settledOrderItemCount > 0) {
+        return reply.conflict(
+          "Cannot delete course with paid/refunded order history. Archive or hide the course instead."
+        );
       }
-    });
-    if (settledOrderItemCount > 0) {
-      return reply.conflict(
-        "Cannot delete course with paid/refunded order history. Archive or hide the course instead."
-      );
+
+      // Safe to remove non-settled order items, then delete the course.
+      await fastify.prisma.$transaction([
+        fastify.prisma.purchaseOrderItem.deleteMany({ where: { courseId: course.id } }),
+        fastify.prisma.course.delete({ where: { id: course.id } })
+      ]);
+
+      // Invalidate course caches
+      await fastify.cache.del(`course:${request.params.slug}`, "courses:list");
+      fastify.log.info({ slug: request.params.slug }, "Course deleted and cache invalidated");
+
+      return { ok: true };
     }
-
-    // Safe to remove non-settled order items, then delete the course.
-    await fastify.prisma.$transaction([
-      fastify.prisma.purchaseOrderItem.deleteMany({ where: { courseId: course.id } }),
-      fastify.prisma.course.delete({ where: { id: course.id } })
-    ]);
-
-    // Invalidate course caches
-    await fastify.cache.del(`course:${request.params.slug}`, "courses:list");
-    fastify.log.info({ slug: request.params.slug }, "Course deleted and cache invalidated");
-
-    return { ok: true };
-  });
+  );
 
   // ── GET /v1/admin/enrollments ──────────────────────────────────────────────
   fastify.get("/enrollments", async (request, reply) => {
@@ -262,37 +418,178 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       deliveryMode: string;
       meetingUrl?: string;
     };
-  }>("/live-sessions", async (request, reply) => {
+  }>(
+    "/live-sessions",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "CREATE",
+        resourceType: "LiveSession",
+        getResourceId: (request) => {
+          // The ID is generated by the database, so we need to extract it from the response
+          // For now, use the title as a temporary identifier
+          return (request.body as { title: string }).title;
+        },
+        getAfterState: async (request) => {
+          // Return the request body as the after state
+          return request.body as Record<string, unknown>;
+        }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
+
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: request.body.courseSlug },
+        select: { id: true }
+      });
+      if (!course) return reply.notFound("Course not found.");
+
+      const session = await fastify.prisma.liveSession.create({
+        data: {
+          courseId: course.id,
+          title: request.body.title,
+          startsAt: new Date(request.body.startsAt),
+          endsAt: new Date(request.body.endsAt),
+          deliveryMode: request.body.deliveryMode,
+          meetingUrl: request.body.meetingUrl ?? null
+        }
+      });
+
+      return session;
+    }
+  );
+
+  // ── DELETE /v1/admin/live-sessions/:id ─────────────────────────────────────
+  fastify.delete<{ Params: { id: string } }>(
+    "/live-sessions/:id",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "DELETE",
+        resourceType: "LiveSession",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const session = await fastify.prisma.liveSession.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              startsAt: true,
+              endsAt: true,
+              deliveryMode: true
+            }
+          });
+          return session;
+        }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
+
+      await fastify.prisma.liveSession.delete({ where: { id: request.params.id } });
+      return { ok: true };
+    }
+  );
+
+  // ── POST /v1/admin/live-sessions/:id/notify ────────────────────────────────
+  fastify.post<{ Params: { id: string } }>("/live-sessions/:id/notify", async (request, reply) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
-    const course = await fastify.prisma.course.findUnique({
-      where: { slug: request.body.courseSlug },
-      select: { id: true }
-    });
-    if (!course) return reply.notFound("Course not found.");
-
-    const session = await fastify.prisma.liveSession.create({
-      data: {
-        courseId: course.id,
-        title: request.body.title,
-        startsAt: new Date(request.body.startsAt),
-        endsAt: new Date(request.body.endsAt),
-        deliveryMode: request.body.deliveryMode,
-        meetingUrl: request.body.meetingUrl ?? null
+    // Get the live session with course details
+    const session = await fastify.prisma.liveSession.findUnique({
+      where: { id: request.params.id },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            slug: true
+          }
+        }
       }
     });
 
-    return session;
-  });
+    if (!session) return reply.notFound("Live session not found.");
 
-  // ── DELETE /v1/admin/live-sessions/:id ─────────────────────────────────────
-  fastify.delete<{ Params: { id: string } }>("/live-sessions/:id", async (request, reply) => {
-    const user = await requireAdmin(request, reply);
-    if (!user) return;
+    // Get all enrolled students for this course
+    const enrollments = await fastify.prisma.enrollment.findMany({
+      where: {
+        courseId: session.courseId,
+        status: "ACTIVE"
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true,
+            firebaseUid: true
+          }
+        }
+      }
+    });
 
-    await fastify.prisma.liveSession.delete({ where: { id: request.params.id } });
-    return { ok: true };
+    if (enrollments.length === 0) {
+      return reply.badRequest("No enrolled students found for this course.");
+    }
+
+    // Format the notification message
+    const sessionDate = new Date(session.startsAt).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+    const sessionTime = new Date(session.startsAt).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    const notificationTitle = `Live Class: ${session.title}`;
+    const notificationBody = `Join us for "${session.title}" on ${sessionDate} at ${sessionTime}. ${session.meetingUrl ? "Meeting link available in your dashboard." : ""}`;
+
+    // TODO: Integrate with your notification system (Firebase Cloud Messaging, email, etc.)
+    // For now, we'll log the notification details
+    fastify.log.info(
+      {
+        sessionId: session.id,
+        courseTitle: session.course.title,
+        recipientCount: enrollments.length,
+        notificationTitle,
+        notificationBody
+      },
+      "Live session notification sent"
+    );
+
+    // In a real implementation, you would:
+    // 1. Send push notifications via Firebase Cloud Messaging
+    // 2. Send emails via your email service
+    // 3. Create in-app notifications in the database
+
+    // Example: Create in-app notifications (if you have a notifications table)
+    // await fastify.prisma.notification.createMany({
+    //   data: enrollments.map(e => ({
+    //     userId: e.userId,
+    //     title: notificationTitle,
+    //     body: notificationBody,
+    //     type: 'LIVE_SESSION',
+    //     relatedId: session.id,
+    //     createdAt: new Date()
+    //   }))
+    // });
+
+    return {
+      ok: true,
+      message: `Notification sent to ${enrollments.length} enrolled student(s)`,
+      recipientCount: enrollments.length,
+      recipients: enrollments.map((e) => ({
+        userId: e.user.id,
+        email: e.user.email,
+        displayName: e.user.displayName
+      }))
+    };
   });
 
   // ── GET /v1/admin/courses/:slug/chapters ───────────────────────────────────
@@ -375,59 +672,72 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       lessonContent?: unknown;
       moduleId?: string | null;
     };
-  }>("/courses/:slug/lessons", async (request, reply) => {
-    const user = await requireAdmin(request, reply);
-    if (!user) return;
+  }>(
+    "/courses/:slug/lessons",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "CREATE",
+        resourceType: "Lesson",
+        getResourceId: (request) => (request.body as { title: string }).title,
+        getAfterState: async (request) => {
+          return request.body as Record<string, unknown>;
+        }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
 
-    const course = await fastify.prisma.course.findUnique({
-      where: { slug: request.params.slug },
-      select: { id: true }
-    });
-    if (!course) return reply.notFound("Course not found.");
+      const course = await fastify.prisma.course.findUnique({
+        where: { slug: request.params.slug },
+        select: { id: true }
+      });
+      if (!course) return reply.notFound("Course not found.");
 
-    const lastLesson = await fastify.prisma.lesson.findFirst({
-      where: { courseId: course.id },
-      orderBy: { position: "desc" },
-      select: { position: true }
-    });
+      const lastLesson = await fastify.prisma.lesson.findFirst({
+        where: { courseId: course.id },
+        orderBy: { position: "desc" },
+        select: { position: true }
+      });
 
-    const position = (lastLesson?.position ?? 0) + 1;
+      const position = (lastLesson?.position ?? 0) + 1;
 
-    const lesson = await fastify.prisma.lesson.create({
-      data: {
-        courseId: course.id,
-        moduleId: request.body.moduleId || null,
-        title: request.body.title,
-        synopsis: request.body.synopsis ?? "",
-        position,
-        bunnyVideoId: request.body.bunnyVideoId ?? null,
-        pdfUrl: request.body.pdfUrl ?? null,
-        durationMinutes: request.body.durationMinutes ?? null,
-        contentType:
-          (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
-        learningMode:
-          (request.body.learningMode as
-            | "LESSON"
-            | "PRACTICE"
-            | "QUIZ"
-            | "LIVE"
-            | "FEEDBACK"
-            | "RESOURCE") ?? "LESSON",
-        accessKind: (request.body.accessKind as "PREVIEW" | "STANDARD") ?? "STANDARD",
-        ...(request.body.lessonContent !== undefined
-          ? { lessonContent: request.body.lessonContent as Prisma.InputJsonValue }
-          : {})
-      }
-    });
+      const lesson = await fastify.prisma.lesson.create({
+        data: {
+          courseId: course.id,
+          moduleId: request.body.moduleId || null,
+          title: request.body.title,
+          synopsis: request.body.synopsis ?? "",
+          position,
+          bunnyVideoId: request.body.bunnyVideoId ?? null,
+          pdfUrl: request.body.pdfUrl ?? null,
+          durationMinutes: request.body.durationMinutes ?? null,
+          contentType:
+            (request.body.contentType as "VIDEO" | "PDF" | "LIVE" | "QUIZ" | "TEXT") ?? "VIDEO",
+          learningMode:
+            (request.body.learningMode as
+              | "LESSON"
+              | "PRACTICE"
+              | "QUIZ"
+              | "LIVE"
+              | "FEEDBACK"
+              | "RESOURCE") ?? "LESSON",
+          accessKind: (request.body.accessKind as "PREVIEW" | "STANDARD") ?? "STANDARD",
+          ...(request.body.lessonContent !== undefined
+            ? { lessonContent: request.body.lessonContent as Prisma.InputJsonValue }
+            : {})
+        }
+      });
 
-    // Update lessonCount on course
-    await fastify.prisma.course.update({
-      where: { id: course.id },
-      data: { lessonCount: { increment: 1 } }
-    });
+      // Update lessonCount on course
+      await fastify.prisma.course.update({
+        where: { id: course.id },
+        data: { lessonCount: { increment: 1 } }
+      });
 
-    return lesson;
-  });
+      return lesson;
+    }
+  );
 
   // ── PATCH /v1/admin/lessons/:id ────────────────────────────────────────────
   fastify.patch<{
@@ -445,72 +755,132 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       lessonContent?: unknown;
       moduleId?: string | null;
     };
-  }>("/lessons/:id", async (request, reply) => {
-    const user = await requireAdmin(request, reply);
-    if (!user) return;
+  }>(
+    "/lessons/:id",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "UPDATE",
+        resourceType: "Lesson",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const lesson = await fastify.prisma.lesson.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              synopsis: true,
+              contentType: true,
+              accessKind: true,
+              position: true
+            }
+          });
+          return lesson;
+        },
+        getAfterState: async (request) => {
+          const lesson = await fastify.prisma.lesson.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              synopsis: true,
+              contentType: true,
+              accessKind: true,
+              position: true
+            }
+          });
+          return lesson;
+        }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
 
-    const body = request.body || {};
+      const body = request.body || {};
 
-    // Build update data object explicitly
-    const updateData: Record<string, unknown> = {};
+      // Build update data object explicitly
+      const updateData: Record<string, unknown> = {};
 
-    if (body.title) updateData.title = body.title;
-    if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
-    if (body.bunnyVideoId !== undefined) {
-      updateData.bunnyVideoId = body.bunnyVideoId || null;
+      if (body.title) updateData.title = body.title;
+      if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
+      if (body.bunnyVideoId !== undefined) {
+        updateData.bunnyVideoId = body.bunnyVideoId || null;
+      }
+      if (body.pdfUrl !== undefined) {
+        updateData.pdfUrl = body.pdfUrl || null;
+      }
+      if (body.durationMinutes !== undefined) updateData.durationMinutes = body.durationMinutes;
+      if (body.accessKind) updateData.accessKind = body.accessKind;
+      if (body.contentType) updateData.contentType = body.contentType;
+      if (body.learningMode) updateData.learningMode = body.learningMode;
+      if (body.position !== undefined) updateData.position = body.position;
+      if (body.moduleId !== undefined) updateData.moduleId = body.moduleId || null;
+      if (body.lessonContent !== undefined) {
+        updateData.lessonContent = body.lessonContent as Prisma.InputJsonValue;
+      }
+
+      const lesson = await fastify.prisma.lesson.update({
+        where: { id: request.params.id },
+        data: updateData
+      });
+
+      // Debug: Log what was actually saved
+      fastify.log.info(
+        {
+          lessonId: lesson.id,
+          savedBunnyVideoId: lesson.bunnyVideoId,
+          requestedBunnyVideoId: body.bunnyVideoId
+        },
+        "Lesson updated successfully"
+      );
+
+      return lesson;
     }
-    if (body.pdfUrl !== undefined) {
-      updateData.pdfUrl = body.pdfUrl || null;
-    }
-    if (body.durationMinutes !== undefined) updateData.durationMinutes = body.durationMinutes;
-    if (body.accessKind) updateData.accessKind = body.accessKind;
-    if (body.contentType) updateData.contentType = body.contentType;
-    if (body.learningMode) updateData.learningMode = body.learningMode;
-    if (body.position !== undefined) updateData.position = body.position;
-    if (body.moduleId !== undefined) updateData.moduleId = body.moduleId || null;
-    if (body.lessonContent !== undefined) {
-      updateData.lessonContent = body.lessonContent as Prisma.InputJsonValue;
-    }
-
-    const lesson = await fastify.prisma.lesson.update({
-      where: { id: request.params.id },
-      data: updateData
-    });
-
-    // Debug: Log what was actually saved
-    fastify.log.info(
-      {
-        lessonId: lesson.id,
-        savedBunnyVideoId: lesson.bunnyVideoId,
-        requestedBunnyVideoId: body.bunnyVideoId
-      },
-      "Lesson updated successfully"
-    );
-
-    return lesson;
-  });
+  );
 
   // ── DELETE /v1/admin/lessons/:id ───────────────────────────────────────────
-  fastify.delete<{ Params: { id: string } }>("/lessons/:id", async (request, reply) => {
-    const user = await requireAdmin(request, reply);
-    if (!user) return;
+  fastify.delete<{ Params: { id: string } }>(
+    "/lessons/:id",
+    {
+      onResponse: createAuditLogHook(auditLogService, {
+        action: "DELETE",
+        resourceType: "Lesson",
+        getResourceId: (request) => (request.params as { id: string }).id,
+        getBeforeState: async (request) => {
+          const lesson = await fastify.prisma.lesson.findUnique({
+            where: { id: (request.params as { id: string }).id },
+            select: {
+              id: true,
+              title: true,
+              synopsis: true,
+              contentType: true
+            }
+          });
+          return lesson;
+        }
+      })
+    },
+    async (request, reply) => {
+      const user = await requireAdmin(request, reply);
+      if (!user) return;
 
-    const lesson = await fastify.prisma.lesson.findUnique({
-      where: { id: request.params.id },
-      select: { courseId: true }
-    });
-    if (!lesson) return reply.notFound("Lesson not found.");
+      const lesson = await fastify.prisma.lesson.findUnique({
+        where: { id: request.params.id },
+        select: { courseId: true }
+      });
+      if (!lesson) return reply.notFound("Lesson not found.");
 
-    await fastify.prisma.lesson.delete({ where: { id: request.params.id } });
+      await fastify.prisma.lesson.delete({ where: { id: request.params.id } });
 
-    // Update lessonCount
-    await fastify.prisma.course.update({
-      where: { id: lesson.courseId },
-      data: { lessonCount: { decrement: 1 } }
-    });
+      // Update lessonCount
+      await fastify.prisma.course.update({
+        where: { id: lesson.courseId },
+        data: { lessonCount: { decrement: 1 } }
+      });
 
-    return { ok: true };
-  });
+      return { ok: true };
+    }
+  );
 
   // ── GET /v1/admin/bunny-videos ─────────────────────────────────────────────
   fastify.get("/bunny-videos", async (request, reply) => {

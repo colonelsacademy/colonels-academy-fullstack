@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
       if (sessionRes.ok) {
         const sessionData = await sessionRes.json();
         // If not admin, redirect to my-learning
-        if (sessionData.authenticated && sessionData.user?.role !== "admin") {
+        if (sessionData.authenticated && sessionData.user?.role?.toUpperCase() !== "ADMIN") {
           return NextResponse.redirect(new URL("/my-learning", request.url));
         }
       }
@@ -71,7 +71,7 @@ export async function middleware(request: NextRequest) {
         if (sessionData.authenticated) {
           const next = nextUrl.searchParams.get("next");
           // Don't redirect to admin if user is not admin
-          if (next?.startsWith("/admin") && sessionData.user?.role !== "admin") {
+          if (next?.startsWith("/admin") && sessionData.user?.role?.toUpperCase() !== "ADMIN") {
             return NextResponse.redirect(new URL("/my-learning", request.url));
           }
           if (next?.startsWith("/") && !next.startsWith("//")) {

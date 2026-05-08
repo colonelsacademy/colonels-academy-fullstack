@@ -123,12 +123,19 @@ enum BundleType {
   PREMIUM
 }
 
+enum PaymentAttemptStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+}
+
 model User {
   id                   String                     @id @default(cuid())
   firebaseUid          String                     @unique
   email                String?                    @unique
   displayName          String?
   role                 UserRole                   @default(STUDENT)
+  roleVersion          Int                        @default(0) // Incremented when role changes
   createdAt            DateTime                   @default(now())
   updatedAt            DateTime                   @updatedAt
   enrollments          Enrollment[]
@@ -147,6 +154,13 @@ model User {
   bundlePurchases      BundlePurchase[]
   chapterProgress      ChapterProgress[]
   chapterAchievements  ChapterAchievement[]
+  // NEW: Analytics tracking
+  auditLogs            AuditLog[]
+  attendanceRecords    LiveSessionAttendance[]
+  paymentAttempts      PaymentAttempt[]
+  // NEW: Mock test system
+  mockTestAttempts     MockTestAttempt[]
+  mockTestPurchases    MockTestPurchase[]
 }
 
 /// Cadet IQ / mock assessment attempts (stored in Postgres; replaces legacy Firestore collection).
@@ -453,6 +467,7 @@ model LiveSession {
   updatedAt          DateTime       @updatedAt
   course             Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   replayVideoAsset   VideoAsset?    @relation(fields: [replayVideoAssetId], references: [id], onDelete: SetNull)
+  attendanceRecords  LiveSessionAttendance[]
 }
 
 model PurchaseOrder {
@@ -466,6 +481,7 @@ model PurchaseOrder {
   updatedAt DateTime            @updatedAt
   user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     PurchaseOrderItem[]
+  paymentAttempts PaymentAttempt[]
 }
 
 model PurchaseOrderItem {
@@ -565,6 +581,7 @@ model ChapterPurchase {
   course Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
   module Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   bundle BundlePurchase? @relation(fields: [bundleId], references: [id], onDelete: SetNull)
+  paymentAttempts PaymentAttempt[]
 
   @@unique([userId, moduleId])
   @@index([userId, courseId])
@@ -620,6 +637,7 @@ model BundlePurchase {
   bundleOffer      CourseBundleOffer @relation(fields: [bundleOfferId], references: [id], onDelete: Cascade)
   course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   chapterPurchases ChapterPurchase[]
+  paymentAttempts  PaymentAttempt[]
 
   @@unique([userId, bundleOfferId])
   @@index([userId, courseId])
@@ -678,4 +696,201 @@ model ChapterAchievement {
 
   @@index([userId, courseId])
   @@index([courseId, chapterNumber])
+}
+
+
+// ============================================
+// MOCK TEST SYSTEM (Phase 1)
+// ============================================
+
+/// Subject for organizing mock tests (GK, English, Math, Reasoning, etc.)
+model Subject {
+  id          String    @id @default(cuid())
+  name        String    // "GK", "English", "Math", "Reasoning", etc.
+  position    String    // "Officer Cadet" | "ASI"
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  mockTests   MockTest[]
+
+  @@unique([name, position])
+  @@index([position])
+}
+
+/// Mock test metadata
+model MockTest {
+  id                String    @id @default(cuid())
+  title             String
+  description       String?
+  position          String    // "Officer Cadet" | "ASI"
+  subjectId         String    // Foreign key to Subject
+  timeLimitMinutes  Int
+  totalQuestions    Int
+  passingScore      Int       // percentage (e.g., 60)
+  status            String    @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  
+  // Difficulty modes
+  difficultyModes   String    @default("MIXED") // EASY, MEDIUM, HARD, MIXED
+  // EASY: Only difficulty 1 questions
+  // MEDIUM: Only difficulty 2 questions
+  // HARD: Only difficulty 3 questions
+  // MIXED: All difficulties (default)
+  
+  // Freemium model
+  accessType        String    @default("FREE") // FREE | PAID
+  priceNpr          Int?      // Price in NPR (null for FREE tests)
+  freePreviewCount  Int       @default(0) // Number of free questions to show (0 = all free)
+  
+  createdBy         String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  subject           Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions         MockTestQuestion[]
+  attempts          MockTestAttempt[]
+  purchases         MockTestPurchase[]
+
+  @@index([position, subjectId, status, accessType])
+}
+
+/// Questions for mock tests
+model MockTestQuestion {
+  id              String    @id @default(cuid())
+  mockTestId      String
+  questionText    String
+  options         Json      // ["Option A", "Option B", "Option C", "Option D", "Option E"]
+  correctAnswer   String    // "A" | "B" | "C" | "D" | "E"
+  explanation     String?
+  difficulty      Int       @default(1) // 1-5
+  position        Int       // order in test
+  isImageBased    Boolean   @default(false)
+  imageUrl        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  mockTest        MockTest  @relation(fields: [mockTestId], references: [id], onDelete: Cascade)
+
+  @@unique([mockTestId, position])
+  @@index([mockTestId])
+}
+
+/// User attempts at mock tests
+model MockTestAttempt {
+  id              String    @id @default(cuid())
+  userId          String
+  mockTestId      String
+  startedAt       DateTime  @default(now())
+  submittedAt     DateTime?
+  timeTakenSeconds Int?
+  score           Int?      // out of 100
+  totalMarks      Int       // total possible marks
+  status          String    @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED
+  answers         Json      // { "questionId": "fullOptionText", ... }
+  difficultyMode  String    @default("MIXED") // EASY, MEDIUM, HARD, MIXED
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mockTest        MockTest  @relation(fields: [mockTestId], references: [id], onDelete: Cascade)
+
+  @@index([userId, mockTestId])
+  @@index([userId, submittedAt])
+}
+
+/// Purchase records for paid mock tests
+model MockTestPurchase {
+  id              String    @id @default(cuid())
+  userId          String
+  mockTestId      String
+  amount          Int       // NPR
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus @default(PENDING)
+  transactionId   String?
+  purchaseDate    DateTime  @default(now())
+  expiresAt       DateTime? // Optional: expiry date for subscription model
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mockTest        MockTest  @relation(fields: [mockTestId], references: [id], onDelete: Cascade)
+  paymentAttempts PaymentAttempt[]
+
+  @@unique([userId, mockTestId])
+  @@index([userId, paymentStatus])
+  @@index([mockTestId, paymentStatus])
+}
+
+// ============================================
+// ANALYTICS TRACKING SYSTEM (Phase 1)
+// ============================================
+
+/// Audit log for tracking all administrative actions
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  action       String   // CREATE, UPDATE, DELETE, ROLE_CHANGE
+  resourceType String   // Course, Lesson, Module, User, LiveSession, etc.
+  resourceId   String
+  changes      Json     // { before: {...}, after: {...} }
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([resourceType, resourceId])
+  @@index([action])
+  @@index([createdAt(sort: Desc)])
+}
+
+/// Live session attendance tracking
+model LiveSessionAttendance {
+  id              String    @id @default(cuid())
+  sessionId       String
+  userId          String
+  joinedAt        DateTime  @default(now())
+  leftAt          DateTime?
+  durationMinutes Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId, joinedAt(sort: Desc)])
+  @@index([sessionId, userId])
+}
+
+/// Payment attempt tracking for all purchase types
+model PaymentAttempt {
+  id                String               @id @default(cuid())
+  orderId           String?
+  chapterPurchaseId String?
+  bundlePurchaseId  String?
+  mockTestPurchaseId String?
+  userId            String
+  amount            Int                  // NPR
+  provider          String               // esewa, khalti, bank_transfer, manual
+  status            PaymentAttemptStatus @default(INITIATED)
+  errorCode         String?
+  errorMessage      String?
+  transactionId     String?
+  attemptedAt       DateTime             @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order           PurchaseOrder?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  chapterPurchase ChapterPurchase? @relation(fields: [chapterPurchaseId], references: [id], onDelete: SetNull)
+  bundlePurchase  BundlePurchase?  @relation(fields: [bundlePurchaseId], references: [id], onDelete: SetNull)
+  mockTestPurchase MockTestPurchase? @relation(fields: [mockTestPurchaseId], references: [id], onDelete: SetNull)
+
+  @@index([userId, attemptedAt(sort: Desc)])
+  @@index([orderId])
+  @@index([chapterPurchaseId])
+  @@index([bundlePurchaseId])
+  @@index([mockTestPurchaseId])
+  @@index([status])
+  @@index([provider])
+  @@index([attemptedAt(sort: Desc)])
 }

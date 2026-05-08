@@ -141,7 +141,8 @@ export const CacheKeys = {
  * Cache TTL constants (in seconds)
  */
 export const CacheTTL = {
-  USER: 3600, // 1 hour
+  USER: 3600, // 1 hour for regular users
+  USER_ADMIN: 60, // 1 minute for admin users (faster updates)
   SESSION: 432000, // 5 days (match session cookie)
   COURSE_LIST: 300, // 5 minutes
   COURSE: 300, // 5 minutes
