@@ -5,4 +5,5 @@ watchPatterns = ["apps/api/**", "packages/**"]
 
 [deploy]
 startCommand = "cd /app && pnpm --filter @colonels-academy/api run start"
+postBuildCommand = "cd /app && pnpm --filter @colonels-academy/api run seed:asi-mock-tests || true"
 
