@@ -2271,11 +2271,27 @@ function AnalyticsTab({ stats }: { stats: Stats }) {
 
 // ─── Audit Log Section ────────────────────────────────────────────────────────
 
+interface AuditLog {
+  id: string;
+  createdAt: string;
+  userName: string;
+  userEmail: string;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+}
+
+interface AuditLogStats {
+  totalEntries: number;
+  byAction: Record<string, number>;
+  byResourceType: Record<string, number>;
+}
+
 function AuditLogSection() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<AuditLogStats | null>(null);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     action: "",
@@ -2539,8 +2555,32 @@ function AuditLogSection() {
 
 // ─── Attendance Section ───────────────────────────────────────────────────────
 
+interface UserActivityStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsers: number;
+  usersByRole: Record<string, number>;
+  recentActivity: Array<{
+    id: string;
+    displayName: string;
+    email: string;
+    role: string;
+    enrollmentCount: number;
+    orderCount: number;
+    createdAt: string;
+    isActive: boolean;
+  }>;
+  topActiveUsers: Array<{
+    userId: string;
+    displayName: string;
+    email: string;
+    enrollmentCount: number;
+    orderCount: number;
+  }>;
+}
+
 function AttendanceSection() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<UserActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -2620,7 +2660,7 @@ function AttendanceSection() {
             Users by Role
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {Object.entries(stats.usersByRole).map(([role, count]: [string, any]) => (
+            {Object.entries(stats.usersByRole).map(([role, count]: [string, number]) => (
               <div
                 key={role}
                 className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
@@ -2657,7 +2697,7 @@ function AttendanceSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.recentActivity.slice(0, 10).map((user: any) => (
+                  {stats.recentActivity.slice(0, 10).map((user) => (
                     <tr key={user.id} className="border-t border-gray-100 hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900">{user.displayName}</div>
@@ -2709,7 +2749,7 @@ function AttendanceSection() {
             Most Active Users
           </h3>
           <div className="space-y-2">
-            {stats.topActiveUsers.slice(0, 5).map((user: any, index: number) => (
+            {stats.topActiveUsers.slice(0, 5).map((user, index: number) => (
               <div
                 key={user.userId}
                 className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
@@ -2742,8 +2782,32 @@ function AttendanceSection() {
 
 // ─── Payments Section ─────────────────────────────────────────────────────────
 
+interface PaymentStats {
+  totalAttempts: number;
+  byStatus: {
+    success: number;
+    failed: number;
+  };
+  successRate: number;
+  byProvider: Record<
+    string,
+    {
+      total: number;
+      success: number;
+      failed: number;
+      successRate: number;
+    }
+  >;
+  commonErrors: Array<{
+    errorCode: string;
+    message: string;
+    count: number;
+    percentage?: number;
+  }>;
+}
+
 function PaymentsSection() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -2821,25 +2885,27 @@ function PaymentsSection() {
             Payment by Provider
           </h3>
           <div className="space-y-2">
-            {Object.entries(stats.byProvider).map(([provider, data]: [string, any]) => (
-              <div
-                key={provider}
-                className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-medium text-gray-900 uppercase">{provider}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {data.total} attempts • {data.success} success • {data.failed} failed
+            {Object.entries(stats.byProvider).map(
+              ([provider, data]: [string, PaymentStats["byProvider"][string]]) => (
+                <div
+                  key={provider}
+                  className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-medium text-gray-900 uppercase">{provider}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {data.total} attempts • {data.success} success • {data.failed} failed
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900">
+                      {data.successRate.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-500">success rate</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">
-                    {data.successRate.toFixed(1)}%
-                  </div>
-                  <div className="text-xs text-gray-500">success rate</div>
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </div>
       )}
@@ -2851,7 +2917,7 @@ function PaymentsSection() {
             Common Errors
           </h3>
           <div className="space-y-2">
-            {stats.commonErrors.slice(0, 5).map((error: any) => (
+            {stats.commonErrors.slice(0, 5).map((error) => (
               <div
                 key={error.errorCode}
                 className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between"
@@ -2862,7 +2928,9 @@ function PaymentsSection() {
                   </div>
                   <div className="text-xs text-red-600 mt-1">{error.count} occurrences</div>
                 </div>
-                <div className="text-lg font-bold text-red-700">{error.percentage.toFixed(1)}%</div>
+                <div className="text-lg font-bold text-red-700">
+                  {error.percentage ? error.percentage.toFixed(1) : "0"}%
+                </div>
               </div>
             ))}
           </div>

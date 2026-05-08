@@ -98,7 +98,7 @@ export class AuditLogService {
         action: params.action,
         resourceType: params.resourceType,
         resourceId: params.resourceId,
-        changes: params.changes as unknown as Record<string, unknown>,
+        changes: JSON.parse(JSON.stringify(params.changes)),
         ipAddress: params.ipAddress ?? null,
         userAgent: params.userAgent ?? null
       }
