@@ -13,12 +13,12 @@ export async function POST(request: NextRequest) {
     body,
     contentType: "application/json"
   });
-  
+
   // Revalidate home page and courses page when a new course is created
   if (response.ok) {
     revalidatePath("/");
     revalidatePath("/courses");
   }
-  
+
   return response;
 }

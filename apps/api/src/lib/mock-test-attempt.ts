@@ -1,4 +1,4 @@
-import { type PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 export class MockTestAttemptService {
@@ -109,7 +109,6 @@ export class MockTestAttemptService {
     // Calculate score
     const score = this.calculateScore(answers, test.questions);
     const percentage = Math.round((score / test.totalQuestions) * 100);
-    const passed = percentage >= test.passingScore;
 
     // Update attempt
     return this.prisma.mockTestAttempt.update({

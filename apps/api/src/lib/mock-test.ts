@@ -1,4 +1,4 @@
-import { type PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 export class MockTestService {
@@ -300,7 +300,8 @@ export class MockTestService {
         totalAttempts += questionAttempts.length;
       }
 
-      const averageAccuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+      const averageAccuracy =
+        totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
 
       return {
         totalQuestions: questions.length,

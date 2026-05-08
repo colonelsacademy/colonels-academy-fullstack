@@ -66,7 +66,7 @@ export function buildApp() {
   });
 
   // Root health check endpoint
-  app.get("/", async (request, reply) => {
+  app.get("/", async (request) => {
     return {
       status: "ok",
       service: "colonels-academy-api",

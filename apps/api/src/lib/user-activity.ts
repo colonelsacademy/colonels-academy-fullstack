@@ -61,11 +61,13 @@ export class UserActivityService {
   async getStats(filters?: UserActivityQueryParams): Promise<UserActivityStatsResponse> {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    
+
     // Build date filters
     const startDateString = filters?.startDate;
     const endDateString = filters?.endDate;
-    const startDate = startDateString ? new Date(startDateString) : new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const startDate = startDateString
+      ? new Date(startDateString)
+      : new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const endDate = endDateString ? new Date(endDateString) : now;
 
     // Get all users with their activity data
@@ -85,7 +87,7 @@ export class UserActivityService {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc"
       }
     });
 
@@ -98,37 +100,35 @@ export class UserActivityService {
     }
 
     // Count new users in date range
-    const newUsers = users.filter(user => 
-      user.createdAt >= startDate && user.createdAt <= endDate
+    const newUsers = users.filter(
+      (user) => user.createdAt >= startDate && user.createdAt <= endDate
     ).length;
 
     // For "active users", we'll use users who have recent activity (enrollments, orders, or recent creation)
     // Since we don't have login tracking yet, we'll use updatedAt as a proxy for activity
-    const activeUsers = users.filter(user => 
-      user.updatedAt >= thirtyDaysAgo || 
-      user._count.enrollments > 0 || 
-      user._count.orders > 0
+    const activeUsers = users.filter(
+      (user) =>
+        user.updatedAt >= thirtyDaysAgo || user._count.enrollments > 0 || user._count.orders > 0
     ).length;
 
     // Recent activity (last 50 users with activity)
-    const recentActivity: UserActivityEntry[] = users
-      .slice(0, 50)
-      .map(user => ({
-        id: user.id,
-        displayName: user.displayName || 'Unknown',
-        email: user.email || 'Unknown',
-        role: user.role,
-        lastLoginAt: user.updatedAt.toISOString(), // Using updatedAt as proxy
-        createdAt: user.createdAt.toISOString(),
-        enrollmentCount: user._count.enrollments,
-        orderCount: user._count.orders,
-        isActive: user.updatedAt >= thirtyDaysAgo || user._count.enrollments > 0 || user._count.orders > 0
-      }));
+    const recentActivity: UserActivityEntry[] = users.slice(0, 50).map((user) => ({
+      id: user.id,
+      displayName: user.displayName || "Unknown",
+      email: user.email || "Unknown",
+      role: user.role,
+      lastLoginAt: user.updatedAt.toISOString(), // Using updatedAt as proxy
+      createdAt: user.createdAt.toISOString(),
+      enrollmentCount: user._count.enrollments,
+      orderCount: user._count.orders,
+      isActive:
+        user.updatedAt >= thirtyDaysAgo || user._count.enrollments > 0 || user._count.orders > 0
+    }));
 
     // Daily signups for the last 30 days
     const dailySignupsMap = new Map<string, number>();
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    
+
     for (const user of users) {
       if (user.createdAt >= last30Days) {
         const dateKey = user.createdAt.toISOString().slice(0, 10);
@@ -142,13 +142,15 @@ export class UserActivityService {
 
     // Top active users (by enrollments + orders)
     const topActiveUsers = users
-      .filter(user => user._count.enrollments > 0 || user._count.orders > 0)
-      .sort((a, b) => (b._count.enrollments + b._count.orders) - (a._count.enrollments + a._count.orders))
+      .filter((user) => user._count.enrollments > 0 || user._count.orders > 0)
+      .sort(
+        (a, b) => b._count.enrollments + b._count.orders - (a._count.enrollments + a._count.orders)
+      )
       .slice(0, 10)
-      .map(user => ({
+      .map((user) => ({
         userId: user.id,
-        displayName: user.displayName || 'Unknown',
-        email: user.email || 'Unknown',
+        displayName: user.displayName || "Unknown",
+        email: user.email || "Unknown",
         enrollmentCount: user._count.enrollments,
         orderCount: user._count.orders,
         lastActivity: user.updatedAt.toISOString()
@@ -170,7 +172,7 @@ export class UserActivityService {
    * @param limit - Number of recent users to return
    * @returns Recent user registrations
    */
-  async getRecentRegistrations(limit: number = 20): Promise<UserActivityEntry[]> {
+  async getRecentRegistrations(limit = 20): Promise<UserActivityEntry[]> {
     const users = await this.prisma.user.findMany({
       select: {
         id: true,
@@ -187,15 +189,15 @@ export class UserActivityService {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc"
       },
       take: limit
     });
 
-    return users.map(user => ({
+    return users.map((user) => ({
       id: user.id,
-      displayName: user.displayName || 'Unknown',
-      email: user.email || 'Unknown',
+      displayName: user.displayName || "Unknown",
+      email: user.email || "Unknown",
       role: user.role,
       lastLoginAt: user.updatedAt.toISOString(),
       createdAt: user.createdAt.toISOString(),

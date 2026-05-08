@@ -343,10 +343,7 @@ export class PaymentService {
     }
 
     // Aggregate by provider
-    const providerMap = new Map<
-      string,
-      { total: number; success: number; failed: number }
-    >();
+    const providerMap = new Map<string, { total: number; success: number; failed: number }>();
 
     for (const attempt of attempts) {
       if (!providerMap.has(attempt.provider)) {

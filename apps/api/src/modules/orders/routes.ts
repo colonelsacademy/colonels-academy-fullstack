@@ -532,10 +532,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
         }
       } catch (error) {
         // Non-blocking: log error but don't fail payment confirmation
-        fastify.log.error(
-          { error, purchaseId },
-          "Failed to update payment attempt record"
-        );
+        fastify.log.error({ error, purchaseId }, "Failed to update payment attempt record");
       }
 
       if (paymentStatus === "COMPLETED") {
@@ -636,10 +633,7 @@ const ordersRoutes: FastifyPluginAsync = async (fastify) => {
         }
       } catch (error) {
         // Non-blocking: log error but don't fail payment confirmation
-        fastify.log.error(
-          { error, purchaseId },
-          "Failed to update payment attempt record"
-        );
+        fastify.log.error({ error, purchaseId }, "Failed to update payment attempt record");
       }
 
       if (paymentStatus === "COMPLETED") {

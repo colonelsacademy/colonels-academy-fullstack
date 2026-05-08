@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Loader2, Plus, Save, Trash2, X, CheckCircle } from "lucide-react";
+import { CheckCircle, Edit, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface MockTest {
@@ -56,9 +56,7 @@ export function MockTestManager() {
 
       // Get tests
       if (subjectsData.length > 0) {
-        const testsRes = await fetch(
-          `/api/admin/mock-tests?subjectId=${subjectsData[0].id}`
-        );
+        const testsRes = await fetch(`/api/admin/mock-tests?subjectId=${subjectsData[0].id}`);
         const testsData = await testsRes.json();
         if (Array.isArray(testsData)) {
           setTests(testsData);
@@ -389,7 +387,9 @@ export function MockTestManager() {
                       <div className="text-xs text-gray-500 mt-0.5">{test.description}</div>
                     </td>
                     <td className="px-5 py-3 text-gray-600">{test.subject.name}</td>
-                    <td className="px-5 py-3 text-gray-600">{test._count?.questions || test.totalQuestions}</td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {test._count?.questions || test.totalQuestions}
+                    </td>
                     <td className="px-5 py-3 text-gray-600">{test.timeLimitMinutes} min</td>
                     <td className="px-5 py-3">
                       <button

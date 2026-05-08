@@ -38,27 +38,24 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * List subjects by position
    * GET /v1/admin/subjects?position=Officer%20Cadet
    */
-  fastify.get<{ Querystring: { position?: string } }>(
-    "/subjects",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.get<{ Querystring: { position?: string } }>("/subjects", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
-        return reply.forbidden("Only admins can view subjects");
-      }
-
-      try {
-        const subjects = request.query.position
-          ? await subjectService.listSubjectsByPosition(request.query.position)
-          : await subjectService.listAllSubjects();
-
-        return reply.send(subjects);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch subjects";
-        return reply.internalServerError(message);
-      }
+    if (authUser.role !== "ADMIN") {
+      return reply.forbidden("Only admins can view subjects");
     }
-  );
+
+    try {
+      const subjects = request.query.position
+        ? await subjectService.listSubjectsByPosition(request.query.position)
+        : await subjectService.listAllSubjects();
+
+      return reply.send(subjects);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch subjects";
+      return reply.internalServerError(message);
+    }
+  });
 
   // ── MOCK TEST MANAGEMENT ──
 
@@ -134,29 +131,26 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * Get mock test details
    * GET /v1/admin/mock-tests/:id
    */
-  fastify.get<{ Params: { id: string } }>(
-    "/mock-tests/:id",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.get<{ Params: { id: string } }>("/mock-tests/:id", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
-        return reply.forbidden("Only admins can view mock tests");
-      }
-
-      try {
-        const test = await mockTestService.getMockTestById(request.params.id);
-
-        if (!test) {
-          return reply.notFound("Mock test not found");
-        }
-
-        return reply.send(test);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch mock test";
-        return reply.internalServerError(message);
-      }
+    if (authUser.role !== "ADMIN") {
+      return reply.forbidden("Only admins can view mock tests");
     }
-  );
+
+    try {
+      const test = await mockTestService.getMockTestById(request.params.id);
+
+      if (!test) {
+        return reply.notFound("Mock test not found");
+      }
+
+      return reply.send(test);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch mock test";
+      return reply.internalServerError(message);
+    }
+  });
 
   /**
    * Update mock test
@@ -194,70 +188,61 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * Publish mock test
    * POST /v1/admin/mock-tests/:id/publish
    */
-  fastify.post<{ Params: { id: string } }>(
-    "/mock-tests/:id/publish",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.post<{ Params: { id: string } }>("/mock-tests/:id/publish", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
-        return reply.forbidden("Only admins can publish mock tests");
-      }
-
-      try {
-        const test = await mockTestService.publishMockTest(request.params.id);
-        return reply.send(test);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to publish mock test";
-        return reply.badRequest(message);
-      }
+    if (authUser.role !== "ADMIN") {
+      return reply.forbidden("Only admins can publish mock tests");
     }
-  );
+
+    try {
+      const test = await mockTestService.publishMockTest(request.params.id);
+      return reply.send(test);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to publish mock test";
+      return reply.badRequest(message);
+    }
+  });
 
   /**
    * Archive mock test
    * POST /v1/admin/mock-tests/:id/archive
    */
-  fastify.post<{ Params: { id: string } }>(
-    "/mock-tests/:id/archive",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.post<{ Params: { id: string } }>("/mock-tests/:id/archive", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
-        return reply.forbidden("Only admins can archive mock tests");
-      }
-
-      try {
-        const test = await mockTestService.archiveMockTest(request.params.id);
-        return reply.send(test);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to archive mock test";
-        return reply.badRequest(message);
-      }
+    if (authUser.role !== "ADMIN") {
+      return reply.forbidden("Only admins can archive mock tests");
     }
-  );
+
+    try {
+      const test = await mockTestService.archiveMockTest(request.params.id);
+      return reply.send(test);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to archive mock test";
+      return reply.badRequest(message);
+    }
+  });
 
   /**
    * Delete mock test
    * DELETE /v1/admin/mock-tests/:id
    */
-  fastify.delete<{ Params: { id: string } }>(
-    "/mock-tests/:id",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.delete<{ Params: { id: string } }>("/mock-tests/:id", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
-        return reply.forbidden("Only admins can delete mock tests");
-      }
-
-      try {
-        await mockTestService.deleteMockTest(request.params.id);
-        return reply.code(204).send();
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to delete mock test";
-        return reply.badRequest(message);
-      }
+    if (authUser.role !== "ADMIN") {
+      return reply.forbidden("Only admins can delete mock tests");
     }
-  );
+
+    try {
+      await mockTestService.deleteMockTest(request.params.id);
+      return reply.code(204).send();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete mock test";
+      return reply.badRequest(message);
+    }
+  });
 
   // ── QUESTION MANAGEMENT ──
 
@@ -382,24 +367,21 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * Get mock test analytics
    * GET /v1/admin/mock-tests/:id/analytics
    */
-  fastify.get<{ Params: { id: string } }>(
-    "/mock-tests/:id/analytics",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.get<{ Params: { id: string } }>("/mock-tests/:id/analytics", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
-        return reply.forbidden("Only admins can view analytics");
-      }
-
-      try {
-        const analytics = await mockTestService.getMockTestAnalytics(request.params.id);
-        return reply.send(analytics);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch analytics";
-        return reply.internalServerError(message);
-      }
+    if (authUser.role !== "ADMIN") {
+      return reply.forbidden("Only admins can view analytics");
     }
-  );
+
+    try {
+      const analytics = await mockTestService.getMockTestAnalytics(request.params.id);
+      return reply.send(analytics);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch analytics";
+      return reply.internalServerError(message);
+    }
+  });
 };
 
 export default adminMockTestRoutes;

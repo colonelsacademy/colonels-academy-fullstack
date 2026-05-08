@@ -17,7 +17,8 @@ const GK_QUESTIONS: Question[] = [
     questionText: "Who is known as the first martyr of Nepal?",
     options: ["Shukraraj Shastri", "Dharma Bhakta Mathema", "Dashrath Chand", "Lakhan Thapa"],
     correctAnswer: "Lakhan Thapa",
-    explanation: "Lakhan Thapa is considered the first martyr of Nepal for his resistance against the Rana regime.",
+    explanation:
+      "Lakhan Thapa is considered the first martyr of Nepal for his resistance against the Rana regime.",
     difficulty: 1
   },
   {
@@ -43,7 +44,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Who is the current Chief Justice of Nepal (as per recent data)?",
-    options: ["Hari Krishna Karki", "Bishowambhar Prasad Shrestha", "Cholendra Shumsher Rana", "Deepak Raj Joshee"],
+    options: [
+      "Hari Krishna Karki",
+      "Bishowambhar Prasad Shrestha",
+      "Cholendra Shumsher Rana",
+      "Deepak Raj Joshee"
+    ],
     correctAnswer: "Bishowambhar Prasad Shrestha",
     explanation: "Bishowambhar Prasad Shrestha has served as Chief Justice of Nepal.",
     difficulty: 2
@@ -85,7 +91,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Who wrote the national anthem of Nepal?",
-    options: ["Madhav Prasad Ghimire", "Byakul Maila", "Laxmi Prasad Devkota", "Bhanubhakta Acharya"],
+    options: [
+      "Madhav Prasad Ghimire",
+      "Byakul Maila",
+      "Laxmi Prasad Devkota",
+      "Bhanubhakta Acharya"
+    ],
     correctAnswer: "Byakul Maila",
     explanation: "Byakul Maila wrote Nepal's national anthem.",
     difficulty: 2
@@ -141,7 +152,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "What is the full form of SAARC?",
-    options: ["South Asian Association for Regional Cooperation", "South Asia Regional Council", "South Asian Regional Cooperation", "South Asia Alliance for Cooperation"],
+    options: [
+      "South Asian Association for Regional Cooperation",
+      "South Asia Regional Council",
+      "South Asian Regional Cooperation",
+      "South Asia Alliance for Cooperation"
+    ],
     correctAnswer: "South Asian Association for Regional Cooperation",
     explanation: "SAARC stands for South Asian Association for Regional Cooperation.",
     difficulty: 1

@@ -6,10 +6,7 @@ export async function GET(request: NextRequest) {
   const subjectId = searchParams.get("subjectId");
 
   if (!subjectId) {
-    return Response.json(
-      { message: "subjectId is required" },
-      { status: 400 }
-    );
+    return Response.json({ message: "subjectId is required" }, { status: 400 });
   }
 
   const query = `?subjectId=${encodeURIComponent(subjectId)}`;

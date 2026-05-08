@@ -1,7 +1,7 @@
 "use client";
 
-import { ToastContainer } from "@/components/admin/Toast";
 import { MockTestManager } from "@/components/admin/MockTestManager";
+import { ToastContainer } from "@/components/admin/Toast";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/hooks/useToast";
 import {
@@ -1721,11 +1721,19 @@ function StaffHQTab() {
                               <button
                                 type="button"
                                 onClick={async () => {
-                                  if (!confirm(`Send notification to all students enrolled in this course?`)) return;
+                                  if (
+                                    !confirm(
+                                      `Send notification to all students enrolled in this course?`
+                                    )
+                                  )
+                                    return;
                                   try {
-                                    const res = await fetch(`/api/admin/live-sessions/${s.id}/notify`, {
-                                      method: "POST"
-                                    });
+                                    const res = await fetch(
+                                      `/api/admin/live-sessions/${s.id}/notify`,
+                                      {
+                                        method: "POST"
+                                      }
+                                    );
                                     if (res.ok) {
                                       alert("Notification sent successfully!");
                                     } else {
@@ -2278,18 +2286,18 @@ function AuditLogSection() {
   const loadLogs = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Calculate date range based on time period
       const endDate = new Date();
       const startDate = new Date();
-      startDate.setDate(endDate.getDate() - parseInt(filters.timePeriod));
+      startDate.setDate(endDate.getDate() - Number.parseInt(filters.timePeriod));
 
       const paramsObj: Record<string, string> = {
         page: String(page),
         limit: "20",
-        startDate: startDate.toISOString().split('T')[0] || "",
-        endDate: endDate.toISOString().split('T')[0] || ""
+        startDate: startDate.toISOString().split("T")[0] || "",
+        endDate: endDate.toISOString().split("T")[0] || ""
       };
 
       if (filters.action) paramsObj.action = filters.action;
@@ -2413,7 +2421,7 @@ function AuditLogSection() {
               <option value="User">User</option>
             </select>
           </div>
-          
+
           {/* Time Period Buttons */}
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">

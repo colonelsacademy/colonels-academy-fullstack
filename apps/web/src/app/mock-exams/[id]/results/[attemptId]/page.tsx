@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, CheckCircle, RotateCcw, XCircle } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle, ArrowLeft, RotateCcw } from "lucide-react";
 
 interface Result {
   questionId: string;
@@ -97,11 +97,11 @@ export default function MockTestResultsPage() {
         </button>
 
         {/* Score Card */}
-        <div className={`rounded-2xl border-2 p-12 mb-8 text-center ${
-          results.passed
-            ? "bg-green-50 border-green-200"
-            : "bg-red-50 border-red-200"
-        }`}>
+        <div
+          className={`rounded-2xl border-2 p-12 mb-8 text-center ${
+            results.passed ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+          }`}
+        >
           <div className="mb-6">
             {results.passed ? (
               <CheckCircle className="w-16 h-16 text-green-600 mx-auto" />
@@ -110,15 +110,19 @@ export default function MockTestResultsPage() {
             )}
           </div>
 
-          <h1 className={`text-4xl font-bold font-['Rajdhani'] mb-2 ${
-            results.passed ? "text-green-700" : "text-red-700"
-          }`}>
+          <h1
+            className={`text-4xl font-bold font-['Rajdhani'] mb-2 ${
+              results.passed ? "text-green-700" : "text-red-700"
+            }`}
+          >
             {results.passed ? "PASSED" : "FAILED"}
           </h1>
 
-          <p className={`text-lg font-medium mb-8 ${
-            results.passed ? "text-green-600" : "text-red-600"
-          }`}>
+          <p
+            className={`text-lg font-medium mb-8 ${
+              results.passed ? "text-green-600" : "text-red-600"
+            }`}
+          >
             {results.testTitle}
           </p>
 
@@ -174,34 +178,41 @@ export default function MockTestResultsPage() {
             {results.results.map((result, idx) => (
               <div key={result.questionId} className="p-6">
                 <button
-                  onClick={() =>
-                    setExpandedQuestion(expandedQuestion === idx ? null : idx)
-                  }
+                  onClick={() => setExpandedQuestion(expandedQuestion === idx ? null : idx)}
                   className="w-full text-left flex items-start justify-between hover:bg-gray-50 p-2 -m-2 rounded transition-colors"
                 >
                   <div className="flex items-start gap-4 flex-1">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white ${
-                      result.isCorrect ? "bg-green-600" : "bg-red-600"
-                    }`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white ${
+                        result.isCorrect ? "bg-green-600" : "bg-red-600"
+                      }`}
+                    >
                       {idx + 1}
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-[#0F1C15]">{result.questionText}</p>
                       <div className="mt-2 flex items-center gap-4 text-sm">
-                        <span className={result.isCorrect ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                        <span
+                          className={
+                            result.isCorrect
+                              ? "text-green-600 font-medium"
+                              : "text-red-600 font-medium"
+                          }
+                        >
                           {result.isCorrect ? "✓ Correct" : "✗ Incorrect"}
                         </span>
                         {!result.isCorrect && (
                           <span className="text-gray-600">
-                            Your answer: <span className="font-medium">{result.userAnswer || "Not answered"}</span>
+                            Your answer:{" "}
+                            <span className="font-medium">
+                              {result.userAnswer || "Not answered"}
+                            </span>
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="text-gray-400 ml-4">
-                    {expandedQuestion === idx ? "−" : "+"}
-                  </div>
+                  <div className="text-gray-400 ml-4">{expandedQuestion === idx ? "−" : "+"}</div>
                 </button>
 
                 {expandedQuestion === idx && (
@@ -227,7 +238,9 @@ export default function MockTestResultsPage() {
                             >
                               <span className="font-bold">{letter})</span> {option}
                               {isCorrectAnswer && <span className="ml-2">✓ Correct</span>}
-                              {isUserAnswer && !isCorrectAnswer && <span className="ml-2">✗ Your answer</span>}
+                              {isUserAnswer && !isCorrectAnswer && (
+                                <span className="ml-2">✗ Your answer</span>
+                              )}
                             </div>
                           );
                         })}

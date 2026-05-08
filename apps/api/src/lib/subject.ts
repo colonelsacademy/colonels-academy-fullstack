@@ -1,4 +1,4 @@
-import { type PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 export class SubjectService {

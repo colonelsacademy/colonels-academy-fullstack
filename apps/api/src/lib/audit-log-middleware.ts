@@ -10,7 +10,10 @@ export interface AuditLogOptions {
   resourceType: string;
   getResourceId: (request: FastifyRequest) => string;
   getBeforeState?: (request: FastifyRequest) => Promise<Record<string, unknown> | null>;
-  getAfterState?: (request: FastifyRequest, reply: FastifyReply) => Promise<Record<string, unknown> | null>;
+  getAfterState?: (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) => Promise<Record<string, unknown> | null>;
 }
 
 /**
@@ -45,15 +48,15 @@ function extractUserAgent(request: FastifyRequest): string | undefined {
 
 /**
  * Create an audit log hook for Fastify routes
- * 
+ *
  * This factory function creates a Fastify onResponse hook that logs administrative
  * actions to the audit log. It captures user context, IP address, user agent, and
  * before/after state of resources.
- * 
+ *
  * @param auditLogService - The audit log service instance
  * @param options - Configuration options for the audit log
  * @returns A Fastify onResponse hook function
- * 
+ *
  * @example
  * ```typescript
  * fastify.post('/courses', {
@@ -68,10 +71,7 @@ function extractUserAgent(request: FastifyRequest): string | undefined {
  * });
  * ```
  */
-export function createAuditLogHook(
-  auditLogService: AuditLogService,
-  options: AuditLogOptions
-) {
+export function createAuditLogHook(auditLogService: AuditLogService, options: AuditLogOptions) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // Only log successful responses (2xx status codes)
@@ -87,7 +87,16 @@ export function createAuditLogHook(
       }
 
       // Get user ID from database
-      const fastifyInstance = request.server as typeof request.server & { prisma: { user: { findUnique: (args: { where: { firebaseUid: string }; select: { id: boolean } }) => Promise<{ id: string } | null> } } };
+      const fastifyInstance = request.server as typeof request.server & {
+        prisma: {
+          user: {
+            findUnique: (args: {
+              where: { firebaseUid: string };
+              select: { id: boolean };
+            }) => Promise<{ id: string } | null>;
+          };
+        };
+      };
       const dbUser = await fastifyInstance.prisma.user.findUnique({
         where: { firebaseUid: authUser.uid },
         select: { id: true }
@@ -170,7 +179,9 @@ export function createAuditLogHook(
     } catch (error) {
       // Non-blocking error handling - log error but don't fail the request
       // Use type assertion to access log property
-      const logger = (request as FastifyRequest & { log?: { error: (obj: unknown, msg: string) => void } }).log;
+      const logger = (
+        request as FastifyRequest & { log?: { error: (obj: unknown, msg: string) => void } }
+      ).log;
       if (logger) {
         logger.error(
           {

@@ -117,7 +117,7 @@ const auditLogRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       // Build cache key based on query parameters
       const cacheKey = `audit-logs:stats:${startDate || "all"}:${endDate || "all"}`;
-      
+
       // Try to get from cache
       const cached = await fastify.cache.get(cacheKey);
       if (cached) {

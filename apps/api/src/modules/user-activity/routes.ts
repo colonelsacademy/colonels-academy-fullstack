@@ -57,7 +57,7 @@ const userActivityRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       // Build cache key based on query parameters
       const cacheKey = `user-activity:stats:${startDate || "all"}:${endDate || "all"}:${limit || "default"}`;
-      
+
       // Try to get from cache
       const cached = await fastify.cache.get(cacheKey);
       if (cached) {
@@ -100,7 +100,7 @@ const userActivityRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       // Build cache key
       const cacheKey = `user-activity:recent:${limit}`;
-      
+
       // Try to get from cache
       const cached = await fastify.cache.get(cacheKey);
       if (cached) {

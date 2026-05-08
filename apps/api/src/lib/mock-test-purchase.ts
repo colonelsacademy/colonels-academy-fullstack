@@ -1,4 +1,4 @@
-import { type PrismaClient, PaymentStatus } from "@prisma/client";
+import { PaymentStatus, type PrismaClient } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 export class MockTestPurchaseService {

@@ -19,7 +19,7 @@ export interface CachedUser {
  * that happen on every authenticated request
  *
  * Performance: 10-50ms (database) → <1ms (cache)
- * 
+ *
  * IMPORTANT: Includes roleVersion to detect role changes
  * If roleVersion changes, cache is automatically invalidated
  */
@@ -32,7 +32,10 @@ export async function getCachedUser(
   // Try cache first
   const cached = await fastify.cache.get<CachedUser>(cacheKey);
   if (cached) {
-    fastify.log.debug({ firebaseUid, role: cached.role, roleVersion: cached.roleVersion, source: "cache" }, "User loaded from cache");
+    fastify.log.debug(
+      { firebaseUid, role: cached.role, roleVersion: cached.roleVersion, source: "cache" },
+      "User loaded from cache"
+    );
     return cached;
   }
 
@@ -68,7 +71,7 @@ export async function getCachedUser(
   // Regular users get 1 hour TTL for better performance
   const ttl = dbUser.role === "ADMIN" ? CacheTTL.USER_ADMIN : CacheTTL.USER;
   await fastify.cache.set(cacheKey, cachedUser, ttl);
-  
+
   fastify.log.debug(
     { firebaseUid, role: dbUser.role, roleVersion: dbUser.roleVersion, ttl, source: "database" },
     "User loaded from database and cached"

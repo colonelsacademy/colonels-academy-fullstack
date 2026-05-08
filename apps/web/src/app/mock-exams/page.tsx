@@ -1,8 +1,8 @@
 "use client";
 
+import { ArrowLeft, BookOpen, Clock, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, Clock, Target } from "lucide-react";
 
 interface Subject {
   id: string;
@@ -60,7 +60,9 @@ export default function MockExamsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/mock-tests/list?subjectId=${encodeURIComponent(subjectId)}`);
+      const response = await fetch(
+        `/api/mock-tests/list?subjectId=${encodeURIComponent(subjectId)}`
+      );
       if (!response.ok) throw new Error("Failed to fetch tests");
       const data = await response.json();
       setTests(data);
@@ -104,9 +106,7 @@ export default function MockExamsPage() {
       <div className="min-h-screen bg-[#F3F4F6]">
         <div className="max-w-[1400px] mx-auto px-4 py-12">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-[#0F1C15] font-['Rajdhani'] mb-2">
-              Mock Exams
-            </h1>
+            <h1 className="text-4xl font-bold text-[#0F1C15] font-['Rajdhani'] mb-2">Mock Exams</h1>
             <p className="text-gray-600">Select your position to get started</p>
           </div>
 
@@ -120,9 +120,7 @@ export default function MockExamsPage() {
                 <div className="w-12 h-12 rounded-xl bg-[#0F1C15] flex items-center justify-center mb-4">
                   <Target className="w-6 h-6 text-[#D4AF37]" />
                 </div>
-                <h3 className="text-xl font-bold text-[#0F1C15] font-['Rajdhani'] mb-2">
-                  {pos}
-                </h3>
+                <h3 className="text-xl font-bold text-[#0F1C15] font-['Rajdhani'] mb-2">{pos}</h3>
                 <p className="text-sm text-gray-600">
                   {pos === "Officer Cadet"
                     ? "Prepare for Officer Cadet examination"
@@ -182,7 +180,8 @@ export default function MockExamsPage() {
                   </h3>
                   <p className="text-sm text-gray-600 mb-3">{subject.description}</p>
                   <div className="text-xs text-gray-500">
-                    {subject._count?.mockTests || 0} test{subject._count?.mockTests !== 1 ? "s" : ""}
+                    {subject._count?.mockTests || 0} test
+                    {subject._count?.mockTests !== 1 ? "s" : ""}
                   </div>
                 </button>
               ))}

@@ -1,4 +1,4 @@
-import { type PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 export class MockTestQuestionService {
@@ -141,10 +141,7 @@ export class MockTestQuestionService {
   /**
    * Reorder questions
    */
-  async reorderQuestions(
-    mockTestId: string,
-    questionIds: string[]
-  ) {
+  async reorderQuestions(mockTestId: string, questionIds: string[]) {
     // Verify all questions belong to the test
     const questions = await this.prisma.mockTestQuestion.findMany({
       where: { mockTestId }

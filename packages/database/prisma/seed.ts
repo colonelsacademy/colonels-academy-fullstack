@@ -281,7 +281,7 @@ async function main() {
       select: { instructorId: true }
     });
 
-    const existingInstructorIds = new Set(existingInstructors.map(ci => ci.instructorId));
+    const existingInstructorIds = new Set(existingInstructors.map((ci) => ci.instructorId));
 
     const instructorsToAdd = course.instructorSlugs
       .map((slug, index) => {
@@ -297,9 +297,8 @@ async function main() {
           displayOrder: index
         };
       })
-      .filter(
-        (value): value is { courseId: string; instructorId: string; displayOrder: number } =>
-          Boolean(value)
+      .filter((value): value is { courseId: string; instructorId: string; displayOrder: number } =>
+        Boolean(value)
       );
 
     if (instructorsToAdd.length > 0) {

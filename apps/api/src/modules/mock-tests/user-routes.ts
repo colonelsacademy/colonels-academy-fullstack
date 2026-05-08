@@ -50,21 +50,18 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * List subjects for a position
    * GET /v1/mock-tests/subjects?position=Officer%20Cadet
    */
-  fastify.get<{ Querystring: { position?: string } }>(
-    "/subjects",
-    async (request, reply) => {
-      try {
-        const subjects = request.query.position
-          ? await subjectService.listSubjectsByPosition(request.query.position)
-          : await subjectService.listAllSubjects();
+  fastify.get<{ Querystring: { position?: string } }>("/subjects", async (request, reply) => {
+    try {
+      const subjects = request.query.position
+        ? await subjectService.listSubjectsByPosition(request.query.position)
+        : await subjectService.listAllSubjects();
 
-        return reply.send(subjects);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch subjects";
-        return reply.internalServerError(message);
-      }
+      return reply.send(subjects);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch subjects";
+      return reply.internalServerError(message);
     }
-  );
+  });
 
   // ── TEST BROWSING ──
 
@@ -130,115 +127,109 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * Get mock test details
    * GET /v1/mock-tests/:id
    */
-  fastify.get<{ Params: { id: string } }>(
-    "/:id",
-    async (request, reply) => {
-      try {
-        const test = await mockTestService.getMockTestById(request.params.id);
+  fastify.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
+    try {
+      const test = await mockTestService.getMockTestById(request.params.id);
 
-        if (!test || test.status !== "PUBLISHED") {
-          return reply.notFound("Mock test not found");
-        }
-
-        // Check user access
-        let userId: string | null = null;
-        let hasAccess = test.accessType === "FREE";
-        let hasPurchased = false;
-
-        try {
-          const authUser = await fastify.requireAuth(request);
-          userId = await resolveDbUserId(authUser.uid);
-
-          if (test.accessType === "PAID") {
-            hasPurchased = await purchaseService.hasPurchased(userId, test.id);
-            hasAccess = hasPurchased;
-          }
-        } catch {
-          // Not authenticated
-        }
-
-        // Filter questions based on access
-        let questions = test.questions;
-        if (test.accessType === "PAID" && !hasAccess) {
-          // Show only free preview questions
-          questions = questions.slice(0, test.freePreviewCount);
-        }
-
-        return reply.send({
-          ...test,
-          questions,
-          hasAccess,
-          hasPurchased,
-          canViewAllQuestions: hasAccess
-        });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch mock test";
-        return reply.internalServerError(message);
+      if (!test || test.status !== "PUBLISHED") {
+        return reply.notFound("Mock test not found");
       }
+
+      // Check user access
+      let userId: string | null = null;
+      let hasAccess = test.accessType === "FREE";
+      let hasPurchased = false;
+
+      try {
+        const authUser = await fastify.requireAuth(request);
+        userId = await resolveDbUserId(authUser.uid);
+
+        if (test.accessType === "PAID") {
+          hasPurchased = await purchaseService.hasPurchased(userId, test.id);
+          hasAccess = hasPurchased;
+        }
+      } catch {
+        // Not authenticated
+      }
+
+      // Filter questions based on access
+      let questions = test.questions;
+      if (test.accessType === "PAID" && !hasAccess) {
+        // Show only free preview questions
+        questions = questions.slice(0, test.freePreviewCount);
+      }
+
+      return reply.send({
+        ...test,
+        questions,
+        hasAccess,
+        hasPurchased,
+        canViewAllQuestions: hasAccess
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch mock test";
+      return reply.internalServerError(message);
     }
-  );
+  });
 
   /**
    * Check access to a mock test
    * GET /v1/mock-tests/:id/check-access
    */
-  fastify.get<{ Params: { id: string } }>(
-    "/:id/check-access",
-    async (request, reply) => {
+  fastify.get<{ Params: { id: string } }>("/:id/check-access", async (request, reply) => {
+    try {
+      const test = await mockTestService.getMockTestById(request.params.id);
+
+      if (!test) {
+        return reply.notFound("Mock test not found");
+      }
+
+      if (test.accessType === "FREE") {
+        return reply.send({
+          hasAccess: true,
+          accessType: "FREE",
+          canViewAllQuestions: true
+        });
+      }
+
+      // PAID test
       try {
-        const test = await mockTestService.getMockTestById(request.params.id);
+        const authUser = await fastify.requireAuth(request);
+        const userId = await resolveDbUserId(authUser.uid);
+        const hasPurchased = await purchaseService.hasPurchased(userId, test.id);
 
-        if (!test) {
-          return reply.notFound("Mock test not found");
-        }
-
-        if (test.accessType === "FREE") {
+        if (hasPurchased) {
           return reply.send({
             hasAccess: true,
-            accessType: "FREE",
-            canViewAllQuestions: true
+            accessType: "PAID",
+            canViewAllQuestions: true,
+            purchasedAt: new Date()
           });
         }
 
-        // PAID test
-        try {
-          const authUser = await fastify.requireAuth(request);
-          const userId = await resolveDbUserId(authUser.uid);
-          const hasPurchased = await purchaseService.hasPurchased(userId, test.id);
-
-          if (hasPurchased) {
-            return reply.send({
-              hasAccess: true,
-              accessType: "PAID",
-              canViewAllQuestions: true,
-              purchasedAt: new Date()
-            });
-          }
-
-          return reply.send({
-            hasAccess: false,
-            accessType: "PAID",
-            canViewAllQuestions: false,
-            freePreviewCount: test.freePreviewCount,
-            price: test.priceNpr,
-            message: "Purchase to access full test"
-          });
-        } catch {
-          return reply.send({
-            hasAccess: false,
-            accessType: "PAID",
-            canViewAllQuestions: false,
-            freePreviewCount: test.freePreviewCount,
-            price: test.priceNpr,
-            message: "Login and purchase to access full test"
-          });
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to check access";
-        return reply.internalServerError(message);
+        return reply.send({
+          hasAccess: false,
+          accessType: "PAID",
+          canViewAllQuestions: false,
+          freePreviewCount: test.freePreviewCount,
+          price: test.priceNpr,
+          message: "Purchase to access full test"
+        });
+      } catch {
+        return reply.send({
+          hasAccess: false,
+          accessType: "PAID",
+          canViewAllQuestions: false,
+          freePreviewCount: test.freePreviewCount,
+          price: test.priceNpr,
+          message: "Login and purchase to access full test"
+        });
       }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to check access";
+      return reply.internalServerError(message);
     }
-  );
+  });
 
   // ── TEST ATTEMPTS ──
 
@@ -247,83 +238,86 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * POST /v1/mock-tests/:id/start
    * Body: { difficultyMode?: "EASY" | "MEDIUM" | "HARD" | "MIXED" }
    */
-  fastify.post<{ 
+  fastify.post<{
     Params: { id: string };
     Body: { difficultyMode?: string };
-  }>(
-    "/:id/start",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  }>("/:id/start", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      try {
-        fastify.log.info(`Start attempt request: testId=${request.params.id}, difficultyMode=${request.body?.difficultyMode}`);
+    try {
+      fastify.log.info(
+        `Start attempt request: testId=${request.params.id}, difficultyMode=${request.body?.difficultyMode}`
+      );
 
-        const userId = await resolveDbUserId(authUser.uid);
-        const difficultyMode = (request.body?.difficultyMode || "MIXED") as "EASY" | "MEDIUM" | "HARD" | "MIXED";
+      const userId = await resolveDbUserId(authUser.uid);
+      const difficultyMode = (request.body?.difficultyMode || "MIXED") as
+        | "EASY"
+        | "MEDIUM"
+        | "HARD"
+        | "MIXED";
 
-        // Validate difficulty mode
-        const validModes = ["EASY", "MEDIUM", "HARD", "MIXED"];
-        if (!validModes.includes(difficultyMode)) {
-          fastify.log.error(`Invalid difficulty mode: ${difficultyMode}`);
-          return reply.badRequest(`Invalid difficulty mode: ${difficultyMode}`);
-        }
-
-        fastify.log.info(`Fetching questions for difficulty mode: ${difficultyMode}`);
-
-        // Get questions for this difficulty mode
-        const questions = await mockTestService.getQuestionsForAttempt(
-          request.params.id,
-          difficultyMode
-        );
-
-        fastify.log.info(`Retrieved ${questions.length} questions`);
-
-        // Get test details
-        const test = await mockTestService.getMockTestById(request.params.id);
-        if (!test) {
-          fastify.log.error(`Test not found: ${request.params.id}`);
-          return reply.notFound("Mock test not found");
-        }
-
-        fastify.log.info(`Creating attempt for user: ${userId}`);
-
-        // Create attempt
-        const attempt = await fastify.prisma.mockTestAttempt.create({
-          data: {
-            userId,
-            mockTestId: request.params.id,
-            totalMarks: questions.length * 2, // 2 marks per question
-            difficultyMode: difficultyMode,
-            answers: {}
-          }
-        });
-
-        fastify.log.info(`Attempt created: ${attempt.id}`);
-
-        return reply.code(201).send({
-          id: attempt.id,
-          mockTestId: attempt.mockTestId,
-          startedAt: attempt.startedAt,
-          questions: questions.map(q => ({
-            id: q.id,
-            questionText: q.questionText,
-            options: q.options,
-            difficulty: q.difficulty,
-            position: q.position,
-            isImageBased: q.isImageBased,
-            imageUrl: q.imageUrl
-          })),
-          totalQuestions: questions.length,
-          timeLimitMinutes: test.timeLimitMinutes,
-          difficultyMode,
-        });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to start attempt";
-        fastify.log.error(`Start attempt error: ${message}`);
-        return reply.badRequest(message);
+      // Validate difficulty mode
+      const validModes = ["EASY", "MEDIUM", "HARD", "MIXED"];
+      if (!validModes.includes(difficultyMode)) {
+        fastify.log.error(`Invalid difficulty mode: ${difficultyMode}`);
+        return reply.badRequest(`Invalid difficulty mode: ${difficultyMode}`);
       }
+
+      fastify.log.info(`Fetching questions for difficulty mode: ${difficultyMode}`);
+
+      // Get questions for this difficulty mode
+      const questions = await mockTestService.getQuestionsForAttempt(
+        request.params.id,
+        difficultyMode
+      );
+
+      fastify.log.info(`Retrieved ${questions.length} questions`);
+
+      // Get test details
+      const test = await mockTestService.getMockTestById(request.params.id);
+      if (!test) {
+        fastify.log.error(`Test not found: ${request.params.id}`);
+        return reply.notFound("Mock test not found");
+      }
+
+      fastify.log.info(`Creating attempt for user: ${userId}`);
+
+      // Create attempt
+      const attempt = await fastify.prisma.mockTestAttempt.create({
+        data: {
+          userId,
+          mockTestId: request.params.id,
+          totalMarks: questions.length * 2, // 2 marks per question
+          difficultyMode: difficultyMode,
+          answers: {}
+        }
+      });
+
+      fastify.log.info(`Attempt created: ${attempt.id}`);
+
+      return reply.code(201).send({
+        id: attempt.id,
+        mockTestId: attempt.mockTestId,
+        startedAt: attempt.startedAt,
+        questions: questions.map((q) => ({
+          id: q.id,
+          questionText: q.questionText,
+          options: q.options,
+          difficulty: q.difficulty,
+          position: q.position,
+          isImageBased: q.isImageBased,
+          imageUrl: q.imageUrl
+        })),
+        totalQuestions: questions.length,
+        timeLimitMinutes: test.timeLimitMinutes,
+        difficultyMode
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to start attempt";
+      fastify.log.error(`Start attempt error: ${message}`);
+      return reply.badRequest(message);
     }
-  );
+  });
 
   /**
    * Submit a mock test attempt
@@ -336,87 +330,94 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
       answers: Record<string, string>;
       timeTakenSeconds: number;
     };
-  }>(
-    "/:id/submit",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  }>("/:id/submit", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      try {
-        const userId = await resolveDbUserId(authUser.uid);
-        
-        fastify.log.info(`Submit request: attemptId=${request.body.attemptId}, testId=${request.params.id}, answersCount=${Object.keys(request.body.answers).length}`);
+    try {
+      const userId = await resolveDbUserId(authUser.uid);
 
-        // Get the attempt to retrieve the difficulty mode
-        const attempt = await fastify.prisma.mockTestAttempt.findUnique({
-          where: { id: request.body.attemptId }
-        });
+      fastify.log.info(
+        `Submit request: attemptId=${request.body.attemptId}, testId=${request.params.id}, answersCount=${Object.keys(request.body.answers).length}`
+      );
 
-        if (!attempt) {
-          fastify.log.error(`Attempt not found: ${request.body.attemptId}`);
-          return reply.notFound("Attempt not found");
-        }
+      // Get the attempt to retrieve the difficulty mode
+      const attempt = await fastify.prisma.mockTestAttempt.findUnique({
+        where: { id: request.body.attemptId }
+      });
 
-        fastify.log.info(`Attempt found: difficultyMode=${attempt.difficultyMode}, mockTestId=${attempt.mockTestId}`);
+      if (!attempt) {
+        fastify.log.error(`Attempt not found: ${request.body.attemptId}`);
+        return reply.notFound("Attempt not found");
+      }
 
-        // Get questions for the same difficulty mode used in the attempt
-        const questions = await mockTestService.getQuestionsForAttempt(
-          request.params.id,
-          attempt.difficultyMode as "EASY" | "MEDIUM" | "HARD" | "MIXED"
-        );
+      fastify.log.info(
+        `Attempt found: difficultyMode=${attempt.difficultyMode}, mockTestId=${attempt.mockTestId}`
+      );
 
-        fastify.log.info(`Retrieved ${questions.length} questions for difficulty mode: ${attempt.difficultyMode}`);
+      // Get questions for the same difficulty mode used in the attempt
+      const questions = await mockTestService.getQuestionsForAttempt(
+        request.params.id,
+        attempt.difficultyMode as "EASY" | "MEDIUM" | "HARD" | "MIXED"
+      );
 
-        // Answers are already in full text format from the web app
-        const convertedAnswers: Record<string, string> = {};
-        let conversionErrors = 0;
+      fastify.log.info(
+        `Retrieved ${questions.length} questions for difficulty mode: ${attempt.difficultyMode}`
+      );
 
-        for (const [questionId, answer] of Object.entries(request.body.answers)) {
-          const question = questions.find(q => q.id === questionId);
-          if (question && answer) {
-            // Check if answer is already full text or if it's a letter
-            if (answer.length === 1 && /^[A-E]$/.test(answer)) {
-              // Convert letter to full text
-              const letterIndex = answer.charCodeAt(0) - 65;
-              const options = question.options as string[];
-              if (letterIndex >= 0 && letterIndex < options.length) {
-                const fullAnswer = options[letterIndex];
-                if (fullAnswer) {
-                  convertedAnswers[questionId] = fullAnswer;
-                }
-              } else {
-                fastify.log.warn(`Invalid letter answer: ${answer} for question ${questionId}`);
-                conversionErrors++;
+      // Answers are already in full text format from the web app
+      const convertedAnswers: Record<string, string> = {};
+      let conversionErrors = 0;
+
+      for (const [questionId, answer] of Object.entries(request.body.answers)) {
+        const question = questions.find((q) => q.id === questionId);
+        if (question && answer) {
+          // Check if answer is already full text or if it's a letter
+          if (answer.length === 1 && /^[A-E]$/.test(answer)) {
+            // Convert letter to full text
+            const letterIndex = answer.charCodeAt(0) - 65;
+            const options = question.options as string[];
+            if (letterIndex >= 0 && letterIndex < options.length) {
+              const fullAnswer = options[letterIndex];
+              if (fullAnswer) {
+                convertedAnswers[questionId] = fullAnswer;
               }
             } else {
-              // Already full text
-              convertedAnswers[questionId] = answer;
+              fastify.log.warn(`Invalid letter answer: ${answer} for question ${questionId}`);
+              conversionErrors++;
             }
           } else {
-            fastify.log.warn(`Question not found or no answer: questionId=${questionId}, answer=${answer}`);
-            conversionErrors++;
+            // Already full text
+            convertedAnswers[questionId] = answer;
           }
+        } else {
+          fastify.log.warn(
+            `Question not found or no answer: questionId=${questionId}, answer=${answer}`
+          );
+          conversionErrors++;
         }
-
-        fastify.log.info(`Converted ${Object.keys(convertedAnswers).length} answers, ${conversionErrors} errors`);
-
-        const submitAttempt = await attemptService.submitAttempt(
-          userId,
-          request.params.id,
-          request.body.attemptId,
-          convertedAnswers,
-          request.body.timeTakenSeconds
-        );
-
-        fastify.log.info(`Attempt submitted successfully: score=${submitAttempt.score}`);
-
-        return reply.send(submitAttempt);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to submit attempt";
-        fastify.log.error(`Submit error: ${message}`);
-        return reply.badRequest(message);
       }
+
+      fastify.log.info(
+        `Converted ${Object.keys(convertedAnswers).length} answers, ${conversionErrors} errors`
+      );
+
+      const submitAttempt = await attemptService.submitAttempt(
+        userId,
+        request.params.id,
+        request.body.attemptId,
+        convertedAnswers,
+        request.body.timeTakenSeconds
+      );
+
+      fastify.log.info(`Attempt submitted successfully: score=${submitAttempt.score}`);
+
+      return reply.send(submitAttempt);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to submit attempt";
+      fastify.log.error(`Submit error: ${message}`);
+      return reply.badRequest(message);
     }
-  );
+  });
 
   /**
    * Get attempt results
@@ -429,10 +430,7 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
 
       try {
         const userId = await resolveDbUserId(authUser.uid);
-        const results = await attemptService.getAttemptResults(
-          request.params.attemptId,
-          userId
-        );
+        const results = await attemptService.getAttemptResults(request.params.attemptId, userId);
 
         return reply.send(results);
       } catch (err) {
@@ -446,22 +444,19 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
    * Get user's attempts for a test
    * GET /v1/mock-tests/:id/attempts
    */
-  fastify.get<{ Params: { id: string } }>(
-    "/:id/attempts",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  fastify.get<{ Params: { id: string } }>("/:id/attempts", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      try {
-        const userId = await resolveDbUserId(authUser.uid);
-        const attempts = await attemptService.getUserAttempts(userId, request.params.id);
+    try {
+      const userId = await resolveDbUserId(authUser.uid);
+      const attempts = await attemptService.getUserAttempts(userId, request.params.id);
 
-        return reply.send(attempts);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to fetch attempts";
-        return reply.internalServerError(message);
-      }
+      return reply.send(attempts);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch attempts";
+      return reply.internalServerError(message);
     }
-  );
+  });
 
   // ── PURCHASES ──
 
@@ -472,37 +467,34 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<{
     Params: { id: string };
     Body: { paymentMethod: string };
-  }>(
-    "/:id/purchase",
-    async (request, reply) => {
-      const authUser = await fastify.requireAuth(request);
+  }>("/:id/purchase", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
 
-      try {
-        const userId = await resolveDbUserId(authUser.uid);
-        const test = await mockTestService.getMockTestById(request.params.id);
+    try {
+      const userId = await resolveDbUserId(authUser.uid);
+      const test = await mockTestService.getMockTestById(request.params.id);
 
-        if (!test) {
-          return reply.notFound("Mock test not found");
-        }
-
-        if (test.accessType !== "PAID") {
-          return reply.badRequest("This test is free");
-        }
-
-        const purchase = await purchaseService.createPurchase({
-          userId,
-          mockTestId: request.params.id,
-          amount: test.priceNpr!,
-          paymentMethod: request.body.paymentMethod
-        });
-
-        return reply.code(201).send(purchase);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to create purchase";
-        return reply.badRequest(message);
+      if (!test) {
+        return reply.notFound("Mock test not found");
       }
+
+      if (test.accessType !== "PAID") {
+        return reply.badRequest("This test is free");
+      }
+
+      const purchase = await purchaseService.createPurchase({
+        userId,
+        mockTestId: request.params.id,
+        amount: test.priceNpr!,
+        paymentMethod: request.body.paymentMethod
+      });
+
+      return reply.code(201).send(purchase);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create purchase";
+      return reply.badRequest(message);
     }
-  );
+  });
 };
 
 export default userMockTestRoutes;

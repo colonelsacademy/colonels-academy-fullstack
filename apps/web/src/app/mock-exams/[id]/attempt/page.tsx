@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Clock, AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Question {
   id: string;
@@ -110,11 +110,11 @@ export default function MockTestAttemptPage() {
     if (!test) return;
     const question = test.questions[currentQuestionIndex];
     if (!question) return;
-    
+
     // Convert letter (A, B, C, D) to full option text
     const letterIndex = letter.charCodeAt(0) - 65; // A=0, B=1, etc.
     const fullAnswer = question.options[letterIndex] || "";
-    
+
     setAnswers((prev) => ({
       ...prev,
       [question.id]: fullAnswer
@@ -154,7 +154,7 @@ export default function MockTestAttemptPage() {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Failed to submit (${response.status})`);
       }
-      
+
       router.push(`/mock-exams/${testId}/results/${attempt.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit");
@@ -204,7 +204,7 @@ export default function MockTestAttemptPage() {
       </div>
     );
   }
-  
+
   const answeredCount = Object.keys(answers).length;
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -222,11 +222,15 @@ export default function MockTestAttemptPage() {
             </p>
           </div>
 
-          <div className={`flex items-center gap-3 px-4 py-2 rounded-lg font-bold ${
-            isTimeWarning ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
-          }`}>
+          <div
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg font-bold ${
+              isTimeWarning ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+            }`}
+          >
             <Clock className="w-5 h-5" />
-            <span>{String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}</span>
+            <span>
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
           </div>
         </div>
       </div>
@@ -317,7 +321,9 @@ export default function MockTestAttemptPage() {
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Answered</span>
-                  <span className="font-bold">{answeredCount}/{test.totalQuestions}</span>
+                  <span className="font-bold">
+                    {answeredCount}/{test.totalQuestions}
+                  </span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
