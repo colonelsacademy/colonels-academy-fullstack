@@ -506,6 +506,20 @@ async function main() {
     }
     console.log(`✓ Reasoning questions seeded (${REASONING_QUESTIONS.length} total)`);
 
+    // Publish tests so they appear to users
+    console.log("📢 Publishing tests...");
+    await prisma.mockTest.update({
+      where: { id: gkTest.id },
+      data: { status: "PUBLISHED" }
+    });
+    console.log("✓ GK test published");
+
+    await prisma.mockTest.update({
+      where: { id: reasoningTest.id },
+      data: { status: "PUBLISHED" }
+    });
+    console.log("✓ Reasoning test published");
+
     console.log("✅ Seeding complete!");
   } catch (error) {
     console.error("❌ Seeding failed:", error);
