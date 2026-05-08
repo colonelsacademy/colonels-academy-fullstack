@@ -108,7 +108,6 @@ export class MockTestAttemptService {
 
     // Calculate score
     const score = this.calculateScore(answers, test.questions);
-    const percentage = Math.round((score / test.totalQuestions) * 100);
 
     // Update attempt
     return this.prisma.mockTestAttempt.update({

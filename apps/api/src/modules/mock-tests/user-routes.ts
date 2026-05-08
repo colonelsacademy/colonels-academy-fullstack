@@ -31,7 +31,7 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
           select: { id: true }
         });
         fastify.log.info(`Created new user: ${authUid}`);
-      } catch (err) {
+      } catch (_err) {
         fastify.log.error(`Failed to create user: ${authUid}`);
         throw new Error("Failed to create user account");
       }

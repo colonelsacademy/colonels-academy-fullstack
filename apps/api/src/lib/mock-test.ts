@@ -225,7 +225,6 @@ export class MockTestService {
       case "HARD":
         difficultyFilter = 3;
         break;
-      case "MIXED":
       default:
         difficultyFilter = undefined; // No filter
         break;
@@ -288,7 +287,7 @@ export class MockTestService {
       for (const question of questions) {
         const questionAttempts = attempts.filter((a) => {
           const answers = a.answers as Record<string, string>;
-          return answers && answers[question.id];
+          return answers?.[question.id];
         });
 
         const correctCount = questionAttempts.filter((a) => {
@@ -356,7 +355,7 @@ export class MockTestService {
     const questionStats = test.questions.map((question) => {
       const questionAttempts = attempts.filter((a) => {
         const answers = a.answers as Record<string, string>;
-        return answers && answers[question.id];
+        return answers?.[question.id];
       });
 
       const correctCount = questionAttempts.filter((a) => {
