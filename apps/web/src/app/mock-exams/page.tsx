@@ -85,7 +85,7 @@ export default function MockExamsPage() {
   };
 
   const handleStartTest = (testId: string) => {
-    router.push(`/mock-exams/${testId}/attempt`);
+    router.push(`/mock-test/${testId}/attempt`);
   };
 
   const handleBack = () => {

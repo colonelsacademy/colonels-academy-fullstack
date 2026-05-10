@@ -2959,13 +2959,28 @@ function MockTestResultsTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/mock-test-results")
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    fetch("/api/admin/mock-test-results", { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         if (d.results) setResults(d.results);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch mock test results:", err);
+        }
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
@@ -3061,18 +3076,63 @@ function CadetIQTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/cadet-iq-results")
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    fetch("/api/admin/cadet-iq-results", { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         if (d.results) setResults(d.results);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch Cadet IQ results:", err);
+        }
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
+
+  // Group results by user and add attempt numbers
+  const groupedResults = results.reduce(
+    (acc, result) => {
+      const userId = result.userId;
+      if (!acc[userId]) {
+        acc[userId] = [];
+      }
+      const userArray = acc[userId];
+      if (userArray) {
+        userArray.push(result);
+      }
+      return acc;
+    },
+    {} as Record<string, typeof results>
+  );
+
+  // Flatten with attempt numbers
+  const resultsWithAttempts = Object.values(groupedResults).flatMap((userResults) => {
+    const typedResults = userResults as typeof results;
+    return typedResults.map((result, index) => ({
+      ...result,
+      attemptNumber: typedResults.length - index
+    }));
+  });
 
   return (
     <div className="space-y-6">
-      <SectionTitle>Cadet IQ Submissions ({results.length})</SectionTitle>
+      <div className="flex items-center justify-between">
+        <SectionTitle>Cadet IQ Submissions ({results.length})</SectionTitle>
+        <div className="text-xs text-gray-500 bg-blue-50 px-3 py-1 rounded-full">
+          ℹ️ All attempts are preserved in history
+        </div>
+      </div>
       {loading ? (
         <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
           <Loader2 className="w-5 h-5 animate-spin" /> Loading...
@@ -3090,13 +3150,14 @@ function CadetIQTab() {
                   <th className="text-left px-5 py-3">Student</th>
                   <th className="text-left px-5 py-3">Email</th>
                   <th className="text-left px-5 py-3">Score</th>
+                  <th className="text-left px-5 py-3">Percentage</th>
                   <th className="text-left px-5 py-3">Status</th>
                   <th className="text-left px-5 py-3">Time Taken</th>
                   <th className="text-left px-5 py-3">Submitted</th>
                 </tr>
               </thead>
               <tbody>
-                {results.map((result) => (
+                {resultsWithAttempts.map((result) => (
                   <tr key={result.id} className="border-t border-gray-100 hover:bg-gray-50">
                     <td className="px-5 py-3 font-medium text-gray-900">
                       {result.user.displayName || "Unknown"}
@@ -3106,6 +3167,21 @@ function CadetIQTab() {
                       {result.score !== null && result.totalMarks !== null
                         ? `${result.score}/${result.totalMarks}`
                         : "—"}
+                    </td>
+                    <td className="px-5 py-3">
+                      {result.score !== null && result.totalMarks !== null ? (
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            Math.round((result.score / result.totalMarks) * 100) >= 60
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {Math.round((result.score / result.totalMarks) * 100)}%
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3">
                       <span
@@ -3325,7 +3401,6 @@ export default function AdminPage() {
     courselist: "Courses Management",
     enrollments: "Enrollments",
     notifications: "Notification Center",
-    mocktests: "Mock Test Management",
     "mock-test-results": "Mock Test Results",
     cadetiq: "Cadet IQ Assessment",
     missionlog: "Mission Log"

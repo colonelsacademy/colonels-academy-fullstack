@@ -163,7 +163,7 @@ export default function MockTestResultsPage() {
 
           <button
             type="button"
-            onClick={() => router.push(`/mock-exams/${testId}/attempt`)}
+            onClick={() => router.push(`/mock-test/${testId}/attempt`)}
             className="inline-flex items-center gap-2 px-8 py-3 bg-[#0F1C15] text-white font-bold rounded-lg hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-colors uppercase tracking-wider"
           >
             <RotateCcw className="w-5 h-5" />

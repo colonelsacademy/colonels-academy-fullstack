@@ -119,7 +119,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.badRequest("subjectId or subjectIds is required");
         }
 
-        let tests: any[] = [];
+        let tests: Awaited<ReturnType<typeof mockTestService.listMockTestsBySubject>> = [];
 
         if (subjectIds) {
           // Handle multiple subject IDs
@@ -133,10 +133,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
           }
         } else if (subjectId) {
           // Handle single subject ID
-          tests = await mockTestService.listMockTestsBySubject(
-            subjectId,
-            request.query.status
-          );
+          tests = await mockTestService.listMockTestsBySubject(subjectId, request.query.status);
         }
 
         return reply.send(tests);

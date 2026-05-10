@@ -155,7 +155,7 @@ export default function MockTestAttemptPage() {
         throw new Error(errorData.message || `Failed to submit (${response.status})`);
       }
 
-      router.push(`/mock-exams/${testId}/results/${attempt.id}`);
+      router.push(`/mock-test/${testId}/results/${attempt.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit");
       setSubmitting(false);

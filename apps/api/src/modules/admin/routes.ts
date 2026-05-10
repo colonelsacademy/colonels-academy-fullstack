@@ -1305,21 +1305,23 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       return {
-        results: results.map((result) => ({
-          id: result.id,
-          userId: result.userId,
-          user: result.user,
-          mockTest: result.mockTest,
-          score: result.score ?? 0,
-          totalMarks: result.totalMarks ?? 0,
-          percentage:
-            result.totalMarks && result.score
-              ? Math.round((result.score / result.totalMarks) * 100)
-              : 0,
-          timeTakenSeconds: result.timeTakenSeconds ?? 0,
-          passed: result.status === "COMPLETED",
-          createdAt: result.createdAt
-        }))
+        results: results.map((result) => {
+          const safeScore = result.score ?? 0;
+          const safeTotalMarks = result.totalMarks ?? 0;
+          return {
+            id: result.id,
+            userId: result.userId,
+            user: result.user,
+            mockTest: result.mockTest,
+            score: safeScore,
+            totalMarks: safeTotalMarks,
+            percentage:
+              safeTotalMarks && safeScore ? Math.round((safeScore / safeTotalMarks) * 100) : 0,
+            timeTakenSeconds: result.timeTakenSeconds ?? 0,
+            passed: (result.status as string) === "COMPLETED",
+            createdAt: result.createdAt
+          };
+        })
       };
     } catch (err) {
       fastify.log.error(err, "Error fetching mock test results");

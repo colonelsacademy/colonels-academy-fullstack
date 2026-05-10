@@ -17,7 +17,6 @@ export default function MockTestSavedView({
   onClearAndRetake
 }: Props) {
   const iqReportEnabled = process.env.NEXT_PUBLIC_IQ_REPORT_ENABLED !== "false";
-  const [showConfirm, setShowConfirm] = useState(false);
   const [showReport, setShowReport] = useState(false);
 
   const { score, totalMarks, timeTaken, passed, createdAt, answers } = savedResult;
@@ -196,94 +195,6 @@ export default function MockTestSavedView({
         }
       `}</style>
 
-      {showConfirm && (
-        <div
-          className="sv-confirm-overlay"
-          onClick={() => !clearLoading && setShowConfirm(false)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape" && !clearLoading) setShowConfirm(false);
-          }}
-        >
-          <div
-            className="sv-confirm-card"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-          >
-            <div className="sv-confirm-icon">🗑️</div>
-            <h3 className="sv-confirm-title">Clear Score?</h3>
-            <p className="sv-confirm-sub">
-              Your score and answers will be permanently deleted so you can retake the assessment
-              with a clean slate.
-            </p>
-            <div className="sv-confirm-note">
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 14 14"
-                fill="none"
-                aria-hidden="true"
-                style={{ flexShrink: 0, marginTop: 1 }}
-              >
-                <path
-                  d="M2 7l4 4 6-7"
-                  stroke="#D4AF37"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>
-                Your <strong>phone number</strong> and account info will be kept — only your test
-                score and answers will be removed.
-              </span>
-            </div>
-            <div className="sv-confirm-btns">
-              <button
-                type="button"
-                className="sv-confirm-cancel"
-                onClick={() => setShowConfirm(false)}
-                disabled={clearLoading}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="sv-confirm-delete"
-                onClick={onClearAndRetake}
-                disabled={clearLoading}
-              >
-                {clearLoading ? (
-                  <>
-                    <span className="sv-spinner" /> Removing…
-                  </>
-                ) : (
-                  <>
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path
-                        d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4"
-                        stroke="#fff"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <rect
-                        x="3"
-                        y="4"
-                        width="8"
-                        height="8"
-                        rx="1"
-                        stroke="#fff"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                    Confirm Clear
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="mt-page">
         <div className="mt-corner-tl" />
         <div className="mt-corner-br" />
@@ -378,7 +289,7 @@ export default function MockTestSavedView({
               <button
                 type="button"
                 className="sv-retake-btn"
-                onClick={() => setShowConfirm(true)}
+                onClick={onClearAndRetake}
                 disabled={clearLoading}
               >
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -403,31 +314,6 @@ export default function MockTestSavedView({
                     strokeLinejoin="round"
                   />
                 </svg>
-              </button>
-              <button
-                type="button"
-                className="sv-clear-btn"
-                onClick={() => setShowConfirm(true)}
-                disabled={clearLoading}
-              >
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path
-                    d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <rect
-                    x="3"
-                    y="4"
-                    width="8"
-                    height="8"
-                    rx="1"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                </svg>
-                Clear Score from Database
               </button>
               {iqReportEnabled && (
                 <button

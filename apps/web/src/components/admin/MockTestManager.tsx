@@ -45,29 +45,32 @@ export function MockTestManager() {
     priceNpr: ""
   });
 
-  const loadData = useCallback(async (position: string = selectedPosition) => {
-    setLoading(true);
-    try {
-      // Get subjects for the selected position
-      const subjectsRes = await fetch(`/api/admin/mock-tests/subjects?position=${position}`);
-      const subjectsData = await subjectsRes.json();
-      if (Array.isArray(subjectsData)) {
-        setSubjects(subjectsData);
+  const loadData = useCallback(
+    async (position: string = selectedPosition) => {
+      setLoading(true);
+      try {
+        // Get subjects for the selected position
+        const subjectsRes = await fetch(`/api/admin/mock-tests/subjects?position=${position}`);
+        const subjectsData = await subjectsRes.json();
+        if (Array.isArray(subjectsData)) {
+          setSubjects(subjectsData);
 
-        // Get tests for all subjects of this position
-        if (subjectsData.length > 0) {
-          const subjectIds = subjectsData.map((s) => s.id).join(",");
-          const testsRes = await fetch(`/api/admin/mock-tests?subjectIds=${subjectIds}`);
-          const testsData = await testsRes.json();
-          if (Array.isArray(testsData)) {
-            setTests(testsData);
+          // Get tests for all subjects of this position
+          if (subjectsData.length > 0) {
+            const subjectIds = subjectsData.map((s) => s.id).join(",");
+            const testsRes = await fetch(`/api/admin/mock-tests?subjectIds=${subjectIds}`);
+            const testsData = await testsRes.json();
+            if (Array.isArray(testsData)) {
+              setTests(testsData);
+            }
           }
         }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedPosition]);
+    },
+    [selectedPosition]
+  );
 
   const handlePositionChange = (position: string) => {
     setSelectedPosition(position);

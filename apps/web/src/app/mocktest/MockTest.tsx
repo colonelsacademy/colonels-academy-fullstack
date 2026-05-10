@@ -177,6 +177,7 @@ export default function MockTest() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const answersRef = useRef(answers);
+  const justClearedRef = useRef(false);
   answersRef.current = answers;
 
   const persistResult = useCallback(
@@ -260,6 +261,18 @@ export default function MockTest() {
         return;
       }
 
+      // ── Skip API check if we just cleared the score ──────────────────────
+      if (justClearedRef.current) {
+        justClearedRef.current = false;
+        return;
+      }
+
+      // ── Don't interrupt stable phases ──────────────────────────────────────
+      if (STABLE_PHASES.includes(phase)) return;
+
+      // ── Only run init once when phase is loading ──────────────────────────
+      if (phase !== "loading") return;
+
       // ── Claim result after login/signup (guest finished test, then authenticated) ──
       try {
         const claimRaw = sessionStorage.getItem(CLAIM_AFTER_AUTH_KEY);
@@ -293,9 +306,6 @@ export default function MockTest() {
           /* ignore */
         }
       }
-
-      // ── Logged-in — don't interrupt active/stable phases ──────────────────
-      if (STABLE_PHASES.includes(phase)) return;
 
       const pending = loadPendingResult();
       if (pending && pending.userId === user.uid) {
@@ -487,6 +497,7 @@ export default function MockTest() {
       setQuestionIndex(0);
       setSaveStatus("idle");
       setSaveError(null);
+      justClearedRef.current = true;
       setPhase("intro");
     } catch (err) {
       console.error("Failed to clear score:", err);
