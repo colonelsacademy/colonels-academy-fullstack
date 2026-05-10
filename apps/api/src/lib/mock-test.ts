@@ -98,6 +98,15 @@ export class MockTestService {
       include: {
         subject: true,
         questions: {
+          select: {
+            id: true,
+            position: true,
+            questionText: true,
+            options: true,
+            difficulty: true,
+            isImageBased: true,
+            imageUrl: true
+          },
           orderBy: { position: "asc" }
         }
       }

@@ -1235,6 +1235,89 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.notFound("Purchase not found");
   });
 
+  // ── GET /v1/admin/cadet-iq-results ─────────────────────────────────────────
+  fastify.get("/cadet-iq-results", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    try {
+      const results = await fastify.prisma.cadetIqMockResult.findMany({
+        include: {
+          user: {
+            select: {
+              displayName: true,
+              email: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 200
+      });
+
+      return {
+        results: results.map((result) => ({
+          id: result.id,
+          userId: result.userId,
+          user: result.user,
+          score: result.score,
+          totalMarks: result.totalMarks,
+          timeTaken: result.timeTaken,
+          passed: result.passed,
+          createdAt: result.createdAt
+        }))
+      };
+    } catch (err) {
+      fastify.log.error(err, "Error fetching Cadet IQ results");
+      const message = err instanceof Error ? err.message : "Failed to fetch Cadet IQ results";
+      return reply.internalServerError(message);
+    }
+  });
+
+  // ── GET /v1/admin/mock-test-results ────────────────────────────────────────
+  fastify.get("/mock-test-results", async (request, reply) => {
+    const user = await requireAdmin(request, reply);
+    if (!user) return;
+
+    try {
+      const results = await fastify.prisma.mockTestAttempt.findMany({
+        include: {
+          user: {
+            select: {
+              displayName: true,
+              email: true
+            }
+          },
+          mockTest: {
+            select: {
+              title: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 200
+      });
+
+      return {
+        results: results.map((result) => ({
+          id: result.id,
+          userId: result.userId,
+          user: result.user,
+          mockTest: result.mockTest,
+          score: result.score,
+          totalMarks: result.totalMarks,
+          percentage: result.totalMarks ? Math.round((result.score / result.totalMarks) * 100) : 0,
+          timeTakenSeconds: result.timeTakenSeconds,
+          passed: result.passed,
+          createdAt: result.createdAt
+        }))
+      };
+    } catch (err) {
+      fastify.log.error(err, "Error fetching mock test results");
+      const message = err instanceof Error ? err.message : "Failed to fetch mock test results";
+      return reply.internalServerError(message);
+    }
+  });
+
   // ── Register Mock Test Admin Routes ────────────────────────────────────────
   await fastify.register(adminMockTestRoutes, { prefix: "/mock-tests" });
 };
