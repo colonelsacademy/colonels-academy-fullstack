@@ -3023,9 +3023,7 @@ function MockTestResultsTab() {
                     <td className="px-5 py-3">
                       <span
                         className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                          result.passed
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
+                          result.passed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                         }`}
                       >
                         {result.passed ? "Passed" : "Failed"}

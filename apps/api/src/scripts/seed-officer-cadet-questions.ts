@@ -139,14 +139,24 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Which is the largest national park of Nepal?",
-    options: ["Chitwan National Park", "Sagarmatha National Park", "Shey Phoksundo National Park", "Bardiya National Park"],
+    options: [
+      "Chitwan National Park",
+      "Sagarmatha National Park",
+      "Shey Phoksundo National Park",
+      "Bardiya National Park"
+    ],
     correctAnswer: "C",
     explanation: "Shey Phoksundo National Park is the largest national park of Nepal.",
     difficulty: 2
   },
   {
     questionText: "What does CPU stand for?",
-    options: ["Central Process Unit", "Central Processing Unit", "Computer Processing Unit", "Control Processing Unit"],
+    options: [
+      "Central Process Unit",
+      "Central Processing Unit",
+      "Computer Processing Unit",
+      "Control Processing Unit"
+    ],
     correctAnswer: "B",
     explanation: "CPU stands for Central Processing Unit.",
     difficulty: 1
@@ -223,7 +233,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "What is the full form of GDP?",
-    options: ["Gross Domestic Product", "General Domestic Product", "Gross Development Plan", "Global Domestic Product"],
+    options: [
+      "Gross Domestic Product",
+      "General Domestic Product",
+      "Gross Development Plan",
+      "Global Domestic Product"
+    ],
     correctAnswer: "A",
     explanation: "GDP stands for Gross Domestic Product.",
     difficulty: 1
@@ -244,7 +259,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Who was the first elected Prime Minister of Nepal?",
-    options: ["B. P. Koirala", "Matrika Prasad Koirala", "Girija Prasad Koirala", "Pushpa Lal Shrestha"],
+    options: [
+      "B. P. Koirala",
+      "Matrika Prasad Koirala",
+      "Girija Prasad Koirala",
+      "Pushpa Lal Shrestha"
+    ],
     correctAnswer: "A",
     explanation: "B. P. Koirala was the first elected Prime Minister of Nepal.",
     difficulty: 2
@@ -293,7 +313,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Which is the oldest university in Nepal?",
-    options: ["Pokhara University", "Kathmandu University", "Tribhuvan University", "Purbanchal University"],
+    options: [
+      "Pokhara University",
+      "Kathmandu University",
+      "Tribhuvan University",
+      "Purbanchal University"
+    ],
     correctAnswer: "C",
     explanation: "Tribhuvan University is the oldest university in Nepal.",
     difficulty: 1
@@ -349,16 +374,27 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Who was the first President of Nepal?",
-    options: ["Ram Baran Yadav", "Bidhya Devi Bhandari", "Girija Prasad Koirala", "Sher Bahadur Deuba"],
+    options: [
+      "Ram Baran Yadav",
+      "Bidhya Devi Bhandari",
+      "Girija Prasad Koirala",
+      "Sher Bahadur Deuba"
+    ],
     correctAnswer: "A",
     explanation: "Ram Baran Yadav was the first President of Nepal.",
     difficulty: 2
   },
   {
     questionText: "What does UNESCO stand for?",
-    options: ["United Nations Educational, Scientific and Cultural Organization", "United Nations Economic and Social Council", "Universal Education Science Council Organization", "United Scientific Education Council Organization"],
+    options: [
+      "United Nations Educational, Scientific and Cultural Organization",
+      "United Nations Economic and Social Council",
+      "Universal Education Science Council Organization",
+      "United Scientific Education Council Organization"
+    ],
     correctAnswer: "A",
-    explanation: "UNESCO stands for United Nations Educational, Scientific and Cultural Organization.",
+    explanation:
+      "UNESCO stands for United Nations Educational, Scientific and Cultural Organization.",
     difficulty: 1
   },
   {
@@ -384,7 +420,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "What is the full form of SAARC?",
-    options: ["South Asian Association for Regional Cooperation", "South Africa Asian Regional Council", "South Asia Regional Committee", "South Asian Regional Community"],
+    options: [
+      "South Asian Association for Regional Cooperation",
+      "South Africa Asian Regional Council",
+      "South Asia Regional Committee",
+      "South Asian Regional Community"
+    ],
     correctAnswer: "A",
     explanation: "SAARC stands for South Asian Association for Regional Cooperation.",
     difficulty: 1
@@ -405,7 +446,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Which national park of Nepal is famous for one-horned rhinoceros?",
-    options: ["Bardiya National Park", "Chitwan National Park", "Sagarmatha National Park", "Khaptad National Park"],
+    options: [
+      "Bardiya National Park",
+      "Chitwan National Park",
+      "Sagarmatha National Park",
+      "Khaptad National Park"
+    ],
     correctAnswer: "B",
     explanation: "Chitwan National Park is famous for one-horned rhinoceros.",
     difficulty: 1
@@ -440,7 +486,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Who is known as the Iron Man of India?",
-    options: ["Mahatma Gandhi", "Jawaharlal Nehru", "Subhas Chandra Bose", "Sardar Vallabhbhai Patel"],
+    options: [
+      "Mahatma Gandhi",
+      "Jawaharlal Nehru",
+      "Subhas Chandra Bose",
+      "Sardar Vallabhbhai Patel"
+    ],
     correctAnswer: "D",
     explanation: "Sardar Vallabhbhai Patel is known as the Iron Man of India.",
     difficulty: 2
@@ -545,7 +596,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Which is the oldest national park in Nepal?",
-    options: ["Sagarmatha National Park", "Langtang National Park", "Chitwan National Park", "Bardiya National Park"],
+    options: [
+      "Sagarmatha National Park",
+      "Langtang National Park",
+      "Chitwan National Park",
+      "Bardiya National Park"
+    ],
     correctAnswer: "C",
     explanation: "Chitwan National Park is the oldest national park in Nepal.",
     difficulty: 1
@@ -678,7 +734,12 @@ const GK_QUESTIONS: Question[] = [
   },
   {
     questionText: "Which body conducts elections in Nepal?",
-    options: ["Supreme Court", "Public Service Commission", "Election Commission", "National Assembly"],
+    options: [
+      "Supreme Court",
+      "Public Service Commission",
+      "Election Commission",
+      "National Assembly"
+    ],
     correctAnswer: "C",
     explanation: "Election Commission Nepal conducts elections in Nepal.",
     difficulty: 1
@@ -932,7 +993,8 @@ const ENGLISH_QUESTIONS: Question[] = [
     questionText: "Fill in the blank with the correct tense.\nBy next year, she ___ her studies.",
     options: ["completes", "completed", "will complete", "will have completed"],
     correctAnswer: "D",
-    explanation: "'Will have completed' is future perfect tense for actions completed by a future time.",
+    explanation:
+      "'Will have completed' is future perfect tense for actions completed by a future time.",
     difficulty: 2
   },
   {
@@ -988,7 +1050,8 @@ const ENGLISH_QUESTIONS: Question[] = [
     difficulty: 1
   },
   {
-    questionText: "Choose the correct sentence transformation.\n'If I were rich, I would travel the world.' This is:",
+    questionText:
+      "Choose the correct sentence transformation.\n'If I were rich, I would travel the world.' This is:",
     options: ["Zero conditional", "First conditional", "Second conditional", "Third conditional"],
     correctAnswer: "C",
     explanation: "This is a second conditional (if + past, would + base verb).",
@@ -1009,7 +1072,8 @@ const ENGLISH_QUESTIONS: Question[] = [
     difficulty: 1
   },
   {
-    questionText: "Rearrange the words to form a meaningful sentence.\n'always / truth / the / speaks / he'",
+    questionText:
+      "Rearrange the words to form a meaningful sentence.\n'always / truth / the / speaks / he'",
     options: [
       "He truth always speaks the.",
       "He always speaks the truth.",
@@ -1021,7 +1085,8 @@ const ENGLISH_QUESTIONS: Question[] = [
     difficulty: 1
   },
   {
-    questionText: "Read the sentence and answer the question.\n'Despite the heavy rain, the match continued.'\nWhat does 'despite' mean?",
+    questionText:
+      "Read the sentence and answer the question.\n'Despite the heavy rain, the match continued.'\nWhat does 'despite' mean?",
     options: ["Because of", "In spite of", "During", "According to"],
     correctAnswer: "B",
     explanation: "'Despite' and 'in spite of' have the same meaning.",
@@ -1130,7 +1195,8 @@ async function main() {
       where: { id: "test_officer_cadet_gk_001" },
       update: {
         title: "Officer Cadet GK Test",
-        description: "General Knowledge test for Officer Cadet - 100 questions, 100 marks, 120 minutes",
+        description:
+          "General Knowledge test for Officer Cadet - 100 questions, 100 marks, 120 minutes",
         timeLimitMinutes: 120,
         totalQuestions: 100,
         passingScore: 60
@@ -1138,7 +1204,8 @@ async function main() {
       create: {
         id: "test_officer_cadet_gk_001",
         title: "Officer Cadet GK Test",
-        description: "General Knowledge test for Officer Cadet - 100 questions, 100 marks, 120 minutes",
+        description:
+          "General Knowledge test for Officer Cadet - 100 questions, 100 marks, 120 minutes",
         position: "Officer Cadet",
         subjectId: gkSubject.id,
         timeLimitMinutes: 120,
