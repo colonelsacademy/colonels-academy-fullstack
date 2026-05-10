@@ -22,7 +22,10 @@ const rajdhani = Rajdhani({
 
 export const metadata: Metadata = {
   title: "Colonels Academy Platform",
-  description: "A fresh Next.js + Fastify learning platform scaffold for Colonels Academy."
+  description: "A fresh Next.js + Fastify learning platform scaffold for Colonels Academy.",
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' font-weight='bold' fill='%23D4AF37'>⚔</text></svg>"
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

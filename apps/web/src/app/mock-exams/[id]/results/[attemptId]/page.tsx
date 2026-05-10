@@ -3,6 +3,7 @@
 import { ArrowLeft, CheckCircle, RotateCcw, XCircle } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Result {
   questionId: string;
@@ -45,6 +46,7 @@ export default function MockTestResultsPage() {
         if (!response.ok) throw new Error("Failed to fetch results");
         const data = await response.json();
         setResults(data);
+        toast.success("Result saved to your account.");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load results");
       } finally {

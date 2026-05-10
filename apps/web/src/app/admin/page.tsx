@@ -42,6 +42,7 @@ type Tab =
   | "enrollments"
   | "notifications"
   | "mocktests"
+  | "mock-test-results"
   | "cadetiq"
   | "missionlog";
 
@@ -94,6 +95,7 @@ const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "enrollments", label: "Enrollments", icon: CheckSquare },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "mocktests", label: "Mock Tests", icon: ClipboardList },
+  { id: "mock-test-results", label: "Mock Test Results", icon: ClipboardList },
   { id: "cadetiq", label: "Cadet IQ", icon: ClipboardList },
   { id: "missionlog", label: "Mission Log", icon: CheckSquare }
 ];
@@ -2940,17 +2942,200 @@ function PaymentsSection() {
   );
 }
 
+// ─── Mock Test Results Tab ────────────────────────────────────────────────────
+
+function MockTestResultsTab() {
+  const [results, setResults] = useState<
+    {
+      id: string;
+      userId: string;
+      user: { displayName: string | null; email: string | null };
+      mockTest: { title: string };
+      score: number;
+      totalMarks: number;
+      percentage: number;
+      timeTakenSeconds: number;
+      passed: boolean;
+      createdAt: string;
+    }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/mock-test-results")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.results) setResults(d.results);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <SectionTitle>Mock Test Results ({results.length})</SectionTitle>
+      {loading ? (
+        <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
+          <Loader2 className="w-5 h-5 animate-spin" /> Loading...
+        </div>
+      ) : results.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 text-sm">
+          No mock test submissions yet
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-left px-5 py-3">Student</th>
+                  <th className="text-left px-5 py-3">Email</th>
+                  <th className="text-left px-5 py-3">Test</th>
+                  <th className="text-left px-5 py-3">Score</th>
+                  <th className="text-left px-5 py-3">Percentage</th>
+                  <th className="text-left px-5 py-3">Status</th>
+                  <th className="text-left px-5 py-3">Time Taken</th>
+                  <th className="text-left px-5 py-3">Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((result) => (
+                  <tr key={result.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="px-5 py-3 font-medium text-gray-900">
+                      {result.user.displayName || "Unknown"}
+                    </td>
+                    <td className="px-5 py-3 text-gray-600">{result.user.email || "—"}</td>
+                    <td className="px-5 py-3 text-gray-600">{result.mockTest.title}</td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {result.score}/{result.totalMarks}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          result.percentage >= 60
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {result.percentage}%
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                          result.passed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {result.passed ? "Passed" : "Failed"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {Math.floor(result.timeTakenSeconds / 60)}m {result.timeTakenSeconds % 60}s
+                    </td>
+                    <td className="px-5 py-3 text-gray-600 text-xs">
+                      {new Date(result.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Cadet IQ Tab ─────────────────────────────────────────────────────────────
 
 function CadetIQTab() {
+  const [results, setResults] = useState<
+    {
+      id: string;
+      userId: string;
+      user: { displayName: string | null; email: string | null };
+      score: number | null;
+      totalMarks: number | null;
+      timeTaken: number | null;
+      passed: boolean | null;
+      createdAt: string;
+    }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/cadet-iq-results")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.results) setResults(d.results);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
-    <div className="space-y-4">
-      <SectionTitle>Cadet IQ Submissions</SectionTitle>
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
-        <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p className="text-sm font-medium">IQ test system coming soon</p>
-        <p className="text-xs mt-1">Mock test results and performance tracking will appear here</p>
-      </div>
+    <div className="space-y-6">
+      <SectionTitle>Cadet IQ Submissions ({results.length})</SectionTitle>
+      {loading ? (
+        <div className="flex items-center justify-center h-32 text-gray-400 gap-2">
+          <Loader2 className="w-5 h-5 animate-spin" /> Loading...
+        </div>
+      ) : results.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 text-sm">
+          No Cadet IQ submissions yet
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-left px-5 py-3">Student</th>
+                  <th className="text-left px-5 py-3">Email</th>
+                  <th className="text-left px-5 py-3">Score</th>
+                  <th className="text-left px-5 py-3">Status</th>
+                  <th className="text-left px-5 py-3">Time Taken</th>
+                  <th className="text-left px-5 py-3">Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((result) => (
+                  <tr key={result.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="px-5 py-3 font-medium text-gray-900">
+                      {result.user.displayName || "Unknown"}
+                    </td>
+                    <td className="px-5 py-3 text-gray-600">{result.user.email || "—"}</td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {result.score !== null && result.totalMarks !== null
+                        ? `${result.score}/${result.totalMarks}`
+                        : "—"}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                          result.passed
+                            ? "bg-green-100 text-green-700"
+                            : result.passed === false
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {result.passed ? "Passed" : result.passed === false ? "Failed" : "Pending"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {result.timeTaken ? `${Math.round(result.timeTaken / 60)}m` : "—"}
+                    </td>
+                    <td className="px-5 py-3 text-gray-600 text-xs">
+                      {new Date(result.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3127,6 +3312,8 @@ export default function AdminPage() {
         return <NotificationsTab />;
       case "mocktests":
         return <MockTestManager />;
+      case "mock-test-results":
+        return <MockTestResultsTab />;
       case "cadetiq":
         return <CadetIQTab />;
       case "missionlog":
@@ -3144,6 +3331,7 @@ export default function AdminPage() {
     enrollments: "Enrollments",
     notifications: "Notification Center",
     mocktests: "Mock Test Management",
+    "mock-test-results": "Mock Test Results",
     cadetiq: "Cadet IQ Assessment",
     missionlog: "Mission Log"
   };
