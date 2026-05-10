@@ -33,6 +33,7 @@ export function MockTestManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [selectedPosition, setSelectedPosition] = useState<string>("ASI");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -44,32 +45,38 @@ export function MockTestManager() {
     priceNpr: ""
   });
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (position: string = selectedPosition) => {
     setLoading(true);
     try {
-      // Get subjects
-      const subjectsRes = await fetch("/api/admin/mock-tests/subjects");
+      // Get subjects for the selected position
+      const subjectsRes = await fetch(`/api/admin/mock-tests/subjects?position=${position}`);
       const subjectsData = await subjectsRes.json();
       if (Array.isArray(subjectsData)) {
         setSubjects(subjectsData);
-      }
 
-      // Get tests
-      if (subjectsData.length > 0) {
-        const testsRes = await fetch(`/api/admin/mock-tests?subjectId=${subjectsData[0].id}`);
-        const testsData = await testsRes.json();
-        if (Array.isArray(testsData)) {
-          setTests(testsData);
+        // Get tests for all subjects of this position
+        if (subjectsData.length > 0) {
+          const subjectIds = subjectsData.map((s) => s.id).join(",");
+          const testsRes = await fetch(`/api/admin/mock-tests?subjectIds=${subjectIds}`);
+          const testsData = await testsRes.json();
+          if (Array.isArray(testsData)) {
+            setTests(testsData);
+          }
         }
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedPosition]);
+
+  const handlePositionChange = (position: string) => {
+    setSelectedPosition(position);
+    loadData(position);
+  };
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(selectedPosition);
+  }, [selectedPosition, loadData]);
 
   const resetForm = () => {
     setForm({
@@ -196,6 +203,31 @@ export function MockTestManager() {
           className="flex items-center gap-1 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-sm hover:bg-[#c9a227]"
         >
           <Plus className="w-4 h-4" /> New Test
+        </button>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => handlePositionChange("ASI")}
+          className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            selectedPosition === "ASI"
+              ? "bg-[#D4AF37] text-[#0F1C15]"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          ASI
+        </button>
+        <button
+          type="button"
+          onClick={() => handlePositionChange("Officer Cadet")}
+          className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            selectedPosition === "Officer Cadet"
+              ? "bg-[#D4AF37] text-[#0F1C15]"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          Officer Cadet
         </button>
       </div>
 

@@ -97,10 +97,11 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   /**
-   * List mock tests by subject
+   * List mock tests by subject(s)
    * GET /v1/admin/mock-tests?subjectId=subject_123&status=PUBLISHED
+   * GET /v1/admin/mock-tests?subjectIds=subject_123,subject_456&status=PUBLISHED
    */
-  fastify.get<{ Querystring: { subjectId?: string; status?: string } }>(
+  fastify.get<{ Querystring: { subjectId?: string; subjectIds?: string; status?: string } }>(
     "/mock-tests",
     async (request, reply) => {
       const authUser = await fastify.requireAuth(request);
@@ -110,14 +111,33 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       try {
-        if (!request.query.subjectId) {
-          return reply.badRequest("subjectId is required");
+        // Support both single subjectId and multiple subjectIds
+        const subjectId = request.query.subjectId;
+        const subjectIds = request.query.subjectIds;
+
+        if (!subjectId && !subjectIds) {
+          return reply.badRequest("subjectId or subjectIds is required");
         }
 
-        const tests = await mockTestService.listMockTestsBySubject(
-          request.query.subjectId,
-          request.query.status
-        );
+        let tests: any[] = [];
+
+        if (subjectIds) {
+          // Handle multiple subject IDs
+          const ids = subjectIds.split(",").map((id) => id.trim());
+          for (const id of ids) {
+            const subjectTests = await mockTestService.listMockTestsBySubject(
+              id,
+              request.query.status
+            );
+            tests = tests.concat(subjectTests);
+          }
+        } else if (subjectId) {
+          // Handle single subject ID
+          tests = await mockTestService.listMockTestsBySubject(
+            subjectId,
+            request.query.status
+          );
+        }
 
         return reply.send(tests);
       } catch (err) {
