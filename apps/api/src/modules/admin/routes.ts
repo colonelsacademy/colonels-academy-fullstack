@@ -1280,7 +1280,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
     try {
       const results = await fastify.prisma.mockTestAttempt.findMany({
-        include: {
+        select: {
+          id: true,
+          userId: true,
+          score: true,
+          totalMarks: true,
+          timeTakenSeconds: true,
+          status: true,
+          createdAt: true,
           user: {
             select: {
               displayName: true,
@@ -1303,11 +1310,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           userId: result.userId,
           user: result.user,
           mockTest: result.mockTest,
-          score: result.score,
-          totalMarks: result.totalMarks,
-          percentage: result.totalMarks ? Math.round((result.score / result.totalMarks) * 100) : 0,
-          timeTakenSeconds: result.timeTakenSeconds,
-          passed: result.passed,
+          score: result.score ?? 0,
+          totalMarks: result.totalMarks ?? 0,
+          percentage:
+            result.totalMarks && result.score
+              ? Math.round((result.score / result.totalMarks) * 100)
+              : 0,
+          timeTakenSeconds: result.timeTakenSeconds ?? 0,
+          passed: result.status === "COMPLETED",
           createdAt: result.createdAt
         }))
       };
