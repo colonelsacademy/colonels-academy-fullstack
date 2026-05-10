@@ -1,6 +1,5 @@
 "use client";
 
-import { MockTestManager } from "@/components/admin/MockTestManager";
 import { ToastContainer } from "@/components/admin/Toast";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/hooks/useToast";
@@ -41,7 +40,6 @@ type Tab =
   | "courselist"
   | "enrollments"
   | "notifications"
-  | "mocktests"
   | "mock-test-results"
   | "cadetiq"
   | "missionlog";
@@ -94,7 +92,6 @@ const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "courselist", label: "Courses", icon: BookMarked },
   { id: "enrollments", label: "Enrollments", icon: CheckSquare },
   { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "mocktests", label: "Mock Tests", icon: ClipboardList },
   { id: "mock-test-results", label: "Mock Test Results", icon: ClipboardList },
   { id: "cadetiq", label: "Cadet IQ", icon: ClipboardList },
   { id: "missionlog", label: "Mission Log", icon: CheckSquare }
@@ -3120,7 +3117,7 @@ function CadetIQTab() {
                               : "bg-gray-100 text-gray-700"
                         }`}
                       >
-                        {result.passed ? "Passed" : result.passed === false ? "Failed" : "Pending"}
+                        {result.passed ? "Passed" : result.passed === false ? "Failed" : "—"}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-gray-600">
@@ -3310,8 +3307,6 @@ export default function AdminPage() {
         return <EnrollmentsTab />;
       case "notifications":
         return <NotificationsTab />;
-      case "mocktests":
-        return <MockTestManager />;
       case "mock-test-results":
         return <MockTestResultsTab />;
       case "cadetiq":
