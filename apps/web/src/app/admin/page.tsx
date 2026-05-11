@@ -42,7 +42,8 @@ type Tab =
   | "notifications"
   | "mock-test-results"
   | "cadetiq"
-  | "missionlog";
+  | "missionlog"
+  | "settings";
 
 interface DBUser {
   id: string;
@@ -94,7 +95,8 @@ const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "mock-test-results", label: "Mock Test Results", icon: ClipboardList },
   { id: "cadetiq", label: "Cadet IQ", icon: ClipboardList },
-  { id: "missionlog", label: "Mission Log", icon: CheckSquare }
+  { id: "missionlog", label: "Mission Log", icon: CheckSquare },
+  { id: "settings", label: "Settings", icon: Palette }
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -3302,6 +3304,72 @@ function EnrollmentsTab() {
   );
 }
 
+// ─── Settings Tab ─────────────────────────────────────────────────────────────
+
+function SettingsTab() {
+  const [showCurriculum, setShowCurriculum] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const handleToggleCurriculum = async () => {
+    setSaving(true);
+    try {
+      // Save to localStorage for now (can be extended to backend)
+      localStorage.setItem("showEliteTrainingCurriculum", JSON.stringify(!showCurriculum));
+      setShowCurriculum(!showCurriculum);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <h3 className="text-lg font-bold text-[#0F1C15] mb-6 flex items-center gap-2">
+          <Palette className="w-5 h-5 text-[#D4AF37]" />
+          Homepage Settings
+        </h3>
+
+        <div className="space-y-4">
+          {/* Elite Training Curriculum Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div>
+              <h4 className="font-bold text-[#0F1C15]">Elite Training Curriculum</h4>
+              <p className="text-sm text-gray-600 mt-1">
+                Show or hide the Elite Training Curriculum section on the homepage
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleToggleCurriculum}
+              disabled={saving}
+              className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                showCurriculum
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : "bg-red-100 text-red-700 hover:bg-red-200"
+              } disabled:opacity-50`}
+            >
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+              ) : showCurriculum ? (
+                "Visible"
+              ) : (
+                "Hidden"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+        <p className="text-sm text-blue-700">
+          <strong>Note:</strong> Settings are saved to your browser. For production, these should be
+          stored in a database and synced across all instances.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -3389,6 +3457,8 @@ export default function AdminPage() {
         return <CadetIQTab />;
       case "missionlog":
         return <MissionLogTab />;
+      case "settings":
+        return <SettingsTab />;
     }
   };
 
@@ -3403,7 +3473,8 @@ export default function AdminPage() {
     notifications: "Notification Center",
     "mock-test-results": "Mock Test Results",
     cadetiq: "Cadet IQ Assessment",
-    missionlog: "Mission Log"
+    missionlog: "Mission Log",
+    settings: "System Settings"
   };
 
   return (

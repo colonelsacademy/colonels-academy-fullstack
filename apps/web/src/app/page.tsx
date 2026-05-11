@@ -18,6 +18,7 @@ import GatewayHero from "./gateway/components/GatewayHero";
 import { Instructors } from "./gateway/components/Instructors";
 import IntakeBanner from "./gateway/components/IntakeBanner";
 import { MobilePlatform } from "./gateway/components/MobilePlatform";
+import { EliteTrainingCurriculumToggle } from "./gateway/components/EliteTrainingCurriculumToggle";
 
 import { ArrowRight } from "lucide-react";
 
@@ -92,7 +93,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         {/* Intake Banner: Renders instantly (Client Component Leaf) */}
         <IntakeBanner />
 
-        {/* Course catalog */}
+        {/* Course catalog - HIDDEN */}
+        {/* 
         <CourseSection
           title="Elite Training Curriculum"
           subtitle="Command-level preparation. Select your target force to begin."
@@ -112,6 +114,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <CourseGrid courses={mainCourses} enrolledCourseIds={enrolledCourseIds} />
           </Suspense>
         </CourseSection>
+        */}
+
+        {/* Elite Training Curriculum - Toggleable */}
+        <EliteTrainingCurriculumToggle
+          courses={mainCourses}
+          enrolledCourseIds={enrolledCourseIds}
+          activeCategory={activeCategory}
+        />
 
         {/* Top Pick (Featured Course): Now an RSC */}
         {topPick && (

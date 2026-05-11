@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/components/auth/AuthProvider";
 import { ArrowLeft, BookOpen, Clock, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ type Page = "position" | "subjects" | "tests" | "loading";
 
 export default function MockExamsPage() {
   const router = useRouter();
+  const { user, loading: authLoading, authenticated } = useAuth();
   const [page, setPage] = useState<Page>("position");
   const [position, setPosition] = useState<string>("");
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -37,6 +39,13 @@ export default function MockExamsPage() {
   const [tests, setTests] = useState<MockTest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!authLoading && !authenticated) {
+      setPage("loading");
+    }
+  }, [authLoading, authenticated]);
 
   // Fetch subjects
   const fetchSubjects = async (pos: string) => {
@@ -102,6 +111,65 @@ export default function MockExamsPage() {
 
   // ── POSITION SELECTION ──
   if (page === "position") {
+    // Show loading while checking auth
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
+
+    // Show sign-in required message
+    if (!authenticated) {
+      return (
+        <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-12 max-w-md text-center shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-[#D4AF37] flex items-center justify-center mx-auto mb-6">
+              <svg
+                className="w-8 h-8 text-[#0F1C15]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-[#0F1C15] mb-3 font-['Rajdhani']">
+              Sign In Required
+            </h2>
+            <p className="text-gray-600 mb-8">
+              You must be signed in to perform mock tests. Please sign in with your account to continue.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(`/login?next=${encodeURIComponent("/mock-exams")}`)
+                }
+                className="w-full px-6 py-3 bg-[#0F1C15] text-white font-bold rounded-lg hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-colors uppercase tracking-wider text-sm"
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                className="w-full px-6 py-3 bg-gray-100 text-[#0F1C15] font-bold rounded-lg hover:bg-gray-200 transition-colors uppercase tracking-wider text-sm"
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-[#F3F4F6]">
         <div className="max-w-[1400px] mx-auto px-4 py-12">

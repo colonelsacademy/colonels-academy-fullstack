@@ -231,6 +231,7 @@ export default function MockTest() {
     setScore(s);
     setTimeTaken(TOTAL_TIME_SECONDS);
 
+    // User is always authenticated at this point
     if (user) {
       await persistResult({
         score: s,
@@ -238,13 +239,8 @@ export default function MockTest() {
         answers: latestAnswers,
         userId: user.uid
       });
-    } else {
-      setSaveStatus("idle");
-      setSaveError(null);
     }
 
-    // Guest: result stays in React state only until they sign in (API requires a session).
-    // They can authenticate from the result page; init() then saves via the API.
     clearProgress();
     setPhase("result");
   }, [persistResult, user]);
@@ -254,10 +250,11 @@ export default function MockTest() {
     if (authLoading) return;
 
     const init = async () => {
-      // ── Guest ─────────────────────────────────────────────────────────────
+      // ── Require login ─────────────────────────────────────────────────────
       if (!user) {
         if (STABLE_PHASES.includes(phase)) return;
-        setPhase("intro");
+        // Redirect to login if not authenticated
+        router.push(`/login?next=${encodeURIComponent("/mocktest")}`);
         return;
       }
 
@@ -413,13 +410,13 @@ export default function MockTest() {
     handleDirectSubmit(elapsed);
   };
 
-  // Submit — persists via API only for authenticated users.
-  // Guests see their result from React state; after sign-in, handleSaveAndLogin + init() persist.
+  // Submit — persists via API for authenticated users only
   const handleDirectSubmit = async (elapsed: number) => {
     setPhase("submitting");
     const s = calcScore(answers);
     setScore(s);
 
+    // User is always authenticated at this point
     if (user) {
       await persistResult({
         score: s,
@@ -427,27 +424,15 @@ export default function MockTest() {
         answers,
         userId: user.uid
       });
-    } else {
-      setSaveStatus("idle");
-      setSaveError(null);
     }
     clearProgress();
     setPhase("result");
   };
 
-  // Guest: persist claim in sessionStorage, then send them to auth; init() saves after session exists.
-  const handleSaveAndLogin = () => {
-    try {
-      sessionStorage.setItem(CLAIM_AFTER_AUTH_KEY, JSON.stringify({ score, timeTaken, answers }));
-    } catch {
-      /* ignore */
-    }
-    router.push(`/login?next=${encodeURIComponent("/mocktest")}`);
-  };
-
   const handleRetrySave = () => {
     if (!user) {
-      handleSaveAndLogin();
+      // This should never happen since login is required
+      router.push(`/login?next=${encodeURIComponent("/mocktest")}`);
       return;
     }
 
@@ -564,7 +549,7 @@ export default function MockTest() {
   if (phase === "intro")
     return (
       <MockTestIntro
-        isLoggedIn={!!user}
+        isLoggedIn={true}
         onGoHome={() => router.push("/")}
         onStart={() => {
           const saved = loadProgress();
@@ -617,12 +602,12 @@ export default function MockTest() {
         score={score}
         timeTaken={timeTaken}
         answers={answers}
-        isLoggedIn={!!user}
+        isLoggedIn={true}
         saveStatus={saveStatus}
         saveError={saveError}
         onGoHome={() => router.push("/")}
         onRetake={handleRetake}
-        onSaveAndLogin={handleSaveAndLogin}
+        onSaveAndLogin={handleRetrySave}
         onRetrySave={handleRetrySave}
       />
     );
