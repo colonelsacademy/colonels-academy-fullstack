@@ -91,29 +91,66 @@ const userMockTestRoutes: FastifyPluginAsync = async (fastify) => {
           // Not authenticated, continue without user data
         }
 
-        const enrichedTests = await Promise.all(
-          tests.map(async (test) => {
-            let bestScore = null;
-            let attemptCount = 0;
-            let hasPurchased = false;
+        // Batch fetch user data to avoid N+1 queries
+        let userAttempts: Array<{ mockTestId: string; score: number | null; count: number }> = [];
+        let userPurchases: Set<string> = new Set();
 
-            if (userId) {
-              bestScore = await attemptService.getUserBestScore(userId, test.id);
-              attemptCount = await attemptService.getUserAttemptCount(userId, test.id);
-
-              if (test.accessType === "PAID") {
-                hasPurchased = await purchaseService.hasPurchased(userId, test.id);
-              }
+        if (userId) {
+          // Fetch all attempts for all tests in one query
+          const attempts = await fastify.prisma.mockTestAttempt.findMany({
+            where: {
+              userId,
+              mockTestId: { in: tests.map((t) => t.id) },
+              status: "SUBMITTED"
+            },
+            select: {
+              mockTestId: true,
+              score: true
             }
+          });
 
-            return {
-              ...test,
-              bestScore,
-              attemptCount,
-              hasPurchased
-            };
-          })
-        );
+          // Group attempts by test and calculate best score and count
+          const attemptsByTest = new Map<string, Array<{ score: number | null }>>();
+          for (const attempt of attempts) {
+            if (!attemptsByTest.has(attempt.mockTestId)) {
+              attemptsByTest.set(attempt.mockTestId, []);
+            }
+            attemptsByTest.get(attempt.mockTestId)!.push(attempt);
+          }
+
+          userAttempts = Array.from(attemptsByTest.entries()).map(([testId, testAttempts]) => ({
+            mockTestId: testId,
+            score: testAttempts.reduce((max, a) => Math.max(max, a.score || 0), 0) || null,
+            count: testAttempts.length
+          }));
+
+          // Fetch all purchases for paid tests in one query
+          const paidTestIds = tests.filter((t) => t.accessType === "PAID").map((t) => t.id);
+          if (paidTestIds.length > 0) {
+            const purchases = await fastify.prisma.mockTestPurchase.findMany({
+              where: {
+                userId,
+                mockTestId: { in: paidTestIds },
+                paymentStatus: "COMPLETED"
+              },
+              select: { mockTestId: true }
+            });
+
+            userPurchases = new Set(purchases.map((p) => p.mockTestId));
+          }
+        }
+
+        // Map user data to tests
+        const enrichedTests = tests.map((test) => {
+          const attemptData = userAttempts.find((a) => a.mockTestId === test.id);
+
+          return {
+            ...test,
+            bestScore: attemptData?.score || null,
+            attemptCount: attemptData?.count || 0,
+            hasPurchased: userPurchases.has(test.id)
+          };
+        });
 
         return reply.send(enrichedTests);
       } catch (err) {
