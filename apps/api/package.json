@@ -6,14 +6,16 @@
   "scripts": {
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "build": "pnpm --filter @colonels-academy/database run db:generate && tsup --config tsup.config.ts",
-    "start": "pnpm --filter @colonels-academy/database run db:push && pnpm --filter @colonels-academy/database run db:seed:direct && pnpm --filter @colonels-academy/api run seed:asi-mock-tests && pnpm --filter @colonels-academy/api run seed:asi-questions && pnpm --filter @colonels-academy/api run seed:officer-cadet-questions && node dist/index.cjs",
+    "start": "pnpm --filter @colonels-academy/database run db:push && pnpm --filter @colonels-academy/database run db:seed:direct && pnpm --filter @colonels-academy/api run seed:mock-test-bundles && pnpm --filter @colonels-academy/api run seed:asi-mock-tests && pnpm --filter @colonels-academy/api run seed:asi-questions && pnpm --filter @colonels-academy/api run seed:officer-cadet-questions && pnpm --filter @colonels-academy/api run seed:cadet-iq-test && node dist/index.cjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "seed:asi-mock-tests": "tsx src/scripts/seed-asi-mock-tests.ts",
     "seed:asi-questions": "tsx src/scripts/seed-asi-questions.ts",
-    "seed:officer-cadet-questions": "tsx src/scripts/seed-officer-cadet-questions.ts"
+    "seed:officer-cadet-questions": "tsx src/scripts/seed-officer-cadet-questions.ts",
+    "seed:cadet-iq-test": "tsx src/scripts/seed-cadet-iq-test.ts",
+    "seed:mock-test-bundles": "tsx src/scripts/seed-mock-test-bundles.ts"
   },
   "dependencies": {
     "@colonels-academy/config": "workspace:*",

@@ -3,12 +3,12 @@ import type { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return proxyFastifyRequest(request, `/v1/admin/mock-tests/${id}`);
+  return proxyFastifyRequest(request, `/v1/admin/mock-tests/mock-tests/${id}`);
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return proxyFastifyRequest(request, `/v1/admin/mock-tests/${id}`);
+  return proxyFastifyRequest(request, `/v1/admin/mock-tests/mock-tests/${id}`);
 }
 
 export async function DELETE(
@@ -16,5 +16,5 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return proxyFastifyRequest(request, `/v1/admin/mock-tests/${id}`);
+  return proxyFastifyRequest(request, `/v1/admin/mock-tests/mock-tests/${id}`);
 }

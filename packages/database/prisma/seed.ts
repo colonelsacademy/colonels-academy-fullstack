@@ -10,6 +10,7 @@ import {
 } from "@colonels-academy/contracts";
 
 import { seedArmyCommandStaff2083 } from "./seeds/army-command-staff-2083-curriculum";
+import { seedMockTestBundles } from "./seeds/seed-mock-test-bundles";
 import { buildStaffCollegeCommandCurriculumSeed } from "./staff-college-command-curriculum";
 
 const prisma = new PrismaClient();
@@ -419,6 +420,14 @@ async function main() {
     await seedArmyCommandStaff2083(prisma);
   } catch (error) {
     console.error("❌ Error seeding Army course:", error);
+    throw error;
+  }
+
+  console.log("\n💰 Seeding Mock Test Bundles...");
+  try {
+    await seedMockTestBundles(prisma);
+  } catch (error) {
+    console.error("❌ Error seeding mock test bundles:", error);
     throw error;
   }
 }

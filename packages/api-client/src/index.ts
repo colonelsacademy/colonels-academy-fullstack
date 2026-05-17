@@ -280,6 +280,9 @@ export function createApiClient(options: CreateApiClientOptions) {
         })
       });
     },
+    getMockTestById(id: string, requestOptions?: ApiRequestOptions) {
+      return requestJson<any>(`/v1/mock-tests/${id}`, requestOptions);
+    },
     getVideoPlayback(bunnyVideoId: string, requestOptions?: ApiRequestOptions) {
       return requestJson<BunnyPlaybackResponse>(
         `/v1/media/video-assets/${bunnyVideoId}/playback`,

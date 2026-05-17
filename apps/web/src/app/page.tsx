@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import type { Category, Course } from "@/data/gateway";
-import { getCourses, getEnrollments, getInstructors } from "@/lib/api";
+import { getCourses, getEnrollments, getInstructors, getMockTest } from "@/lib/api";
 
 import { Footer } from "@/components/Footer";
 import {
@@ -12,13 +12,14 @@ import {
   CourseGridSkeleton,
   CourseSection
 } from "./gateway/components/Courses";
+import { ElitePracticalTests } from "./gateway/components/ElitePracticalTests";
+import { EliteTrainingCurriculumToggle } from "./gateway/components/EliteTrainingCurriculumToggle";
 import { FeaturedCourse } from "./gateway/components/FeaturedCourse";
 import { GatewayCTA } from "./gateway/components/GatewayFooter";
 import GatewayHero from "./gateway/components/GatewayHero";
 import { Instructors } from "./gateway/components/Instructors";
 import IntakeBanner from "./gateway/components/IntakeBanner";
 import { MobilePlatform } from "./gateway/components/MobilePlatform";
-import { EliteTrainingCurriculumToggle } from "./gateway/components/EliteTrainingCurriculumToggle";
 
 import { ArrowRight } from "lucide-react";
 
@@ -39,10 +40,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const activeCategory = (resolvedParams.category as Category) ?? "all";
 
   // 1. Fetch from the API (single source of truth across all pages)
-  const [apiCourses, apiInstructors, enrollments] = await Promise.all([
+  const [apiCourses, apiInstructors, enrollments, apiCadetIqTest] = await Promise.all([
     getCourses(),
     getInstructors(),
-    getEnrollments()
+    getEnrollments(),
+    getMockTest("cadet-iq-test")
   ]);
 
   const instructorNameBySlug = new Map(apiInstructors.map((i) => [i.slug, i.name]));
@@ -80,8 +82,32 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       : allMappedCourses;
 
   // 3. Selection for UI components
-  const mainCourses = mappedCourses.slice(0, 8);
-  const topPick = mappedCourses.find((c) => c.isBestseller) ?? mappedCourses[0];
+  const topPick: Course = {
+    id: apiCadetIqTest?.id || "cadet-iq-test",
+    title: apiCadetIqTest?.title || "Cadet IQ Test",
+    category: "army",
+    description:
+      apiCadetIqTest?.description ||
+      "60-question comprehensive preparation test for Nepal Army Officer Cadet candidates. Start your entrance exam preparation with this free Cadet IQ Test.",
+    instructor: "Expert Faculty",
+    rating: 4.8,
+    ratingCount: 1200,
+    students: 1500,
+    duration: apiCadetIqTest ? `${apiCadetIqTest.timeLimitMinutes} mins` : "30 mins",
+    lessons: apiCadetIqTest?.totalQuestions || 60,
+    iconId: "Target",
+    thumbnail:
+      apiCadetIqTest?.heroImageUrl ||
+      "https://colonels-alpha.b-cdn.net/images/courses/cadet%20test.png",
+    price: 100, // IQ bundle price (the MockTest itself is free, but the bundle costs Rs. 100)
+    originalPrice: 500,
+    color: "#8F7A38",
+    lightColor: "#FEFCE8",
+    tag: "FREE MOCK TEST",
+    level: "All Levels",
+    isBestseller: true,
+    comingSoon: false
+  };
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -116,12 +142,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </CourseSection>
         */}
 
-        {/* Elite Training Curriculum - Toggleable */}
+        {/* Elite Training Curriculum - Toggleable - HIDDEN */}
+        {/* 
         <EliteTrainingCurriculumToggle
           courses={mainCourses}
           enrolledCourseIds={enrolledCourseIds}
           activeCategory={activeCategory}
         />
+        */}
+
+        {/* Elite Practical Tests */}
+        <Suspense fallback={<SectionFallback className="min-h-[640px]" />}>
+          <ElitePracticalTests />
+        </Suspense>
 
         {/* Top Pick (Featured Course): Now an RSC */}
         {topPick && (

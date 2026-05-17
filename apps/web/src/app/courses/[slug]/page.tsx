@@ -260,6 +260,97 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               </div>
             </div>
 
+            {/* Mock Tests Section */}
+            <div>
+              <h3 className="text-2xl font-bold text-[#0F1C15] mb-6 font-['Rajdhani']">
+                Practice with Mock Tests
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Officer Cadet Mock Test */}
+                <Link href="/mock-test-purchase/bundle-1">
+                  <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group h-full">
+                    <div className="h-32 bg-gradient-to-br from-[#0F1C15] to-[#1a2f24] flex items-center justify-center relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-10">
+                        <Award className="w-32 h-32 text-[#D4AF37]" />
+                      </div>
+                      <div className="relative z-10 text-center">
+                        <h4 className="text-white font-bold text-lg font-['Rajdhani']">
+                          Officer Cadet
+                        </h4>
+                        <p className="text-[#D4AF37] text-xs font-bold">140+ Questions</p>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-gray-600 mb-4">
+                        Complete mock test bundle for Officer Cadet examination preparation
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-[#0F1C15]">Rs. 100</span>
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">
+                          -80%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* ASI Mock Test */}
+                <Link href="/mock-test-purchase/bundle-2">
+                  <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group h-full">
+                    <div className="h-32 bg-gradient-to-br from-[#0F1C15] to-[#1a2f24] flex items-center justify-center relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-10">
+                        <Award className="w-32 h-32 text-[#D4AF37]" />
+                      </div>
+                      <div className="relative z-10 text-center">
+                        <h4 className="text-white font-bold text-lg font-['Rajdhani']">ASI</h4>
+                        <p className="text-[#D4AF37] text-xs font-bold">50+ Questions</p>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-gray-600 mb-4">
+                        Complete mock test bundle for ASI examination preparation
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-[#0F1C15]">Rs. 100</span>
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">
+                          -80%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* Cadet IQ Test */}
+                <Link href="/mock-test-purchase/cadet-iq">
+                  <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group h-full">
+                    <div className="h-32 bg-gradient-to-br from-[#0F1C15] to-[#1a2f24] flex items-center justify-center relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-10">
+                        <Award className="w-32 h-32 text-[#D4AF37]" />
+                      </div>
+                      <div className="relative z-10 text-center">
+                        <h4 className="text-white font-bold text-lg font-['Rajdhani']">
+                          Cadet IQ Test
+                        </h4>
+                        <p className="text-[#D4AF37] text-xs font-bold">60 Questions</p>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-gray-600 mb-4">
+                        Test your intelligence and reasoning skills with 60 comprehensive IQ
+                        questions
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-[#0F1C15]">Rs. 100</span>
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">
+                          -80%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
             {/* Requirements */}
             <div>
               <h3 className="text-2xl font-bold text-[#0F1C15] mb-4 font-['Rajdhani']">

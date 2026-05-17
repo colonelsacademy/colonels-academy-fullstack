@@ -6,9 +6,24 @@ interface Props {
   onGoHome: () => void;
   onStart: () => void;
   onPrint: () => void;
+  testTitle?: string;
+  totalQuestions?: number;
+  timeLimitMinutes?: number;
+  fullMarks?: number;
+  passMarks?: number;
 }
 
-export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }: Props) {
+export default function MockTestIntro({
+  isLoggedIn,
+  onGoHome,
+  onStart,
+  onPrint,
+  testTitle = "Cadet IQ Test",
+  totalQuestions = TOTAL_QUESTIONS,
+  timeLimitMinutes = 30,
+  fullMarks = FULL_MARKS,
+  passMarks = PASS_MARK_SCORE
+}: Props) {
   return (
     <>
       <style>{`
@@ -141,7 +156,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
           </div>
 
           <h1 className="intro-headline">
-            IQ Mock <span>Examination</span>
+            {testTitle.split(" ").slice(0, -1).join(" ")} <span>{testTitle.split(" ").pop()}</span>
           </h1>
           <p className="intro-sub">
             Officer selection requires precision under pressure.
@@ -172,7 +187,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
                   </svg>
                   Modules
                 </div>
-                <div className="intro-cell-val">{TOTAL_QUESTIONS}</div>
+                <div className="intro-cell-val">{totalQuestions}</div>
                 <div className="intro-cell-lbl">Questions</div>
               </div>
               <div className="intro-cell">
@@ -183,7 +198,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
                   </svg>
                   Timer
                 </div>
-                <div className="intro-cell-val">30</div>
+                <div className="intro-cell-val">{timeLimitMinutes}</div>
                 <div className="intro-cell-lbl">Minutes</div>
               </div>
               <div className="intro-cell">
@@ -197,7 +212,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
                   </svg>
                   Marks
                 </div>
-                <div className="intro-cell-val">{FULL_MARKS}</div>
+                <div className="intro-cell-val">{fullMarks}</div>
                 <div className="intro-cell-lbl">Full Marks</div>
               </div>
               <div className="intro-cell">
@@ -212,7 +227,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
                   </svg>
                   Pass
                 </div>
-                <div className="intro-cell-val">{PASS_MARK_SCORE}</div>
+                <div className="intro-cell-val">{passMarks}</div>
                 <div className="intro-cell-lbl">Pass Mark</div>
               </div>
             </div>
@@ -228,7 +243,7 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
               </div>
               <div className="intro-rule">
                 <span className="intro-rule-dot g" />
-                You may submit before 30 minutes
+                You may submit before {timeLimitMinutes} minutes
               </div>
               <div className="intro-rule">
                 <span className="intro-rule-dot g" />
@@ -309,21 +324,14 @@ export default function MockTestIntro({ isLoggedIn, onGoHome, onStart, onPrint }
             <button type="button" className="intro-print-btn intro-home-btn" onClick={onGoHome}>
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path
-                  d="M2 6.5L7 2l5 4.5V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6.5Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M5.5 13V8.5h3V13"
+                  d="M2 7h10M5 4l-3 3 3 3"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              Return to Home
+              Go Back
             </button>
 
             <div className="intro-status-bar">

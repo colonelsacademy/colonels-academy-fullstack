@@ -16,6 +16,7 @@ import healthRoutes from "./modules/health/routes";
 import learningRoutes from "./modules/learning/routes";
 import mediaRoutes from "./modules/media/routes";
 import mockTestRoutes from "./modules/mock-test/routes";
+import bundleRoutes from "./modules/mock-tests/bundle-routes";
 import mockTestsRoutes from "./modules/mock-tests/routes";
 import ordersRoutes from "./modules/orders/routes";
 import paymentAnalyticsRoutes from "./modules/payment-analytics/routes";
@@ -114,6 +115,9 @@ export function buildApp() {
   });
   void app.register(mockTestsRoutes, {
     prefix: "/v1/mock-tests"
+  });
+  void app.register(bundleRoutes, {
+    prefix: "/v1/mock-test-bundles"
   });
 
   app.setErrorHandler((error, request, reply) => {

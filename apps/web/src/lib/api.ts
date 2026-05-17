@@ -67,6 +67,21 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
   }
 }
 
+export async function getMockTest(id: string): Promise<any | null> {
+  try {
+    const test = await apiClient.getMockTestById(id);
+    if (!test) return null;
+    const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
+    return {
+      ...test,
+      ...(test.heroImageUrl ? { heroImageUrl: getAssetUrl(test.heroImageUrl, cdnUrl) } : {})
+    };
+  } catch (error) {
+    console.error(`Failed to fetch mock test ${id}:`, error);
+    return null;
+  }
+}
+
 export async function getInstructors(): Promise<InstructorProfile[]> {
   try {
     const data: CatalogInstructorsResponse = await apiClient.getInstructors();

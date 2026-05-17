@@ -1,12 +1,22 @@
-import { FULL_MARKS, PASS_MARK_SCORE, optionLetters, questions } from "@/data/mockQuestions";
 import { mockTestBaseCSS } from "@/data/mockTestTheme";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+const optionLetters = ["A", "B", "C", "D", "E"];
+
+interface Question {
+  id: number;
+  text: string;
+  options: string[];
+  answer: string;
+  explanation: string;
+}
 
 interface Props {
   score: number;
   timeTaken: number;
   answers: Record<number, string>;
+  questions: Question[];
   isLoggedIn: boolean;
   saveStatus: "idle" | "saving" | "failed" | "saved";
   saveError: string | null;
@@ -20,6 +30,7 @@ export default function MockTestResult({
   score,
   timeTaken,
   answers,
+  questions,
   isLoggedIn,
   saveStatus,
   saveError,
@@ -32,14 +43,16 @@ export default function MockTestResult({
   const [showReport, setShowReport] = useState(false);
   const iqReportEnabled = process.env.NEXT_PUBLIC_IQ_REPORT_ENABLED !== "false";
 
-  const passed = score >= PASS_MARK_SCORE;
-  const pct = Math.round((score / FULL_MARKS) * 100);
+  const passed = score >= Math.ceil(questions.length * 0.4); // 40% pass mark
+  const pct = Math.round((score / questions.length) * 100);
   const correct = questions.filter((q) => answers[q.id] === q.answer).length;
   const wrong = Object.values(answers).length - correct;
   const unanswered = questions.length - Object.values(answers).length;
   const mins = Math.floor(timeTaken / 60);
   const secs = timeTaken % 60;
   const showSaveRecovery = isLoggedIn && (saveStatus === "saving" || saveStatus === "failed");
+  const FULL_MARKS = questions.length;
+  const PASS_MARK_SCORE = Math.ceil(questions.length * 0.4);
 
   return (
     <>

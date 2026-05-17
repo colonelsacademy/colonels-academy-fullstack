@@ -6,6 +6,7 @@ import { useState } from "react";
 interface Props {
   savedResult: MockTestSavedResult;
   clearLoading: boolean;
+  testTitle?: string;
   onGoHome: () => void;
   onClearAndRetake: () => void;
 }
@@ -13,6 +14,7 @@ interface Props {
 export default function MockTestSavedView({
   savedResult,
   clearLoading,
+  testTitle,
   onGoHome,
   onClearAndRetake
 }: Props) {
@@ -220,6 +222,7 @@ export default function MockTestSavedView({
                 }}
               />
               <span className="mt-eyebrow-text" style={{ color: passed ? "#B8860B" : "#dc2626" }}>
+                {testTitle ? `${testTitle} — ` : ""}
                 {passed ? "Previous Result — Qualified" : "Previous Result — Not Passed"}
               </span>
             </div>

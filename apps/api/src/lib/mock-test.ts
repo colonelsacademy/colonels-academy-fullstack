@@ -72,6 +72,7 @@ export class MockTestService {
       accessType?: string;
       priceNpr?: number;
       freePreviewCount?: number;
+      heroImageUrl?: string;
       status?: string;
     }
   ) {

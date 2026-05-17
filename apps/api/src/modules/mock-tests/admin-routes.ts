@@ -20,7 +20,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
       const authUser = await fastify.requireAuth(request);
 
       // Check admin role
-      if (authUser.role !== "ADMIN") {
+      if (authUser.role !== "admin") {
         return reply.forbidden("Only admins can create subjects");
       }
 
@@ -41,7 +41,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { position?: string } }>("/subjects", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can view subjects");
     }
 
@@ -79,7 +79,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   }>("/mock-tests", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can create mock tests");
     }
 
@@ -106,23 +106,18 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
+      if (authUser.role !== "admin") {
         return reply.forbidden("Only admins can view mock tests");
       }
 
       try {
-        // Support both single subjectId and multiple subjectIds
         const subjectId = request.query.subjectId;
         const subjectIds = request.query.subjectIds;
 
-        if (!subjectId && !subjectIds) {
-          return reply.badRequest("subjectId or subjectIds is required");
-        }
-
-        let tests: Awaited<ReturnType<typeof mockTestService.listMockTestsBySubject>> = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let tests: any[] = [];
 
         if (subjectIds) {
-          // Handle multiple subject IDs
           const ids = subjectIds.split(",").map((id) => id.trim());
           for (const id of ids) {
             const subjectTests = await mockTestService.listMockTestsBySubject(
@@ -132,8 +127,14 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
             tests = tests.concat(subjectTests);
           }
         } else if (subjectId) {
-          // Handle single subject ID
           tests = await mockTestService.listMockTestsBySubject(subjectId, request.query.status);
+        } else {
+          // If no subjectId is provided, fetch all mock tests
+          tests = (await fastify.prisma.mockTest.findMany({
+            ...(request.query.status ? { where: { status: request.query.status } } : {}),
+            include: { subject: true, _count: { select: { attempts: true } } },
+            orderBy: { createdAt: "desc" }
+          })) as any;
         }
 
         return reply.send(tests);
@@ -151,7 +152,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { id: string } }>("/mock-tests/:id", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can view mock tests");
     }
 
@@ -184,11 +185,12 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
       accessType?: string;
       priceNpr?: number;
       freePreviewCount?: number;
+      heroImageUrl?: string;
     };
   }>("/mock-tests/:id", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can update mock tests");
     }
 
@@ -208,7 +210,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { id: string } }>("/mock-tests/:id/publish", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can publish mock tests");
     }
 
@@ -228,7 +230,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { id: string } }>("/mock-tests/:id/archive", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can archive mock tests");
     }
 
@@ -248,7 +250,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { id: string } }>("/mock-tests/:id", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can delete mock tests");
     }
 
@@ -282,7 +284,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   }>("/mock-tests/:id/questions", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can add questions");
     }
 
@@ -317,7 +319,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   }>("/mock-tests/:id/questions/:qId", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can update questions");
     }
 
@@ -339,7 +341,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const authUser = await fastify.requireAuth(request);
 
-      if (authUser.role !== "ADMIN") {
+      if (authUser.role !== "admin") {
         return reply.forbidden("Only admins can delete questions");
       }
 
@@ -363,7 +365,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   }>("/mock-tests/:id/questions/reorder", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can reorder questions");
     }
 
@@ -387,7 +389,7 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { id: string } }>("/mock-tests/:id/analytics", async (request, reply) => {
     const authUser = await fastify.requireAuth(request);
 
-    if (authUser.role !== "ADMIN") {
+    if (authUser.role !== "admin") {
       return reply.forbidden("Only admins can view analytics");
     }
 
@@ -396,6 +398,40 @@ const adminMockTestRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.send(analytics);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch analytics";
+      return reply.internalServerError(message);
+    }
+  });
+
+  /**
+   * Get all mock test purchases
+   * GET /v1/admin/mock-tests/purchases
+   */
+  fastify.get("/purchases", async (request, reply) => {
+    const authUser = await fastify.requireAuth(request);
+
+    if (authUser.role !== "admin") {
+      return reply.forbidden("Only admins can view mock test purchases");
+    }
+
+    try {
+      const purchases = await fastify.prisma.mockTestPurchase.findMany({
+        where: {
+          paymentStatus: "COMPLETED"
+        },
+        include: {
+          user: {
+            select: { id: true, displayName: true, email: true }
+          },
+          mockTest: {
+            select: { id: true, title: true, position: true }
+          }
+        },
+        orderBy: { createdAt: "desc" }
+      });
+
+      return reply.send({ purchases });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch purchases";
       return reply.internalServerError(message);
     }
   });

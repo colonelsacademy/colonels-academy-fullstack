@@ -14,9 +14,13 @@ import {
   ChevronRight,
   ClipboardList,
   Edit,
+  Image,
+  Layout,
+  List,
   Loader2,
   Palette,
   Plus,
+  RefreshCcw,
   RefreshCw,
   Save,
   Send,
@@ -26,8 +30,7 @@ import {
   Wifi,
   X
 } from "lucide-react";
-import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -83,6 +86,8 @@ interface Stats {
   courseCount: number;
   enrollmentCount: number;
   orderCount: number;
+  mockTestCount: number;
+  mockTestOrderCount: number;
 }
 const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: Activity },
@@ -94,6 +99,8 @@ const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "enrollments", label: "Enrollments", icon: CheckSquare },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "mock-test-results", label: "Mock Test Results", icon: ClipboardList },
+  { id: "mock-tests-mgmt", label: "Mock Tests Mgmt", icon: BookOpen },
+  { id: "mock-test-purchases", label: "Mock Test Purchases", icon: ClipboardList },
   { id: "cadetiq", label: "Cadet IQ", icon: ClipboardList },
   { id: "missionlog", label: "Mission Log", icon: CheckSquare },
   { id: "settings", label: "Settings", icon: Palette }
@@ -215,11 +222,23 @@ function OverviewTab({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard label="Active Personnel" value={stats.userCount} icon={Users} color="blue" />
         <StatCard label="Active Courses" value={stats.courseCount} icon={BookOpen} color="green" />
         <StatCard label="Scheduled Classes" value={upcoming.length} icon={Calendar} color="red" />
         <StatCard label="Paid Orders" value={stats.orderCount} icon={CheckSquare} color="orange" />
+        <StatCard
+          label="Active Mock Tests"
+          value={stats.mockTestCount || 0}
+          icon={ClipboardList}
+          color="purple"
+        />
+        <StatCard
+          label="Mock Test Orders"
+          value={stats.mockTestOrderCount || 0}
+          icon={CheckSquare}
+          color="indigo"
+        />
       </div>
 
       {/* Live Classes */}
@@ -3084,7 +3103,12 @@ function CadetIQTab() {
     fetch("/api/admin/cadet-iq-results", { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
-        if (d.results) setResults(d.results);
+        if (d.results) {
+          const validResults = d.results.filter(
+            (r: any) => r.score !== null && r.totalMarks !== null
+          );
+          setResults(validResults);
+        }
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
@@ -3372,6 +3396,933 @@ function SettingsTab() {
 
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 
+// ─── Mock Tests Management Tab ──────────────────────────────────────────────────
+
+
+// ─── Mock Test Question Manager ─────────────────────────────────────────────
+
+interface MockTestQuestion {
+  id: string;
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string | null;
+  difficulty: number;
+  position: number;
+  isImageBased: boolean;
+  imageUrl: string | null;
+}
+
+function MockTestQuestionManager({ testId, onClose }: { testId: string; onClose: () => void }) {
+  const formRef = useRef<HTMLDivElement>(null);
+  const [questions, setQuestions] = useState<MockTestQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    questionText: "",
+    options: ["", "", "", "", ""],
+    correctAnswer: "A",
+    explanation: "",
+    difficulty: 1,
+    isImageBased: false,
+    imageUrl: ""
+  });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/mock-tests/${testId}`);
+      const data = await res.json();
+      if (data.questions) setQuestions(data.questions);
+    } catch (err) {
+      console.error("Failed to load questions", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [testId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const resetForm = () => {
+    setForm({
+      questionText: "",
+      options: ["", "", "", "", ""],
+      correctAnswer: "A",
+      explanation: "",
+      difficulty: 1,
+      isImageBased: false,
+      imageUrl: ""
+    });
+    setEditingId(null);
+    setShowForm(false);
+    setError("");
+  };
+
+  const startEdit = (q: MockTestQuestion) => {
+    const rawOptions = Array.isArray(q.options) ? [...q.options] : [];
+    const paddedOptions = [...rawOptions];
+    while (paddedOptions.length < 5) paddedOptions.push("");
+
+    setEditingId(q.id);
+    setForm({
+      questionText: q.questionText,
+      options: paddedOptions,
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation ?? "",
+      difficulty: q.difficulty,
+      isImageBased: q.isImageBased,
+      imageUrl: q.imageUrl ?? ""
+    });
+    setShowForm(true);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "images/mock-tests");
+
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setForm((prev) => ({ ...prev, imageUrl: data.url, isImageBased: true }));
+    } catch (err: any) {
+      setError(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!form.questionText.trim()) {
+      setError("Question text is required.");
+      return;
+    }
+    if (form.options.some((o) => !o.trim())) {
+      setError("All 5 options must be filled.");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    const payload = {
+      ...form,
+      difficulty: Number(form.difficulty),
+      position: editingId ? undefined : questions.length + 1
+    };
+
+    try {
+      if (editingId) {
+        const res = await fetch(`/api/admin/mock-tests/${testId}/questions/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+      } else {
+        const res = await fetch(`/api/admin/mock-tests/${testId}/questions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+      }
+      resetForm();
+      load();
+    } catch (err: any) {
+      setError(err.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteQuestion = async (id: string) => {
+    if (!confirm("Delete this question?")) return;
+    await fetch(`/api/admin/mock-tests/${testId}/questions/${id}`, { method: "DELETE" });
+    load();
+  };
+
+  return (
+    <div className="border-t border-gray-100 bg-gray-50/50 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+            <ClipboardList className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+              Question Bank
+            </span>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+              {questions.length} Questions Total
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              resetForm();
+              setShowForm((v) => !v);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-lg text-xs hover:bg-[#c9a227] transition-all shadow-sm"
+          >
+            <Plus className="w-3 h-3" /> New Question
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-600 font-bold rounded-lg text-xs hover:bg-gray-50 transition-all"
+          >
+            Close Manager
+          </button>
+        </div>
+      </div>
+
+      {showForm && (
+        <div
+          ref={formRef}
+          className={`bg-white rounded-xl border-2 ${editingId ? "border-[#D4AF37]" : "border-gray-200"} shadow-lg p-6 mb-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300`}
+        >
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+              <span className="w-4 h-1 bg-[#D4AF37] rounded-full" />
+              {editingId ? (
+                <>
+                  Modify Question #{questions.findIndex((q) => q.id === editingId) + 1}
+                </>
+              ) : (
+                "Deploy New Question"
+              )}
+            </h4>
+            <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Question Text */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                Question Narrative
+              </label>
+              <textarea
+                value={form.questionText}
+                onChange={(e) => setForm((p) => ({ ...p, questionText: e.target.value }))}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-[#D4AF37] focus:bg-white bg-gray-50/50 outline-none text-sm transition-all resize-none font-medium"
+                placeholder="Enter the primary question text here..."
+              />
+            </div>
+
+            {/* Options Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">
+                  Response Options (A-E)
+                </label>
+                {["A", "B", "C", "D", "E"].map((opt, idx) => (
+                  <div key={opt} className="flex gap-3 group">
+                    <div
+                      className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center font-bold transition-all border-2 ${
+                        form.correctAnswer === opt
+                          ? "bg-green-100 border-green-500 text-green-700 shadow-sm"
+                          : "bg-gray-50 border-gray-100 text-gray-400 group-hover:border-gray-200"
+                      }`}
+                    >
+                      {opt}
+                    </div>
+                    <input
+                      value={form.options[idx] || ""}
+                      onChange={(e) => {
+                        const newOps = [...form.options];
+                        newOps[idx] = e.target.value;
+                        setForm((p) => ({ ...p, options: newOps }));
+                      }}
+                      className="flex-1 px-4 py-2 rounded-xl border-2 border-gray-100 focus:border-[#D4AF37] outline-none text-sm bg-gray-50/30 font-medium"
+                      placeholder={`Option ${opt} content`}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-6">
+                {/* Correct Answer & Difficulty */}
+                <div className="grid grid-cols-2 gap-4">
+                  <SelectField
+                    label="Correct Key"
+                    value={form.correctAnswer}
+                    onChange={(v) => setForm((p) => ({ ...p, correctAnswer: v }))}
+                    options={[
+                      { value: "A", label: "Option A" },
+                      { value: "B", label: "Option B" },
+                      { value: "C", label: "Option C" },
+                      { value: "D", label: "Option D" },
+                      { value: "E", label: "Option E" }
+                    ]}
+                  />
+                  <SelectField
+                    label="Difficulty Level"
+                    value={String(form.difficulty)}
+                    onChange={(v) => setForm((p) => ({ ...p, difficulty: Number(v) }))}
+                    options={[
+                      { value: "1", label: "Lvl 1 - Basic" },
+                      { value: "2", label: "Lvl 2 - Intermediate" },
+                      { value: "3", label: "Lvl 3 - Advanced" }
+                    ]}
+                  />
+                </div>
+
+                {/* Explanation */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                    Strategic Explanation
+                  </label>
+                  <textarea
+                    value={form.explanation}
+                    onChange={(e) => setForm((p) => ({ ...p, explanation: e.target.value }))}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-[#D4AF37] bg-gray-50/50 outline-none text-sm resize-none font-medium"
+                    placeholder="Provide the logic for the correct answer..."
+                  />
+                </div>
+
+                {/* Image Support */}
+                <div className="p-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      <Image className="w-3 h-3" /> Visual Intelligence Asset
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.isImageBased}
+                        onChange={(e) => setForm((p) => ({ ...p, isImageBased: e.target.checked }))}
+                        className="w-3.5 h-3.5 accent-[#D4AF37]"
+                      />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                        Image-Based
+                      </span>
+                    </label>
+                  </div>
+
+                  {form.imageUrl && (
+                    <div className="mb-3 relative group">
+                      <img
+                        src={form.imageUrl}
+                        alt="Question"
+                        className="w-full h-32 object-contain rounded-lg bg-white border border-gray-100 shadow-inner"
+                      />
+                      <button
+                        onClick={() => setForm((p) => ({ ...p, imageUrl: "", isImageBased: false }))}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <label
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#D4AF37] transition-all ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+                    >
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                      {uploading ? (
+                        <Loader2 className="w-3 h-3 animate-spin text-[#D4AF37]" />
+                      ) : (
+                        <Plus className="w-3 h-3 text-[#D4AF37]" />
+                      )}
+                      <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">
+                        {uploading ? "Uploading..." : "Upload Asset"}
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.imageUrl}
+                      onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))}
+                      placeholder="Or paste asset URL..."
+                      className="flex-[2] px-3 py-2 bg-white border-2 border-gray-100 rounded-lg text-[10px] outline-none focus:border-[#D4AF37]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-red-500" />
+              <p className="text-xs text-red-600 font-medium">{error}</p>
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-6 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saving}
+              className="px-6 py-2.5 bg-[#D4AF37] text-[#0F1C15] font-bold rounded-xl text-xs hover:bg-[#c9a227] disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-[#D4AF37]/20"
+            >
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? "Synchronizing..." : editingId ? "Update Intelligence" : "Deploy Question"}
+            </button>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="px-6 py-2.5 bg-gray-100 text-gray-500 font-bold rounded-xl text-xs hover:bg-gray-200 transition-all"
+            >
+              Abort Operation
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Retreiving Data...</p>
+        </div>
+      ) : questions.length === 0 ? (
+        <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Layout className="w-8 h-8 text-gray-200" />
+          </div>
+          <p className="text-gray-500 font-bold uppercase tracking-wider text-xs">
+            Intelligence Void Detected
+          </p>
+          <p className="text-xs text-gray-400 mt-1 max-w-[240px] mx-auto">
+            This mock test has no questions assigned. Deploy your first tactical question above.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {questions.map((q, i) => (
+            <div
+              key={q.id}
+              className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#D4AF37]/30 transition-all group shadow-sm hover:shadow-md"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg bg-gray-900 text-[#D4AF37] flex items-center justify-center font-bold font-['Rajdhani'] text-sm shrink-0 shadow-lg shadow-black/10">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span
+                      className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
+                        q.difficulty === 1
+                          ? "bg-green-50 text-green-600 border-green-100"
+                          : q.difficulty === 2
+                            ? "bg-blue-50 text-blue-600 border-blue-100"
+                            : "bg-red-50 text-red-600 border-red-100"
+                      }`}
+                    >
+                      Lvl {q.difficulty}
+                    </span>
+                    {q.isImageBased && (
+                      <span className="text-[9px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-amber-100 flex items-center gap-1">
+                        <Image className="w-2.5 h-2.5" /> Visual
+                      </span>
+                    )}
+                    <span className="text-[9px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-gray-100 ml-auto">
+                      Key: {q.correctAnswer}
+                    </span>
+                  </div>
+
+                  <p className="text-sm font-bold text-gray-800 leading-relaxed line-clamp-2 mb-3">
+                    {q.questionText}
+                  </p>
+
+                  {q.isImageBased && q.imageUrl && (
+                    <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 p-2">
+                      <img src={q.imageUrl} alt="" className="w-full h-32 object-contain" />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-1.5 mb-4">
+                    {Array.isArray(q.options) &&
+                      q.options.slice(0, 5).map((opt, idx) => (
+                        <div
+                          key={idx}
+                          className={`text-[10px] px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-colors ${
+                            q.correctAnswer === ["A", "B", "C", "D", "E"][idx]
+                              ? "bg-green-50 border-green-200 text-green-700 font-bold"
+                              : "bg-gray-50 border-gray-50 text-gray-500"
+                          }`}
+                        >
+                          <span className="opacity-50">{["A", "B", "C", "D", "E"][idx]}</span>
+                          <span className="truncate">{opt}</span>
+                        </div>
+                      ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                    <button
+                      onClick={() => deleteQuestion(q.id)}
+                      className="text-[10px] font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3" /> Terminate
+                    </button>
+                    <button
+                      onClick={() => startEdit(q)}
+                      className="px-3 py-1.5 bg-gray-900 text-[#D4AF37] rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-[#D4AF37] hover:text-[#0F1C15] transition-all flex items-center gap-1"
+                    >
+                      <Edit className="w-3 h-3" /> Edit Intel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MockTestsManagementTab({ onRefresh, toast }: any) {
+  const [tests, setTests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    priceNpr: 0,
+    timeLimitMinutes: 30,
+    totalQuestions: 60,
+    heroImageUrl: ""
+  });
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/mock-tests");
+      const data = await res.json();
+      setTests(Array.isArray(data) ? data : []);
+    } catch (e) {
+      toast.error("Failed to load mock tests");
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setForm((prev) => ({ ...prev, heroImageUrl: data.url }));
+      toast.success("Image uploaded!");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId) return;
+
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/mock-tests/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          heroImageUrl: form.heroImageUrl || null,
+          title: form.title,
+          description: form.description,
+          priceNpr: Number(form.priceNpr),
+          timeLimitMinutes: Number(form.timeLimitMinutes),
+          totalQuestions: Number(form.totalQuestions)
+        })
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.message || "Failed to update");
+      }
+
+      toast.success("Mock test updated!");
+      setEditingId(null);
+      load();
+      if (onRefresh) onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || "Update failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <SectionTitle>Mock Tests Management</SectionTitle>
+        <button onClick={load} className="text-gray-500 hover:text-gray-700">
+          <RefreshCcw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {loading && tests.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">Loading tests...</div>
+      ) : tests.length === 0 ? (
+        <div className="text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200">
+          No mock tests found.
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-xs">
+              <tr>
+                <th className="px-5 py-4">Title</th>
+                <th className="px-5 py-4">Position</th>
+                <th className="px-5 py-4">Questions</th>
+                <th className="px-5 py-4">Price</th>
+                <th className="px-5 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {tests.map((test) => (
+                <React.Fragment key={test.id}>
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        {test.heroImageUrl ? (
+                          <img
+                            src={test.heroImageUrl}
+                            alt=""
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-xs text-gray-400 font-bold">
+                            No Img
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-bold text-gray-900">{test.title}</div>
+                          <div className="text-xs text-gray-500">{test.status}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3 text-gray-600">{test.position}</td>
+                    <td className="px-5 py-3 text-gray-600">{test.totalQuestions}</td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {test.priceNpr ? `Rs. ${test.priceNpr}` : "Free"}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setExpandedTestId(expandedTestId === test.id ? null : test.id)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 font-bold rounded-lg text-[10px] uppercase tracking-wider transition-all ${
+                            expandedTestId === test.id
+                              ? "bg-[#D4AF37] text-[#0F1C15]"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          <List className="w-3.5 h-3.5" />
+                          Questions
+                          <ChevronRight
+                            className={`w-3 h-3 transition-transform ${expandedTestId === test.id ? "rotate-90" : ""}`}
+                          />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingId(test.id);
+                            setForm({
+                              title: test.title || "",
+                              description: test.description || "",
+                              priceNpr: test.priceNpr || 0,
+                              timeLimitMinutes: test.timeLimitMinutes || 30,
+                              totalQuestions: test.totalQuestions || 60,
+                              heroImageUrl: test.heroImageUrl || ""
+                            });
+                          }}
+                          className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
+                          title="Edit metadata"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expandedTestId === test.id && (
+                    <tr>
+                      <td colSpan={5} className="bg-gray-50/30">
+                        <MockTestQuestionManager
+                          testId={test.id}
+                          onClose={() => setExpandedTestId(null)}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {editingId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 my-8">
+            <h3 className="text-lg font-bold mb-4">Edit Mock Test Details</h3>
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    required
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    rows={3}
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Price (NPR)</label>
+                  <input
+                    type="number"
+                    value={form.priceNpr}
+                    onChange={(e) => setForm({ ...form, priceNpr: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                    Time Limit (Mins)
+                  </label>
+                  <input
+                    type="number"
+                    value={form.timeLimitMinutes}
+                    onChange={(e) => setForm({ ...form, timeLimitMinutes: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                    Total Questions
+                  </label>
+                  <input
+                    type="number"
+                    value={form.totalQuestions}
+                    onChange={(e) => setForm({ ...form, totalQuestions: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    min="1"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t">
+                <label className="block text-sm font-bold text-gray-700 mb-1">
+                  Thumbnail / Hero Image
+                </label>
+                {form.heroImageUrl && (
+                  <img
+                    src={form.heroImageUrl}
+                    alt="Preview"
+                    className="w-full h-40 object-cover rounded-lg mb-3"
+                  />
+                )}
+                <div className="flex items-center gap-4">
+                  <label
+                    className={`cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold transition-all text-sm ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+                  >
+                    {uploading ? "Uploading..." : "Upload Image"}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                  <input
+                    type="text"
+                    value={form.heroImageUrl}
+                    onChange={(e) => setForm({ ...form, heroImageUrl: e.target.value })}
+                    placeholder="Or enter image URL"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t mt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingId(null)}
+                  className="px-4 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving || uploading}
+                  className="bg-[#D4AF37] text-[#0F1C15] px-6 py-2 rounded-lg font-bold hover:bg-[#B3932F] transition-all disabled:opacity-50 flex items-center"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ────
+
+function MockTestPurchasesTab() {
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    fetch("/api/admin/mock-tests/purchases", { signal: controller.signal })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.purchases) setPurchases(d.purchases);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") console.error("Failed to fetch mock test purchases", err);
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <SectionTitle>Mock Test Enrollments / Purchases</SectionTitle>
+        <div className="text-sm text-gray-500">Total Enrolled: {purchases.length}</div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th className="px-5 py-4 font-medium">User</th>
+                <th className="px-5 py-4 font-medium">Mock Test</th>
+                <th className="px-5 py-4 font-medium">Status</th>
+                <th className="px-5 py-4 font-medium">Date Enrolled</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-12 text-center text-gray-400">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                    Loading enrollments...
+                  </td>
+                </tr>
+              ) : purchases.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-12 text-center text-gray-400">
+                    No enrollments found.
+                  </td>
+                </tr>
+              ) : (
+                purchases.map((purchase) => (
+                  <tr key={purchase.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-500 font-bold">
+                          {purchase.user?.name?.[0]?.toUpperCase() || "?"}
+                        </div>
+                        <div>
+                          <div className="font-bold text-gray-900">
+                            {purchase.user?.name || "Unknown"}
+                          </div>
+                          <div className="text-xs text-gray-500">{purchase.user?.email}</div>
+                          {purchase.user?.phoneNumber && (
+                            <div className="text-xs text-gray-400">{purchase.user.phoneNumber}</div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="font-medium text-gray-900">
+                        {purchase.mockTest?.title || "Unknown Test"}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {purchase.mockTest?.position || ""}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {purchase.paymentStatus || "ENROLLED"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-gray-500">
+                      {new Date(purchase.purchaseDate).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user, authenticated, loading: authLoading } = useAuth();
   const { toasts, removeToast, success, error, info } = useToast();
@@ -3380,7 +4331,9 @@ export default function AdminPage() {
     userCount: 0,
     courseCount: 0,
     enrollmentCount: 0,
-    orderCount: 0
+    orderCount: 0,
+    mockTestCount: 0,
+    mockTestOrderCount: 0
   });
   const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -3453,6 +4406,10 @@ export default function AdminPage() {
         return <NotificationsTab />;
       case "mock-test-results":
         return <MockTestResultsTab />;
+      case "mock-tests-mgmt":
+        return <MockTestsManagementTab onRefresh={loadData} toast={{ success, error, info }} />;
+      case "mock-test-purchases":
+        return <MockTestPurchasesTab />;
       case "cadetiq":
         return <CadetIQTab />;
       case "missionlog":
@@ -3472,6 +4429,8 @@ export default function AdminPage() {
     enrollments: "Enrollments",
     notifications: "Notification Center",
     "mock-test-results": "Mock Test Results",
+    "mock-tests-mgmt": "Mock Tests Management",
+    "mock-test-purchases": "Mock Test Purchases",
     cadetiq: "Cadet IQ Assessment",
     missionlog: "Mission Log",
     settings: "System Settings"

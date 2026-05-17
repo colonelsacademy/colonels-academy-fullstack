@@ -31,6 +31,8 @@ interface Props {
   question: Question;
   questionIndex: number;
   totalQuestions: number;
+  freePreviewCount: number;
+  allQuestionsUnlocked: boolean;
   selectedAnswer: string | undefined;
   answeredCount: number;
   timeLeft: number;
@@ -41,6 +43,7 @@ interface Props {
   onJump: (index: number) => void;
   onSubmit: () => void;
   onExit: () => void;
+  onLockedQuestionClick: () => void;
   answers: Record<number, string>;
 }
 
@@ -56,6 +59,8 @@ export default function MockTestQuestion({
   question,
   questionIndex,
   totalQuestions,
+  freePreviewCount,
+  allQuestionsUnlocked,
   selectedAnswer,
   answeredCount,
   timeLeft,
@@ -66,6 +71,7 @@ export default function MockTestQuestion({
   onJump,
   onSubmit,
   onExit,
+  onLockedQuestionClick,
   answers
 }: Props) {
   const [imgError, setImgError] = useState(false);
@@ -259,6 +265,8 @@ export default function MockTestQuestion({
         .mqt-dot.answered { background: rgba(212,175,55,0.12); border-color: rgba(212,175,55,0.35); color: #B8860B; }
         .mqt-dot.current { background: #0F1C15; border-color: #0F1C15; color: #fff; }
         .mqt-dot.current.answered { background: #D4AF37; border-color: #D4AF37; color: #0F1C15; }
+        .mqt-dot.locked { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); color: #ef4444; cursor: not-allowed; opacity: 0.7; }
+        .mqt-dot.locked:hover { border-color: rgba(239,68,68,0.3); opacity: 0.85; }
 
         .mqt-legend { display: flex; gap: 16px; margin-top: 12px; }
         .mqt-legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #9ca3af; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-family: monospace; }
@@ -485,15 +493,39 @@ export default function MockTestQuestion({
                 const qId = i + 1;
                 const isAnswered = !!answers[qId];
                 const isCurrent = i === questionIndex;
+                const isQuestionLocked = !allQuestionsUnlocked && i >= freePreviewCount;
                 return (
                   <button
                     key={qId}
                     type="button"
-                    className={`mqt-dot ${isCurrent ? "current" : ""} ${isAnswered ? "answered" : ""}`}
-                    onClick={() => onJump(i)}
-                    title={`Q${qId}${isAnswered ? " ✓" : ""}`}
+                    className={`mqt-dot ${isCurrent ? "current" : ""} ${isAnswered ? "answered" : ""} ${isQuestionLocked ? "locked" : ""}`}
+                    onClick={() => {
+                      if (isQuestionLocked) {
+                        onLockedQuestionClick();
+                      } else {
+                        onJump(i);
+                      }
+                    }}
+                    title={
+                      isQuestionLocked
+                        ? `Q${qId} - Locked (Purchase to unlock)`
+                        : `Q${qId}${isAnswered ? " ✓" : ""}`
+                    }
+                    disabled={isQuestionLocked}
                   >
-                    {qId}
+                    {isQuestionLocked ? (
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 1C6.48 1 2 5.48 2 11v10c0 .55.45 1 1 1h2v4c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-4h4v4c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-4h2c.55 0 1-.45 1-1V11c0-5.52-4.48-10-10-10zm-2 15h-2v-2h2v2zm0-4h-2v-2h2v2zm4 4h-2v-2h2v2zm0-4h-2v-2h2v2zm4 4h-2v-2h2v2zm0-4h-2v-2h2v2z" />
+                      </svg>
+                    ) : (
+                      qId
+                    )}
                   </button>
                 );
               })}
@@ -522,6 +554,17 @@ export default function MockTestQuestion({
                   }}
                 />
                 Pending
+              </div>
+              <div className="mqt-legend-item">
+                <div
+                  className="mqt-legend-dot"
+                  style={{
+                    background: "rgba(239,68,68,0.08)",
+                    border: "1px solid rgba(239,68,68,0.2)",
+                    color: "#ef4444"
+                  }}
+                />
+                Locked
               </div>
             </div>
           </div>

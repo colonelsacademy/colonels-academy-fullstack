@@ -37,14 +37,24 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     const user = await requireAdmin(request, reply);
     if (!user) return;
 
-    const [userCount, courseCount, enrollmentCount, orderCount] = await Promise.all([
-      fastify.prisma.user.count(),
-      fastify.prisma.course.count(),
-      fastify.prisma.enrollment.count({ where: { status: "ACTIVE" } }),
-      fastify.prisma.purchaseOrder.count({ where: { status: "PAID" } })
-    ]);
+    const [userCount, courseCount, enrollmentCount, orderCount, mockTestCount, mockTestOrderCount] =
+      await Promise.all([
+        fastify.prisma.user.count(),
+        fastify.prisma.course.count(),
+        fastify.prisma.enrollment.count({ where: { status: "ACTIVE" } }),
+        fastify.prisma.purchaseOrder.count({ where: { status: "PAID" } }),
+        fastify.prisma.mockTest.count(),
+        fastify.prisma.mockTestPurchase.count({ where: { paymentStatus: "COMPLETED" } })
+      ]);
 
-    return { userCount, courseCount, enrollmentCount, orderCount };
+    return {
+      userCount,
+      courseCount,
+      enrollmentCount,
+      orderCount,
+      mockTestCount,
+      mockTestOrderCount
+    };
   });
 
   // ── GET /v1/admin/users ────────────────────────────────────────────────────

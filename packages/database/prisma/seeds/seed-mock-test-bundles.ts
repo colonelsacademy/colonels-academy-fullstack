@@ -1,8 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-
-async function main() {
+export async function seedMockTestBundles(prisma: PrismaClient) {
   console.log("Seeding mock test bundles...");
 
   // Create Officer Cadet bundle
@@ -40,11 +38,15 @@ async function main() {
   console.log("Mock test bundles seeded successfully!");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Allow running this file directly for testing
+if (require.main === module) {
+  const prisma = new PrismaClient();
+  seedMockTestBundles(prisma)
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

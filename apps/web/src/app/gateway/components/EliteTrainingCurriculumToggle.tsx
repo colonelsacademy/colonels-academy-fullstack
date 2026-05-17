@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { Category, Course } from "@/data/gateway";
+import { useEffect, useState } from "react";
 import { CourseFilter, CourseGrid, CourseGridSkeleton, CourseSection } from "./Courses";
 
 interface EliteTrainingCurriculumToggleProps {
